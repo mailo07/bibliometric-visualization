@@ -1,0 +1,16 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+build/
+
+# OS / Editor
+.DS_Store
+.vscode/
+
+# Any personal or secret files
+.env
+.env.local

@@ -1,0 +1,23 @@
+# Flask and useful middleware
+flask==2.2.3
+flask-cors==3.0.10
+
+# Data manipulation
+pandas==1.5.3
+numpy==1.24.2
+openpyxl==3.1.1
+
+# HTTP requests
+requests==2.28.2
+
+# (Optional) Database/ORM
+sqlalchemy==1.4.46
+
+# (Optional) NLP or advanced tasks
+transformers==4.26.0
+torch==1.13.1
+nltk==3.8.1
+
+# (Optional) Deploy
+gunicorn==20.1.0
+uwsgi==2.0.20
