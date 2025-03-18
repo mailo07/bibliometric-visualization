@@ -1,0 +1,46 @@
+.not-found-box {
+    background-color: #f0f0f0;
+    /* Solid light gray color */
+    color: #333;
+    /* Darkish gray font color */
+    font-family: 'Playfair Display', serif;
+    /* Apply the font style from about page */
+    max-width: 800px;
+    /* Reduced max-width for smaller box */
+    font-size: 0.9em;
+    /* Reduced font size */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Center content horizontally */
+    justify-content: flex-start;
+    /* Align items to the top */
+    padding-top: 20px;
+    /* Add some padding to the top */
+}
+
+.not-found-heading {
+    margin-bottom: 20px;
+    /* Add space below the heading */
+}
+
+.not-found-content {
+    margin-bottom: 15px;
+    /* Add space below the content */
+    text-align: left;
+    /* Align text to the left */
+    width: 80%;
+    /* Limit the width of the content */
+}
+
+.not-found-list {
+    list-style-type: disc;
+    /* Use disc style bullets */
+    padding-left: 40px;
+    /* Indent the list */
+}
+
+.not-found-list li {
+    margin-bottom: 5px;
+    /* Add spacing between list items */
+}

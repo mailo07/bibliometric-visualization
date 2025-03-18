@@ -1,0 +1,43 @@
+/* Styles for pagination buttons */
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.pagination-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    background-color: white;
+    color: black;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 0 0.25rem;
+}
+
+.pagination-button:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination-button.active {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+.pagination-info {
+    margin: 0 1rem;
+    color: #777;
+}
+
+/* Styles for collapse content */
+.collapse-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out; /* Adjust transition for smoother animation */
+}
+
+.collapse-content.open {
+    max-height: 500px; /* Adjust max-height as needed */
+}

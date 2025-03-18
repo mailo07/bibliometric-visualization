@@ -21,3 +21,6 @@ nltk==3.8.1
 # (Optional) Deploy
 gunicorn==20.1.0
 uwsgi==2.0.20
+
+psycopg2-binary==2.9.1
+neo4j==4.4.0

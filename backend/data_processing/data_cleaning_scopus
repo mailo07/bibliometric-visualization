@@ -1,0 +1,16 @@
+import pandas as pd
+
+# Load the file with tolerant encoding
+file_path = "C:/Users/mystu/OneDrive/Desktop/Bibliometric Project/bibliometric-visualization/backend/data/scopus_data_sept.csv"
+data = pd.read_csv(file_path, encoding='latin1', on_bad_lines='skip')
+
+# Clean non-UTF8 characters
+data_cleaned = data.apply(
+    lambda x: x.encode('utf-8', 'ignore').decode('utf-8') if isinstance(x, str) else x
+)
+
+# Save the cleaned file
+cleaned_file_path = "C:/Users/mystu/OneDrive/Desktop/Bibliometric Project/bibliometric-visualization/backend/data/scopus_data_sept_cleaned_utf8.csv"
+data_cleaned.to_csv(cleaned_file_path, index=False, encoding='utf-8')
+
+print(f"Cleaned file saved at: {cleaned_file_path}")

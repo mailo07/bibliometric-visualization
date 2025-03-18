@@ -1,0 +1,265 @@
+/* Base styles that take precedence */
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color:#f0f0f0;
+    color: #333;
+
+}
+
+/* Header styles */
+.header {
+    position: relative;
+    background: linear-gradient(rgba(0, 0, 0, 0.097), rgba(0, 0, 0, 0.097)), url(https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D);
+    background-size: cover;
+    background-position: center;
+    height: 95vh;
+    /* Reduced from 100vh to ensure content below is visible */
+    color: white;
+    border-radius: 0 0 50px 50px;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    padding: 20px;
+}
+
+.nav {
+    display: inline-block;
+    margin-left: 20px;
+}
+
+.header-buttons {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.header-buttons a {
+    color: white;
+    /* Changed from black for better visibility */
+    background: linear-gradient(to bottom right, #1e3a8a, #1e40af);
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-left: 10px;
+    display: inline-block;
+    /* Ensure proper display */
+}
+
+.header-buttons a:hover {
+    background: linear-gradient(to bottom right, #1c335d, #16284c);
+}
+
+.header-buttons .home {
+    background: none;
+    border: 2px solid white;
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+}
+
+.header-buttons .home:hover {
+    background: white;
+    color: black;
+}
+
+.main-content {
+    position: absolute;
+    bottom: 20%;
+    left: 20px;
+    z-index: 1;
+    max-width: 80%;
+}
+
+.main-content .tag {
+    background: transparent;
+    border: 2px solid white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    font-weight: bold;
+    color: white;
+}
+
+.main-content h1 {
+    font-size: 3em;
+    margin: 10px 0;
+}
+
+.main-content p {
+    font-size: 1.2em;
+}
+
+.main-content .cta {
+    background: transparent;
+    border: 2px solid white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    display: inline-block;  /* Ensure this is set to inline-block */
+    margin-top: 10px;
+}
+
+
+.main-content .cta:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+        /* Accordion styles */
+        .accordion-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            overflow: hidden;
+        }
+
+        .accordion-title {
+            color: #3b1f1f;
+        }
+
+        .accordion-icon {
+            color: #3b1f1f;
+        }
+
+        /* Animation styles */
+        @keyframes scroll {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+
+        .scrolling-text {
+            white-space: nowrap;
+            display: inline-block;
+            animation: scroll 40s linear infinite;
+            font-size: 4rem;
+        }
+
+        .fade {
+            position: absolute;
+            width: 10%;
+            height: 100%;
+            top: 0;
+            z-index: 1;
+        }
+
+        .fade-left {
+            left: 0;
+            background: linear-gradient(to right, #f0f0f0, rgba(240, 240, 240, 0));
+            /* Adjusted for light gray */
+        }
+
+        .fade-right {
+            right: 0;
+            background: linear-gradient(to left, #f0f0f0, rgba(240, 240, 240, 0));
+            /* Adjusted for light gray */
+        }
+
+        /* Typewriter effect styles */
+        .typewriter h1 {
+            overflow: hidden;
+            border-right: .15em solid #3b1f1f;
+            white-space: nowrap;
+            margin: 0 auto;
+            letter-spacing: .15em;
+            animation: typing 4s steps(40, end), blink-caret .75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from {
+                width: 0
+            }
+
+            to {
+                width: 100%
+            }
+        }
+
+        @keyframes blink-caret {
+
+            from,
+            to {
+                border-color: transparent
+            }
+
+            50% {
+                border-color: #3b1f1f;
+            }
+        }
+
+/* Ensure React roots are visible */
+#root-index,
+#root-index-2 {
+    display: block;
+    width: 100%;
+}
+
+   /* Dialog styles */
+   .signup-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    border-radius: 8px;
+    min-width: 300px;
+}
+
+.signup-dialog input {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.signup-dialog button[type="submit"] {
+    background: #1e3a8a;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}

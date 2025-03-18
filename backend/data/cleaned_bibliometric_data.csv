@@ -1,0 +1,80 @@
+Author Name,Title,DOI,Year
+Unknown,Scikit-Learn: Machine Learning In Python,https://doi.org/10.48550/arxiv.1201.0490,2012
+Unknown,"Genetic Algorithms In Search, Optimization, And Machine Learning",https://doi.org/10.5860/choice.27-0936,1989
+Unknown,Pattern Recognition And Machine Learning,https://doi.org/10.1117/1.2819119,2007
+Unknown,Data Mining: Practical Machine Learning Tools And Techniques,https://doi.org/10.1016/c2009-0-19715-5,2011
+Unknown,Gaussian Processes For Machine Learning,https://doi.org/10.7551/mitpress/3206.001.0001,2005
+Unknown,Machine Learning In Automated Text Categorization,https://doi.org/10.1145/505282.505283,2002
+Unknown,Proceedings Of The 24Th International Conference On Machine Learning,https://doi.org/10.1145/1273496,2007
+Unknown,Tensorflow: A System For Large-Scale Machine Learning,https://doi.org/10.48550/arxiv.1605.08695,2016
+Unknown,"Machine Learning: Trends, Perspectives, And Prospects",https://doi.org/10.1126/science.aaa8415,2015
+Unknown,Ensemble Methods In Machine Learning,https://doi.org/10.1007/3-540-45014-9_1,2000
+Unknown,Tensorflow: Large-Scale Machine Learning On Heterogeneous Distributed Systems,https://doi.org/10.48550/arxiv.1603.04467,2016
+Unknown,Text Categorization With Support Vector Machines: Learning With Many Relevant Features,https://doi.org/10.1007/bfb0026683,1998
+Unknown,The Use Of The Area Under The Roc Curve In The Evaluation Of Machine Learning Algorithms,https://doi.org/10.1016/s0031-3203(96)00142-2,1997
+Unknown,Tensorflow: A System For Large-Scale Machine Learning,https://doi.org/10.5555/3026877.3026899,2016
+Unknown,Pattern Recognition And Machine Learning,https://doi.org/10.1198/tech.2007.s518,2007
+Unknown,Large-Scale Machine Learning With Stochastic Gradient Descent,https://doi.org/10.1007/978-3-7908-2604-3_16,2010
+Unknown,Some Studies In Machine Learning Using The Game Of Checkers,https://doi.org/10.1147/rd.33.0210,1959
+Unknown,Practical Bayesian Optimization Of Machine Learning Algorithms,https://doi.org/10.48550/arxiv.1206.2944,2012
+Unknown,Selection Of Relevant Features And Examples In Machine Learning,https://doi.org/10.1016/s0004-3702(97)00063-5,1997
+Unknown,Machine Learning For High-Speed Corner Detection,https://doi.org/10.1007/11744023_34,2006
+Unknown,Pattern Recognition And Machine Learning,https://doi.org/10.1007/978-0-387-45528-0,2006
+Unknown,Convolutional Lstm Network: A Machine Learning Approach For Precipitation Nowcasting,https://doi.org/10.48550/arxiv.1506.04214,2015
+Unknown,Fashion-Mnist: A Novel Image Dataset For Benchmarking Machine Learning Algorithms,https://doi.org/10.48550/arxiv.1708.07747,2017
+Unknown,Genetic Algorithms And Machine Learning,https://doi.org/10.1023/a:1022602019183,1988
+Unknown,Gaussian Processes In Machine Learning,https://doi.org/10.1007/978-3-540-28650-9_4,2004
+Unknown,Encyclopedia Of Machine Learning,https://doi.org/10.1007/978-0-387-30164-8,2010
+Unknown,Machine Learning In Medicine,https://doi.org/10.1161/circulationaha.115.001593,2015
+Unknown,Scikit-Learn: Machine Learning In Python,https://doi.org/10.5555/1953048.2078195,2011
+Unknown,Quantum Machine Learning,https://doi.org/10.1038/nature23474,2017
+Unknown,Dlib-Ml: A Machine Learning Toolkit,https://doi.org/10.5555/1577069.1755843,2009
+Unknown,Proceedings Of The 29Th International Conference On Machine Learning (Icml-12),https://doi.org/10.48550/arxiv.1207.4676,2012
+Unknown,Federated Machine Learning,https://doi.org/10.1145/3298981,2019
+Unknown,"Machine Learning, Neural And Statistical Classification",https://doi.org/10.2307/1269742,1995
+Unknown,Machine Learning For Molecular And Materials Science,https://doi.org/10.1038/s41586-018-0337-2,2018
+Unknown,Understanding Machine Learning,https://doi.org/10.1017/cbo9781107298019,2014
+Unknown,A Few Useful Things To Know About Machine Learning,https://doi.org/10.1145/2347736.2347755,2012
+Unknown,Towards A Rigorous Science Of Interpretable Machine Learning,https://doi.org/10.48550/arxiv.1702.08608,2017
+Unknown,Membership Inference Attacks Against Machine Learning Models,https://doi.org/10.1109/sp.2017.41,2017
+Unknown,Soilgrids250M: Global Gridded Soil Information Based On Machine Learning,https://doi.org/10.1371/journal.pone.0169748,2017
+Unknown,An Introduction To Support Vector Machines And Other Kernel-Based Learning Methods,https://doi.org/10.1017/cbo9780511801389,2000
+Unknown,Machine Learning Applications In Cancer Prognosis And Prediction,https://doi.org/10.1016/j.csbj.2014.11.005,2015
+Unknown,Machine Learning In Medicine,https://doi.org/10.1056/nejmra1814259,2019
+Unknown,Stop Explaining Black Box Machine Learning Models For High Stakes Decisions And Use Interpretable Models Instead,https://doi.org/10.1038/s42256-019-0048-x,2019
+Unknown,Practical Black-Box Attacks Against Machine Learning,https://doi.org/10.1145/3052973.3053009,2017
+Unknown,A Study Of The Behavior Of Several Methods For Balancing Machine Learning Training Data,https://doi.org/10.1145/1007730.1007735,2004
+Unknown,The Mnist Database Of Handwritten Digit Images For Machine Learning Research [Best Of The Web],https://doi.org/10.1109/msp.2012.2211477,2012
+Unknown,Machine-Learning Research,https://doi.org/10.1609/aimag.v18i4.1324,1997
+Unknown,"Predicting The Future — Big Data, Machine Learning, And Clinical Medicine",https://doi.org/10.1056/nejmp1606181,2016
+Unknown,Machine Learning For Neuroimaging With Scikit-Learn,https://doi.org/10.3389/fninf.2014.00014,2014
+Unknown,Gaussian Processes For Machine Learning,https://doi.org/10.1142/s0129065704001899,2004
+Unknown,Multimodal Machine Learning: A Survey And Taxonomy,https://doi.org/10.1109/tpami.2018.2798607,2019
+Unknown,Physics-Informed Machine Learning,https://doi.org/10.1038/s42254-021-00314-5,2021
+Unknown,Machine Learning In Agriculture: A Review,https://doi.org/10.3390/s18082674,2018
+Unknown,Introduction To Machine Learning,https://doi.org/10.1142/9789811201967_0001,2019
+Unknown,Adversarial Machine Learning At Scale,https://doi.org/10.48550/arxiv.1611.01236,2016
+Unknown,Optimization Methods For Large-Scale Machine Learning,https://doi.org/10.1137/16m1080173,2018
+Unknown,Pattern Recognition And Machine Learning,https://doi.org/10.18637/jss.v017.b05,2007
+Unknown,Machine Learning Applications In Genetics And Genomics,https://doi.org/10.1038/nrg3920,2015
+Unknown,Introduction To Machine Learning,https://doi.org/10.1007/978-3-030-10546-4_1,2019
+Unknown,Dataset Shift In Machine Learning,https://doi.org/10.7551/mitpress/9780262170055.001.0001,2008
+Unknown,The Boosting Approach To Machine Learning: An Overview,https://doi.org/10.1007/978-0-387-21579-2_9,2003
+Unknown,Dadiannao: A Machine-Learning Supercomputer,https://doi.org/10.1109/micro.2014.58,2014
+Unknown,Thumbs Up? Sentiment Classification Using Machine Learning Techniques,https://doi.org/10.48550/arxiv.cs/0205070,2002
+Unknown,Moleculenet: A Benchmark For Molecular Machine Learning,https://doi.org/10.1039/c7sc02664a,2018
+Unknown,Probabilistic Machine Learning And Artificial Intelligence,https://doi.org/10.1038/nature14541,2015
+Unknown,Bayesian Reasoning And Machine Learning,https://doi.org/10.1017/cbo9780511804779,2012
+Unknown,Proceedings Of The 25Th International Conference On Machine Learning - Icml '08,https://doi.org/10.1145/1390156,2008
+Unknown,Faster And Better: A Machine Learning Approach To Corner Detection,https://doi.org/10.1109/tpami.2008.275,2010
+Unknown,Extreme Learning Machine: Theory And Applications,https://doi.org/10.1016/j.neucom.2005.12.126,2006
+Unknown,Fast And Accurate Modeling Of Molecular Atomization Energies With Machine Learning,https://doi.org/10.1103/physrevlett.108.058301,2012
+Unknown,"Machine Learning For Medical Diagnosis: History, State Of The Art And Perspective",https://doi.org/10.1016/s0933-3657(01)00077-x,2001
+Unknown,A Survey Of Data Mining And Machine Learning Methods For Cyber Security Intrusion Detection,https://doi.org/10.1109/comst.2015.2494502,2016
+Unknown,Machine Learning And The Physical Sciences,https://doi.org/10.1103/revmodphys.91.045002,2019
+Unknown,Ilastik: Interactive Machine Learning For (Bio)Image Analysis,https://doi.org/10.1038/s41592-019-0582-9,2019
+Unknown,Machine Learning Classifiers And Fmri: A Tutorial Overview,https://doi.org/10.1016/j.neuroimage.2008.11.007,2009
+Unknown,Adversarial Machine Learning,https://doi.org/10.1145/2046684.2046692,2011
+Unknown,Mllib: Machine Learning In Apache Spark,https://doi.org/10.48550/arxiv.1505.06807,2015
+Unknown,Map-Reduce For Machine Learning On Multicore,https://doi.org/10.7551/mitpress/7503.003.0040,2007
+Unknown,Mxnet: A Flexible And Efficient Machine Learning Library For Heterogeneous Distributed Systems,https://doi.org/10.48550/arxiv.1512.01274,2015

@@ -1,21 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { fetchHelloMessage } from './services/apiServices';
+// frontend/src/App.js
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+import MainPage from './components/MainPage/MainPage';
+import AboutPage from './components/AboutPage/AboutPage';
+import ErrorPage from './components/ErrorPage/ErrorPage';
+import ProfilePage from './components/ProfilePage/ProfilePage';
+import RegisterPage from './components/RegisterPage/RegisterPage';
+import SearchPage from './components/SearchPage/SearchPage';
 
 function App() {
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    (async () => {
-      const data = await fetchHelloMessage();
-      setMessage(data.message || data.error);
-    })();
-  }, []);
-
   return (
-    <div className="App">
-      <h1>Frontend</h1>
-      <p>Backend says: {message}</p>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="*" element={<ErrorPage />} />
+      </Routes>
+    </Router>
   );
 }
 
