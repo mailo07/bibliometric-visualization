@@ -1,8 +1,7 @@
-/* General Styles */
-body {
+
+.MainPage {
     margin: 0;
     font-family: 'Roboto', sans-serif;
-    /* Background using linear-gradient */
     background: linear-gradient(to bottom, #f5f5f5, #e5e5e5);
     animation: fadeIn 1s ease-in;
     color: #2c2c2c;
@@ -14,23 +13,25 @@ body {
 }
 
 /* Scroll Reveal Animation */
-.reveal {
+.MainPage .reveal {
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
-.reveal.active {
+.MainPage .reveal.active {
     opacity: 1;
     transform: none;
 }
 
-/* Header Styles (reveal class removed) */
-.header {
+/* Header Styles */
+.MainPage .header {
     position: relative;
-    background: linear-gradient(rgba(0, 0, 0, 0.097), rgba(0, 0, 0, 0.097)),url('https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center;
+    background: linear-gradient(rgba(0, 0, 0, 0.097), rgba(0, 0, 0, 0.097)),
+                url('https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')
+                no-repeat center center;
     background-size: cover;
     background-position: center;
-    height: 80vh;
+    height: 95vh;
     color: white;
     display: flex;
     flex-direction: column;
@@ -41,7 +42,7 @@ body {
     text-align: center;
     padding-top: 80px;
 }
-.header::before {
+.MainPage .header::before {
     content: '';
     position: absolute;
     top: 0;
@@ -52,24 +53,26 @@ body {
 }
 
 /* Header Content Styles */
-.header-content {
+.MainPage .header-content {
     position: relative;
     padding: 40px;
     max-width: 800px;
 }
-.header-content h1 {
+
+.MainPage .header-content h1 {
     font-family: 'Playfair Display', serif;
     font-size: 5em;
     margin: 0;
 }
-.header-content p {
+
+.MainPage .header-content p {
     font-family: 'Roboto', sans-serif;
     font-size: 1.2em;
     margin-top: 20px;
 }
 
 /* Navigation Styles */
-.nav {
+.MainPage .nav {
     position: absolute;
     top: 20px;
     left: 20px;
@@ -80,58 +83,62 @@ body {
     padding: 0 40px;
     z-index: 10;
 }
-.nav .logo {
+.MainPage .nav .logo {
     font-family: 'Playfair Display', serif;
     font-size: 2em;
 }
-.header-buttons {
+
+.MainPage .header-buttons {
     position: absolute;
     top: 20px;
     right: 20px;
     display: flex;
     gap: 10px; 
 }
-.header-buttons button, .header-buttons a {
+
+.MainPage .header-buttons button,
+.MainPage .header-buttons a {
     color: white;
     text-decoration: none;
     font-weight: 400;
     border: 2px solid white;
-    padding: 10px 20px; /* Adjusted padding for a smaller button */
-    border-radius: 30px; /* Make buttons round */
+    padding: 10px 20px;
+    border-radius: 30px;
     display: flex;
     align-items: center;
     gap: 5px;
     transition: background 0.3s ease, border 0.3s ease;
-    background: none; /* Remove blue color */
+    background: none;
 }
-.header-buttons button:hover, .header-buttons a:hover {
+
+.MainPage .header-buttons button:hover,
+.MainPage .header-buttons a:hover {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* Modify the about-button and register-button styles for transparency and round shape */
-.header-buttons .about-button,
-.header-buttons .register-button {
+/* Modify the about-button and register-button styles */
+.MainPage .header-buttons .about-button,
+.MainPage .header-buttons .register-button {
     color: white;
     text-decoration: none;
     font-weight: 400;
     border: 2px solid white;
     padding: 10px 20px; 
-    border-radius: 30px; /* Round shape */
-    background: none; /* No fill */
+    border-radius: 30px;
+    background: none;
     display: flex;
     align-items: center;
     gap: 5px;
     transition: background 0.3s ease, border 0.3s ease;
 }
 
-.header-buttons .about-button:hover,
-.header-buttons .register-button:hover {
+.MainPage .header-buttons .about-button:hover,
+.MainPage .header-buttons .register-button:hover {
     background: rgba(255, 255, 255, 0.2);
 }
 
-
-.main {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+.MainPage .main {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),url('https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
     background-size: cover;
     background-position: center;
     color: white;
@@ -139,17 +146,19 @@ body {
     padding: 100px 30px;
     transition: padding 0.3s;
 }
-.main h1 {
+
+.MainPage .main h1 {
     font-size: 48px;
     margin-bottom: 20px;
 }
-.main p {
+
+.MainPage .main p {
     font-size: 18px;
     margin-bottom: 40px;
 }
 
 /* Search Box Styles */
-.search-box {
+.MainPage .search-box {
     background-image: linear-gradient(to bottom, #00509e, #003366);
     padding: 40px 20px;
     border-radius: 10px;
@@ -159,23 +168,23 @@ body {
     box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
     transition: all 0.3s;
 }
-.search-box h2 {
+.MainPage .search-box h2 {
     color: white;
     font-size: 24px;
     margin-bottom: 20px;
 }
-.search-box h3 {
+.MainPage .search-box h3 {
     color: #87ceeb;
     font-size: 18px;
     margin-bottom: 20px;
 }
-.search-box .tabs {
+.MainPage .search-box .tabs {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
     position: relative;
 }
-.search-box .tabs a {
+.MainPage .search-box .tabs a {
     color: white;
     text-decoration: none;
     font-size: 14px;
@@ -185,11 +194,11 @@ body {
     cursor: pointer;
     transition: all 0.3s;
 }
-.search-box .tabs a:hover {
+.MainPage .search-box .tabs a:hover {
     background-color: #006bb3;
     border-radius: 5px;
 }
-.search-box .tabs .glider {
+.MainPage .search-box .tabs .glider {
     position: absolute;
     bottom: -2px;
     width: 100%;
@@ -199,16 +208,15 @@ body {
     margin-left: 5px;
 }
 
-/* Make the search bar + input fill more horizontal space */
-.search-box .search-bar {
+.MainPage .search-box .search-bar {
     display: flex;
     width: 100%;
 }
-.search-box .search-bar form {
+.MainPage .search-box .search-bar form {
     display: flex;
     width: 100%;
 }
-.search-box .search-bar input {
+.MainPage .search-box .search-bar input {
     flex: 4;
     padding: 10px;
     border-radius: 5px 0 0 5px;
@@ -217,11 +225,11 @@ body {
     color: #000;
     font-size: 16px;
 }
-.search-box .search-bar input:focus {
+.MainPage .search-box .search-bar input:focus {
     box-shadow: 0 0 5px #87ceeb;
     outline: none;
 }
-.search-box .search-bar button {
+.MainPage .search-box .search-bar button {
     flex: 1;
     background-color: hsl(221, 84%, 71%);
     color: white;
@@ -230,15 +238,14 @@ body {
     border-radius: 0 5px 5px 0;
     cursor: pointer;
     transition: background-color 0.3s;
-    white-space: nowrap; /* Ensures text stays on one line */
-
+    white-space: nowrap;
 }
-.search-box .search-bar button:hover {
+.MainPage .search-box .search-bar button:hover {
     background-color: #0088cc;
 }
 
 /* Main Content Styles */
-.collaboration-carousel-slide {
+.MainPage .collaboration-carousel-slide {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -247,87 +254,86 @@ body {
     border-radius: 10px;
     margin: 20px 0;
 }
-.container {
+
+.MainPage .container {
     display: flex;
     flex-wrap: wrap;
     padding: 50px 20px;
     max-width: 1200px;
     margin: 0 auto;
 }
-.testimonial {
+
+.MainPage .testimonial {
     font-size: 16px;
     color: #333;
     margin-bottom: 20px;
 }
-.author {
+.MainPage .author {
     display: flex;
     align-items: center;
 }
-.author img {
+.MainPage .author img {
     border-radius: 50%;
     width: 50px;
     height: 50px;
     margin-right: 10px;
     object-fit: cover;
 }
-.author-info {
+.MainPage .author-info {
     font-size: 14px;
     color: #007bff;
 }
-.author-info span {
+.MainPage .author-info span {
     display: block;
     color: #666;
 }
-.container {
-    display: flex;
-    padding: 50px;
-}
-.left-column {
+
+.MainPage .left-column {
     width: 60%;
     padding-right: 20px;
 }
-.right-column {
+.MainPage .right-column {
     width: 40%;
     position: relative;
 }
-.right-column img {
+.MainPage .right-column img {
     width: 100%;
     border-radius: 10px;
     max-height: 200px;
     object-fit: cover;
 }
-.section-title {
+.MainPage .section-title {
     color: #007bff;
     font-size: 14px;
     text-transform: uppercase;
     margin-bottom: 10px;
 }
-.main-title {
+.MainPage .main-title {
     font-size: 36px;
     color: #333;
     margin-bottom: 20px;
 }
-.description {
+.MainPage .description {
     font-size: 18px;
     color: #666;
     margin-bottom: 40px;
 }
-.carousel {
+.MainPage .carousel {
     position: relative;
     overflow: hidden;
     width: 100%;
     max-width: 800px;
     margin: 40px auto;
 }
-.carousel-inner {
+.MainPage .carousel-inner {
     display: flex;
     transition: transform 0.5s ease-in-out;
 }
-.carousel-item {
+.MainPage .carousel-item {
     min-width: 100%;
     box-sizing: border-box;
 }
-.carousel-controls {
+.MainPage .carousel-controls {
     position: absolute;
     top: 50%;
     width: 100%;
@@ -335,22 +341,22 @@ body {
     justify-content: space-between;
     transform: translateY(-50%);
 }
-.carousel-controls i {
+.MainPage .carousel-controls i {
     background: rgba(0, 0, 0, 0.5);
     color: white;
     padding: 10px;
     cursor: pointer;
     transition: background 0.3s;
 }
-.carousel-controls i:hover {
+.MainPage .carousel-controls i:hover {
     background: rgba(0, 0, 0, 0.8);
 }
-.carousel-indicators {
+.MainPage .carousel-indicators {
     display: flex;
     justify-content: center;
     align-items: center;
 }
-.carousel-indicators div {
+.MainPage .carousel-indicators div {
     width: 10px;
     height: 10px;
     background-color: #ccc;
@@ -358,11 +364,12 @@ body {
     margin: 0 5px;
     cursor: pointer;
 }
-.carousel-indicators .active {
+.MainPage .carousel-indicators .active {
     background-color: #007bff;
 }
+
 /* News Card Styles */
-.news-card {
+.MainPage .news-card {
     display: flex;
     flex-direction: column;
     background: white;
@@ -372,29 +379,29 @@ body {
     transition: transform 0.3s, box-shadow 0.3s;
     margin-bottom: 20px;
 }
-.news-card img {
+.MainPage .news-card img {
     width: 100%;
     height: 180px;
     object-fit: cover;
 }
-.news-card .news-content {
+.MainPage .news-card .news-content {
     padding: 20px;
 }
-.news-card .news-content h4 {
+.MainPage .news-card .news-content h4 {
     font-size: 20px;
     margin-bottom: 10px;
 }
-.news-card .news-content p {
+.MainPage .news-card .news-content p {
     font-size: 14px;
     color: #555;
 }
-.news-card:hover {
+.MainPage .news-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Footer Styles (reveal class removed) */
-.footer {
+/* Footer Styles */
+.MainPage .footer {
     background-color: #1a1a1a;
     color: white;
     padding: 40px 20px;
@@ -404,7 +411,7 @@ body {
     font-family: 'Playfair Display', serif;
 }
 
-.footer-content {
+.MainPage .footer-content {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
@@ -412,45 +419,45 @@ body {
     margin: 20px auto;
     text-align: center;
 }
-.footer-section {
+.MainPage .footer-section {
     margin: 0 20px;
     flex: 1;
     min-width: 200px;
 }
-.footer h3 {
+.MainPage .footer h3 {
     font-size: 1.2em;
     margin-bottom: 10px;
 }
-.footer p {
+.MainPage .footer p {
     font-size: 1em;
     line-height: 1.5;
     margin: 0;
 }
-.footer a {
+.MainPage .footer a {
     color: #87ceeb;
     text-decoration: none;
 }
-.footer a:hover {
+.MainPage .footer a:hover {
     text-decoration: underline;
 }
-.footer-title {
+.MainPage .footer-title {
     font-size: 1.5em;
     font-weight: bold;
 }
-.footer-subtitle {
+.MainPage .footer-subtitle {
     font-size: 1em;
     font-weight: 400;
     margin-top: 5px;
 }
 
 /* Increase font size and bold for "Our Recent News" */
-.right-column h2 {
+.MainPage .right-column h2 {
     font-size: 2em;
     font-weight: bold;
 }
 
 /* Login Box Styles */
-.signup-dialog {
+.MainPage .signup-dialog {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -463,7 +470,7 @@ body {
     min-width: 300px;
 }
 
-.signup-dialog input {
+.MainPage .signup-dialog input {
     display: block;
     width: 100%;
     margin-bottom: 10px;
@@ -472,7 +479,7 @@ body {
     border-radius: 4px;
 }
 
-.signup-dialog button[type="submit"] {
+.MainPage .signup-dialog button[type="submit"] {
     background: #1e3a8a;
     color: #fff;
     padding: 10px;
@@ -482,7 +489,7 @@ body {
     width: 100%;
 }
 
-.dialog-overlay {
+.MainPage .dialog-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -493,20 +500,19 @@ body {
 }
 
 /* Plain Text Styles */
-.plain-text-container {
+.MainPage .plain-text-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100px; /* adjust as needed */
+    min-height: 100px;
+}
+.MainPage .plain-text-container h1 {
+    font-size: 6rem;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
-.plain-text-container h1 {
-    font-size: 6rem; /* Adjust font size as needed */
-    white-space: nowrap; /* Prevent text from wrapping */
-    overflow: hidden; /* Hide overflowing text */
-}
-
-.tabs button {
+.MainPage .tabs button {
     background: none;
     border: none;
     padding: 0;
@@ -516,8 +522,8 @@ body {
     color: inherit;
     text-decoration: none;
     transition: all 0.3s;
-    margin-right: 10px; 
+    margin-right: 10px;
 }
-.tabs button.active {
+.MainPage .tabs button.active {
     font-weight: bold;
 }

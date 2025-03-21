@@ -10,9 +10,9 @@ const MainPage = () => {
     const tabs = document.querySelectorAll('.search-box .tabs button');
     const glider = document.querySelector('.search-box .tabs .glider');
 
-    tabs.forEach((tab, index) => {
+    tabs.forEach((tab) => {
       tab.addEventListener('click', function () {
-        tabs.forEach(t => t.classList.remove('active'));
+        tabs.forEach((t) => t.classList.remove('active'));
         tab.classList.add('active');
         glider.style.width = `${tab.offsetWidth}px`;
         glider.style.left = `${tab.offsetLeft}px`;
@@ -74,10 +74,10 @@ const MainPage = () => {
 
     // Scroll Reveal Functionality
     function reveal() {
-      var reveals = document.querySelectorAll('.reveal');
-      for (var i = 0; i < reveals.length; i++) {
-        var windowHeight = window.innerHeight;
-        var elementTop = reveals[i].getBoundingClientRect().top;
+      const reveals = document.querySelectorAll('.reveal');
+      for (let i = 0; i < reveals.length; i++) {
+        const windowHeight = window.innerHeight;
+        const elementTop = reveals[i].getBoundingClientRect().top;
         if (elementTop < windowHeight - 100) {
           reveals[i].classList.add('active');
         }
@@ -85,7 +85,6 @@ const MainPage = () => {
     }
     window.addEventListener('scroll', reveal);
     window.addEventListener('load', reveal);
-
   }, []);
 
   const toggleLoginBox = () => {
@@ -96,15 +95,17 @@ const MainPage = () => {
     setContactBoxVisible(!contactBoxVisible);
   };
 
-    return (
-    <div>
+  return (
+    
+    <div className="MainPage">
       {/* Header Section */}
       <header className="header">
         <nav className="nav">
           <div className="header-buttons">
             <a href="/about" className="about-button">
-              <i className="fas fa-info-circle"></i> About</a>
-            <a href ="/register" className="register-button">
+              <i className="fas fa-info-circle"></i> About
+            </a>
+            <a href="/register" className="register-button">
               <i className="fas fa-user"></i> Register
             </a>
             <button className="login-button" onClick={toggleLoginBox}>
@@ -125,9 +126,7 @@ const MainPage = () => {
             <h2>Fostering Global Connections</h2>
             <h3>Start Your Search Here</h3>
             <div className="tabs">
-              <button onClick={(e) => e.preventDefault()}>
-                Authors
-              </button>
+              <button onClick={(e) => e.preventDefault()}>Authors</button>
               <button onClick={(e) => e.preventDefault()}>Fields</button>
               <button onClick={(e) => e.preventDefault()}>Scholarly works</button>
               <div className="glider"></div>
@@ -150,14 +149,19 @@ const MainPage = () => {
       {loginBoxVisible && (
         <div className="dialog-overlay" onClick={toggleLoginBox}>
           <div className="signup-dialog" onClick={(e) => e.stopPropagation()}>
-            <button onClick={toggleLoginBox} style={{ position: 'absolute', top: '10px', right: '10px' }}>X</button>
+            <button
+              onClick={toggleLoginBox}
+              style={{ position: 'absolute', top: '10px', right: '10px' }}
+            >
+              X
+            </button>
             <h1>Log-in to Biblioknow</h1>
             <form>
               <label>Email address or Username</label>
-              <input type='text' />
+              <input type="text" />
               <label>Password</label>
-              <input type='password' />
-              <button type='submit'>Log in</button>
+              <input type="password" />
+              <button type="submit">Log in</button>
             </form>
           </div>
         </div>
@@ -167,33 +171,39 @@ const MainPage = () => {
       {contactBoxVisible && (
         <div className="dialog-overlay" onClick={toggleContactBox}>
           <div className="signup-dialog" onClick={(e) => e.stopPropagation()}>
-            <button onClick={toggleContactBox} style={{ position: 'absolute', top: '10px', right: '10px' }}>X</button>
+            <button
+              onClick={toggleContactBox}
+              style={{ position: 'absolute', top: '10px', right: '10px' }}
+            >
+              X
+            </button>
             <h2>Contact Information</h2>
             <p>
-              For inquiries and support, please contact the admin at:
+              For inquiries and support, please contact the admin at:{' '}
               <a href="mailto:Biblioknow00@outlook.com">
                 BiblioKnow00@outlook.com
               </a>
               <br />
               You can also reach us at (+91) 123467890.
             </p>
-            <p>
-              For more information, visit our educational project page.
-            </p>
+            <p>For more information, visit our educational project page.</p>
           </div>
         </div>
       )}
 
       {/* Main Content Sections */}
       <section className="bg-gray-100 py-12 text-center reveal">
-     
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-600">
-          OUR PRIMARY FOCUS AND OBJECTIVES</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-600">
+          OUR PRIMARY FOCUS AND OBJECTIVES
+        </h1>
         <p className="text-lg text-gray-600 mt-2">
-        To provide a platform for researchers, scholars, and academics to connect, collaborate,<br />
-      and exchange knowledge. We aim to foster a collaborative environment
-        where researchers can share their findings,  discover new insights,<br />
-        and contribute to the advancement of knowledge.
+          To provide a platform for researchers, scholars, and academics to
+          connect, collaborate,
+          <br />
+          and exchange knowledge. We aim to foster a collaborative environment
+          where researchers can share their findings, discover new insights,
+          <br />
+          and contribute to the advancement of knowledge.
         </p>
       </section>
 
@@ -202,7 +212,7 @@ const MainPage = () => {
           Discover, Analyse, and Map Global Innovation Knowledge
         </h1>
         <p className="text-lg text-gray-600 mt-2">
-          Connecting Worlds & Building Cultural Bridges
+          Connecting Worlds &amp; Building Cultural Bridges
         </p>
       </section>
 
@@ -222,12 +232,12 @@ const MainPage = () => {
                   <div className="left-section">
                     <h2>What Others Say</h2>
                     <div className="testimonial">
-                      “I used BiblioKnow to run patent analyses for my PhD and it
-                      was a critical factor of my successful thesis. The UX is
-                      phenomenal and you are a pro after 5 minutes. The database
-                      is reliable - I did several validation checks with
-                      proprietary databases and found no inconsistencies...
-                      Thanks BiblioKnow.”
+                      “I used BiblioKnow to run patent analyses for my PhD and
+                      it was a critical factor of my successful thesis. The UX
+                      is phenomenal and you are a pro after 5 minutes. The
+                      database is reliable - I did several validation checks
+                      with proprietary databases and found no
+                      inconsistencies... Thanks BiblioKnow.”
                     </div>
                     <div className="author">
                       <img
@@ -304,7 +314,7 @@ const MainPage = () => {
               src="https://oaidalleapiprodscus.blob.core.windows.net/private/org-RcpoXHkzChYnDbFAyeQ8"
             />
             <div className="news-content">
-              <h4>The Lens Scales for Impact</h4>
+              <h4>Scales for Impact</h4>
               <p>13 June 2024 - Press Release</p>
               <p>
                 Moore Foundation supports The Lens’ growth as the definitive
@@ -319,19 +329,24 @@ const MainPage = () => {
       <div className="footer">
         <div className="footer-title">&copy; 2025 Biblioknow</div>
         <div className="footer-subtitle">
-          Please Note: This is just an Educational Project. Not intended for real use
+          Please Note: This is just an Educational Project. Not intended for
+          real use
         </div>
         <div className="footer-content">
           <div className="footer-section">
             <h3>Location</h3>
-            <p>India<br/>
+            <p>
+              India
+              <br />
               Meghalaya, 793017
             </p>
           </div>
           <div className="footer-section">
             <h3>Contact</h3>
-            <p><a href="mailto:Biblioknow00@outlook.com">BiblioKnow00@outlook.com</a><br />
-            (+91) 123467890
+            <p>
+              <a href="mailto:Biblioknow00@outlook.com">BiblioKnow00@outlook.com</a>
+              <br />
+              (+91) 123467890
             </p>
           </div>
         </div>

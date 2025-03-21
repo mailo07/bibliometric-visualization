@@ -1,46 +1,69 @@
-.not-found-box {
-    background-color: #f0f0f0;
-    /* Solid light gray color */
-    color: #333;
-    /* Darkish gray font color */
-    font-family: 'Playfair Display', serif;
-    /* Apply the font style from about page */
-    max-width: 800px;
-    /* Reduced max-width for smaller box */
-    font-size: 0.9em;
-    /* Reduced font size */
+/* Container for the 404 page */
+.page_404 {
+    width: 100%;
+    min-height: 100vh;
+    background: #fff;
+    font-family: 'Arvo', serif; /* or any font you like */
     display: flex;
-    flex-direction: column;
     align-items: center;
-    /* Center content horizontally */
-    justify-content: flex-start;
-    /* Align items to the top */
-    padding-top: 20px;
-    /* Add some padding to the top */
+    justify-content: center;
+}
+ /* Wrapping container */
+.container_404 {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 40px 20px;
 }
 
-.not-found-heading {
-    margin-bottom: 20px;
-    /* Add space below the heading */
+  /* Row/col classes (if not using a CSS framework) */
+.row_404 {
+    display: flex;
+    justify-content: center;
+}
+.col_404 {
+    max-width: 600px;
 }
 
-.not-found-content {
-    margin-bottom: 15px;
-    /* Add space below the content */
-    text-align: left;
-    /* Align text to the left */
-    width: 80%;
-    /* Limit the width of the content */
+  /* Large 404 code text */
+.code_404 {
+font-size: 5rem;
+    margin: 0;
+    color: #333;
+}
+  /* Caveman image styling */
+.caveman_img {
+    max-width: 250px;
+    width: 100%;
+    height: auto;
+    margin: 20px 0;
 }
 
-.not-found-list {
-    list-style-type: disc;
-    /* Use disc style bullets */
-    padding-left: 40px;
-    /* Indent the list */
+  /* "Look like you're lost" title */
+.lost_title {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: #333;
 }
 
-.not-found-list li {
-    margin-bottom: 5px;
-    /* Add spacing between list items */
+  /* Smaller text under the title */
+.lost_text {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+  /* The green "Go to Home" button */
+.link_404 {
+    display: inline-block;
+    padding: 10px 25px;
+    background: #39ac31;
+    color: #fff !important;
+    text-decoration: none;
+    font-size: 1rem;
+    border-radius: 4px;
+}
+
+.link_404:hover {
+    background: #2e8d25;
 }

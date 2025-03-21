@@ -3,8 +3,9 @@ from flask_cors import CORS
 from utils.db_utils import fetch_all  # Import db functions
 import os  # Import the os module
 
+
 app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app)
 
 # --- Serve the React App ---
 @app.route('/')
