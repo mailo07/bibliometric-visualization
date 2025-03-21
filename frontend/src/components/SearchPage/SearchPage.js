@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { search } from '../../services/apiService'; // Import search
+import { search } from '../../services/apiService';
 import './SearchPage.css';
 
 const SearchPage = () => {
@@ -24,8 +24,10 @@ const SearchPage = () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await search(query);
-            setData(data);
+            const results = await search(query);
+            setData(results);
+
+            // Placeholder metrics
             setMetrics({
                 scholarlyWorks: Math.floor(Math.random() * 100000000),
                 worksCitedByPatents: Math.floor(Math.random() * 100000000),
@@ -53,7 +55,7 @@ const SearchPage = () => {
             !subjectFilter ||
             (item.title && item.title.toLowerCase().includes(subjectFilter.toLowerCase()));
 
-        // We leave publisher/date/flags as placeholders
+        // Publisher/date/flags can be added similarly if needed
         return authorMatch && subjectMatch;
     });
 
@@ -68,7 +70,7 @@ const SearchPage = () => {
     };
 
     const renderPaginationButtons = () => {
-        let buttons = [];
+        const buttons = [];
 
         if (totalPages <= 7) {
             for (let i = 1; i <= totalPages; i++) {
@@ -134,18 +136,52 @@ const SearchPage = () => {
 
     return (
         <div className="flex flex-col min-h-screen font-sans">
-            {/* Header: Title on the right */}
-            <header className="bg-gray-800 p-4 text-white flex justify-end items-center">
-                <h1 className="text-2xl font-bold">BIBLIOKNOW</h1>
+            {/* HEADER with search bar centered, BIBLIOKNOW on the right */}
+            <header className="bg-gray-800 px-4 py-3 text-white flex items-center">
+                {/* Centered Search Bar */}
+                <div className="flex-grow flex justify-center">
+                    <div className="relative w-full max-w-md">
+                        <input
+                            type="text"
+                            placeholder="Search"
+                            className="w-full bg-black text-white placeholder-gray-400 
+                                       rounded-full pl-4 pr-10 py-2 focus:outline-none"
+                        />
+                        {/* Magnifying Glass Button */}
+                        <button
+                            type="button"
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 
+                                       text-gray-400 hover:text-white"
+                        >
+                            <svg
+                                className="h-5 w-5"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                viewBox="0 0 24 24"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <h1 className="ml-4 text-2xl font-bold">BIBLIOKNOW</h1>
             </header>
 
-            {/* Main Content: 3 columns */}
+            {/* Main Content: 3 columns, all flex-grow so they expand to the footer */}
             <div className="flex flex-grow">
                 {/* Left Column: Chart */}
                 <aside className="w-full md:w-2/6 p-4 bg-white shadow-md">
-                    <h3 className="font-semibold text-gray-600 mb-4">Chart Visualization of Citation Counts</h3>
+                    <h3 className="font-semibold text-gray-600 mb-4">
+                        Chart Visualization of Citation Counts
+                    </h3>
                     <div className="h-64 bg-gray-200 flex items-center justify-center">
-                        <p className="text-gray-700">[Chart/Plot for citation metrics goes here]</p>
+                        <p className="text-gray-700">
+                            [Chart/Plot for citation metrics goes here]
+                        </p>
                     </div>
                 </aside>
 
@@ -255,181 +291,188 @@ const SearchPage = () => {
                     {!loading && !error && activeTab !== "scholarlyWorks" && (
                         <div className="bg-white shadow-md rounded p-4">
                             <p className="text-gray-600">
-                                {activeTab === "citation" ? "Citation view content goes here..." : "Analysis content goes here..."}
+                                {activeTab === "citation"
+                                    ? "Citation view content goes here..."
+                                    : "Analysis content goes here..."}
                             </p>
                         </div>
                     )}
                 </main>
 
-                {/* Right Sidebar: Dark background, BIBLIOKNOW on top right, white panel with filters, icons to the right */}
-                <aside className="w-full md:w-1/6 bg-gray-800 text-white flex flex-col">
-                    {/* Top: BIBLIOKNOW aligned right */}
-                    <div className="p-4 flex justify-end">
-                        <h2 className="text-xl font-bold">BIBLIOKNOW</h2>
-                    </div>
-
-                    {/* White Panel for Filters */}
-                    <div className="bg-white text-black flex-1 p-4">
-                        <h2 className="font-semibold mb-4">FILTERS</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <button
-                                    className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
-                                    onClick={() => toggleFilter('dateRange')}
-                                >
-                                    <span>Date Range</span>
-                                    <span>{activeFilter === 'dateRange' ? ">" : ">"}</span>
-                                </button>
-                                <div className={`collapse-content ${activeFilter === 'dateRange' ? 'open' : ''}`}>
-                                    <label className="block mt-2">
-                                        <span className="text-gray-700">Start Date</span>
-                                        <input
-                                            type="date"
-                                            className="w-full border p-2 rounded mb-2"
-                                            value={dateRange.start}
-                                            onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                                        />
-                                    </label>
-                                    <label className="block">
-                                        <span className="text-gray-700">End Date</span>
-                                        <input
-                                            type="date"
-                                            className="w-full border p-2 rounded"
-                                            value={dateRange.end}
-                                            onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                                        />
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div>
-                                <button
-                                    className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
-                                    onClick={() => toggleFilter('flags')}
-                                >
-                                    <span>Flags</span>
-                                    <span>{activeFilter === 'flags' ? ">" : ">"}</span>
-                                </button>
-                                <div className={`collapse-content ${activeFilter === 'flags' ? 'open' : ''}`}>
-                                    <div className="flex items-center space-x-2 mt-2">
-                                        <input
-                                            type="checkbox"
-                                            id="flag1"
-                                            checked={flags.flag1}
-                                            onChange={(e) => setFlags({ ...flags, flag1: e.target.checked })}
-                                        />
-                                        <label htmlFor="flag1">Flag 1</label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            id="flag2"
-                                            checked={flags.flag2}
-                                            onChange={(e) => setFlags({ ...flags, flag2: e.target.checked })}
-                                        />
-                                        <label htmlFor="flag2">Flag 2</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <button
-                                    className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
-                                    onClick={() => toggleFilter('author')}
-                                >
-                                    <span>Author</span>
-                                    <span>{activeFilter === 'author' ? ">" : ">"}</span>
-                                </button>
-                                <div className={`collapse-content ${activeFilter === 'author' ? 'open' : ''}`}>
+                {/* Filters Column */}
+                <div className="bg-white text-black flex-1 p-4">
+                    <h2 className="font-semibold mb-4">FILTERS</h2>
+                    <div className="space-y-4">
+                        <div>
+                            <button
+                                className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
+                                onClick={() => toggleFilter('dateRange')}
+                            >
+                                <span>Date Range</span>
+                                <span>{activeFilter === 'dateRange' ? ">" : ">"}</span>
+                            </button>
+                            <div className={`collapse-content ${activeFilter === 'dateRange' ? 'open' : ''}`}>
+                                <label className="block mt-2">
+                                    <span className="text-gray-700">Start Date</span>
                                     <input
-                                        type="text"
-                                        className="w-full border p-2 rounded mt-2"
-                                        placeholder="Search Author"
-                                        value={authorFilter}
-                                        onChange={(e) => setAuthorFilter(e.target.value)}
+                                        type="date"
+                                        className="w-full border p-2 rounded mb-2"
+                                        value={dateRange.start}
+                                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
                                     />
-                                </div>
-                            </div>
-
-                            <div>
-                                <button
-                                    className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
-                                    onClick={() => toggleFilter('publisher')}
-                                >
-                                    <span>Publisher</span>
-                                    <span>{activeFilter === 'publisher' ? ">" : ">"}</span>
-                                </button>
-                                <div className={`collapse-content ${activeFilter === 'publisher' ? 'open' : ''}`}>
+                                </label>
+                                <label className="block">
+                                    <span className="text-gray-700">End Date</span>
                                     <input
-                                        type="text"
-                                        className="w-full border p-2 rounded mt-2"
-                                        placeholder="Search Publisher"
-                                        value={publisherFilter}
-                                        onChange={(e) => setPublisherFilter(e.target.value)}
+                                        type="date"
+                                        className="w-full border p-2 rounded"
+                                        value={dateRange.end}
+                                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
                                     />
-                                </div>
+                                </label>
                             </div>
-
-                            <div>
-                                <button
-                                    className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
-                                    onClick={() => toggleFilter('subject')}
-                                >
-                                    <span>Subject Matter</span>
-                                    <span>{activeFilter === 'subject' ? ">" : ">"}</span>
-                                </button>
-                                <div className={`collapse-content ${activeFilter === 'subject' ? 'open' : ''}`}>
-                                    <input
-                                        type="text"
-                                        className="w-full border p-2 rounded mt-2"
-                                        placeholder="Search Subject Matter"
-                                        value={subjectFilter}
-                                        onChange={(e) => setSubjectFilter(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-
-                            {(authorFilter || publisherFilter || subjectFilter || flags.flag1 || flags.flag2 || dateRange.start || dateRange.end) && (
-                                <button
-                                    className="w-full mt-4 p-2 bg-red-500 text-white rounded hover:bg-red-600"
-                                    onClick={clearFilters}
-                                >
-                                    Clear Filters
-                                </button>
-                            )}
                         </div>
-                    </div>
 
-                    {/* Icon section at the bottom (right side) */}
-                    <div className="p-4 flex flex-col items-center space-y-4">
-                        <button>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6 text-white hover:text-gray-300"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
+                        <div>
+                            <button
+                                className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
+                                onClick={() => toggleFilter('flags')}
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                            </svg>
-                        </button>
-                        <button>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6 text-white hover:text-gray-300"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
+                                <span>Flags</span>
+                                <span>{activeFilter === 'flags' ? ">" : ">"}</span>
+                            </button>
+                            <div className={`collapse-content ${activeFilter === 'flags' ? 'open' : ''}`}>
+                                <div className="flex items-center space-x-2 mt-2">
+                                    <input
+                                        type="checkbox"
+                                        id="flag1"
+                                        checked={flags.flag1}
+                                        onChange={(e) => setFlags({ ...flags, flag1: e.target.checked })}
+                                    />
+                                    <label htmlFor="flag1">Flag 1</label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="checkbox"
+                                        id="flag2"
+                                        checked={flags.flag2}
+                                        onChange={(e) => setFlags({ ...flags, flag2: e.target.checked })}
+                                    />
+                                    <label htmlFor="flag2">Flag 2</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button
+                                className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
+                                onClick={() => toggleFilter('author')}
                             >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 7a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm0 7a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" />
-                            </svg>
-                        </button>
+                                <span>Author</span>
+                                <span>{activeFilter === 'author' ? ">" : ">"}</span>
+                            </button>
+                            <div className={`collapse-content ${activeFilter === 'author' ? 'open' : ''}`}>
+                                <input
+                                    type="text"
+                                    className="w-full border p-2 rounded mt-2"
+                                    placeholder="Search Author"
+                                    value={authorFilter}
+                                    onChange={(e) => setAuthorFilter(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <button
+                                className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
+                                onClick={() => toggleFilter('publisher')}
+                            >
+                                <span>Publisher</span>
+                                <span>{activeFilter === 'publisher' ? ">" : ">"}</span>
+                            </button>
+                            <div className={`collapse-content ${activeFilter === 'publisher' ? 'open' : ''}`}>
+                                <input
+                                    type="text"
+                                    className="w-full border p-2 rounded mt-2"
+                                    placeholder="Search Publisher"
+                                    value={publisherFilter}
+                                    onChange={(e) => setPublisherFilter(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <button
+                                className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
+                                onClick={() => toggleFilter('subject')}
+                            >
+                                <span>Subject Matter</span>
+                                <span>{activeFilter === 'subject' ? ">" : ">"}</span>
+                            </button>
+                            <div className={`collapse-content ${activeFilter === 'subject' ? 'open' : ''}`}>
+                                <input
+                                    type="text"
+                                    className="w-full border p-2 rounded mt-2"
+                                    placeholder="Search Subject Matter"
+                                    value={subjectFilter}
+                                    onChange={(e) => setSubjectFilter(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {(authorFilter || publisherFilter || subjectFilter || flags.flag1 || flags.flag2 || dateRange.start || dateRange.end) && (
+                            <button
+                                className="w-full mt-4 p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                onClick={clearFilters}
+                            >
+                                Clear Filters
+                            </button>
+                        )}
                     </div>
-                </aside>
+                </div>
+
+                {/* Slim additional panel at the far right with icons */}
+                <div className="bg-gray-800 text-white w-16 flex flex-col items-center py-6">
+                    {/* Home Icon */}
+                    <button className="mb-8">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M3 12l2-2m0 0l7-7 7 7m-7-7v18"
+                            />
+                        </svg>
+                    </button>
+
+                    {/* Three-dash (hamburger) icon */}
+                    <button>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 6h16M4 12h16M4 18h16"
+                            />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            {/* Footer */}
-            <footer className="bg-black text-white text-center py-10 mt-20">
+            {/* Footer with no extra margin-top so main content touches it */}
+            <footer className="bg-black text-white text-center py-10">
                 <p className="text-gray-500 text-sm">
                     This website is just an educational project and is not meant for intended use. User discretion is advised.
                 </p>
