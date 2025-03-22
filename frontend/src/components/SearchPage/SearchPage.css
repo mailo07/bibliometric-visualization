@@ -35,7 +35,8 @@
 .collapse-content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease-out; /* Adjust transition for smoother animation */
+    /* Updated to ease-in-out for smoother animations */
+    transition: max-height 0.3s ease-in-out;
 }
 
 .collapse-content.open {
@@ -45,10 +46,11 @@
 /* Styles for filter panel */
 .filter-panel {
     transform: translateX(-100%);
-    transition: transform 0.5s ease-in-out; /* Adjust transition speed for a more relaxed feel */
+    /* Uses ease-in-out for the filter panel's slide-in */
+    transition: transform 0.5s ease-in-out;
     width: 100%; /* Ensure it takes the full width of its container */
     max-width: 400px; /* Limit the maximum width of the panel */
-    position: relative; /* Ensure position is relative for proper stacking */
+    position: relative; /* For proper stacking */
     z-index: 10; /* Ensure it is above other content */
 }
 
@@ -58,6 +60,6 @@
 
 @media (min-width: 768px) {
     .filter-panel {
-        max-width: none; /* Remove max width on larger screens */
+        max-width: none; /* Remove max width on larger screens if desired */
     }
 }

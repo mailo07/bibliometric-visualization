@@ -176,7 +176,7 @@ const SearchPage = () => {
                 <h1 className="ml-4 text-2xl font-bold">BIBLIOKNOW</h1>
             </header>
 
-            {/* Main Content: 3 columns, all flex-grow so they expand to the footer */}
+            {/* Main Content: 3 columns plus the filter panel overlay */}
             <div className="flex flex-grow">
                 {/* Left Column: Chart */}
                 <aside className="w-full md:w-2/6 p-4 bg-white shadow-md">
@@ -304,8 +304,12 @@ const SearchPage = () => {
                     )}
                 </main>
 
-                {/* Filters Column */}
-                <aside className={`bg-white text-black flex-1 p-4 filter-panel ${isFilterActive ? 'active' : ''}`}>
+                {/* Filters Column (overlay panel) */}
+                <aside
+                    className={`bg-white text-black flex-1 p-4 filter-panel ${
+                        isFilterActive ? 'active' : ''
+                    }`}
+                >
                     <h2 className="font-semibold mb-4">FILTERS</h2>
                     <div className="space-y-4">
                         <div>
@@ -316,14 +320,20 @@ const SearchPage = () => {
                                 <span>Date Range</span>
                                 <span>{activeFilter === 'dateRange' ? ">" : ">"}</span>
                             </button>
-                            <div className={`collapse-content ${activeFilter === 'dateRange' ? 'open' : ''}`}>
+                            <div
+                                className={`collapse-content ${
+                                    activeFilter === 'dateRange' ? 'open' : ''
+                                }`}
+                            >
                                 <label className="block mt-2">
                                     <span className="text-gray-700">Start Date</span>
                                     <input
                                         type="date"
                                         className="w-full border p-2 rounded mb-2"
                                         value={dateRange.start}
-                                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                                        onChange={(e) =>
+                                            setDateRange({ ...dateRange, start: e.target.value })
+                                        }
                                     />
                                 </label>
                                 <label className="block">
@@ -332,7 +342,9 @@ const SearchPage = () => {
                                         type="date"
                                         className="w-full border p-2 rounded"
                                         value={dateRange.end}
-                                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                                        onChange={(e) =>
+                                            setDateRange({ ...dateRange, end: e.target.value })
+                                        }
                                     />
                                 </label>
                             </div>
@@ -346,13 +358,17 @@ const SearchPage = () => {
                                 <span>Flags</span>
                                 <span>{activeFilter === 'flags' ? ">" : ">"}</span>
                             </button>
-                            <div className={`collapse-content ${activeFilter === 'flags' ? 'open' : ''}`}>
+                            <div
+                                className={`collapse-content ${activeFilter === 'flags' ? 'open' : ''}`}
+                            >
                                 <div className="flex items-center space-x-2 mt-2">
                                     <input
                                         type="checkbox"
                                         id="flag1"
                                         checked={flags.flag1}
-                                        onChange={(e) => setFlags({ ...flags, flag1: e.target.checked })}
+                                        onChange={(e) =>
+                                            setFlags({ ...flags, flag1: e.target.checked })
+                                        }
                                     />
                                     <label htmlFor="flag1">Flag 1</label>
                                 </div>
@@ -361,7 +377,9 @@ const SearchPage = () => {
                                         type="checkbox"
                                         id="flag2"
                                         checked={flags.flag2}
-                                        onChange={(e) => setFlags({ ...flags, flag2: e.target.checked })}
+                                        onChange={(e) =>
+                                            setFlags({ ...flags, flag2: e.target.checked })
+                                        }
                                     />
                                     <label htmlFor="flag2">Flag 2</label>
                                 </div>
@@ -376,7 +394,9 @@ const SearchPage = () => {
                                 <span>Author</span>
                                 <span>{activeFilter === 'author' ? ">" : ">"}</span>
                             </button>
-                            <div className={`collapse-content ${activeFilter === 'author' ? 'open' : ''}`}>
+                            <div
+                                className={`collapse-content ${activeFilter === 'author' ? 'open' : ''}`}
+                            >
                                 <input
                                     type="text"
                                     className="w-full border p-2 rounded mt-2"
@@ -395,7 +415,11 @@ const SearchPage = () => {
                                 <span>Publisher</span>
                                 <span>{activeFilter === 'publisher' ? ">" : ">"}</span>
                             </button>
-                            <div className={`collapse-content ${activeFilter === 'publisher' ? 'open' : ''}`}>
+                            <div
+                                className={`collapse-content ${
+                                    activeFilter === 'publisher' ? 'open' : ''
+                                }`}
+                            >
                                 <input
                                     type="text"
                                     className="w-full border p-2 rounded mt-2"
@@ -414,7 +438,11 @@ const SearchPage = () => {
                                 <span>Subject Matter</span>
                                 <span>{activeFilter === 'subject' ? ">" : ">"}</span>
                             </button>
-                            <div className={`collapse-content ${activeFilter === 'subject' ? 'open' : ''}`}>
+                            <div
+                                className={`collapse-content ${
+                                    activeFilter === 'subject' ? 'open' : ''
+                                }`}
+                            >
                                 <input
                                     type="text"
                                     className="w-full border p-2 rounded mt-2"
@@ -425,7 +453,13 @@ const SearchPage = () => {
                             </div>
                         </div>
 
-                        {(authorFilter || publisherFilter || subjectFilter || flags.flag1 || flags.flag2 || dateRange.start || dateRange.end) && (
+                        {(authorFilter ||
+                            publisherFilter ||
+                            subjectFilter ||
+                            flags.flag1 ||
+                            flags.flag2 ||
+                            dateRange.start ||
+                            dateRange.end) && (
                             <button
                                 className="w-full mt-4 p-2 bg-red-500 text-white rounded hover:bg-red-600"
                                 onClick={clearFilters}
