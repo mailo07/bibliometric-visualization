@@ -3,6 +3,7 @@ import { search } from '../../services/apiService';
 import './SearchPage.css';
 
 const SearchPage = () => {
+    const [isFilterActive, setIsFilterActive] = useState(false); // State for filter panel visibility
     const [activeTab, setActiveTab] = useState("scholarlyWorks");
     const [activeFilter, setActiveFilter] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -132,6 +133,10 @@ const SearchPage = () => {
         setSubjectFilter('');
         setFlags({ flag1: false, flag2: false });
         setDateRange({ start: '', end: '' });
+    };
+
+    const toggleFilterPanel = () => {
+        setIsFilterActive(!isFilterActive);
     };
 
     return (
@@ -300,7 +305,7 @@ const SearchPage = () => {
                 </main>
 
                 {/* Filters Column */}
-                <div className="bg-white text-black flex-1 p-4">
+                <aside className={`bg-white text-black flex-1 p-4 filter-panel ${isFilterActive ? 'active' : ''}`}>
                     <h2 className="font-semibold mb-4">FILTERS</h2>
                     <div className="space-y-4">
                         <div>
@@ -429,7 +434,7 @@ const SearchPage = () => {
                             </button>
                         )}
                     </div>
-                </div>
+                </aside>
 
                 {/* Slim additional panel at the far right with icons */}
                 <div className="bg-gray-800 text-white w-16 flex flex-col items-center py-6">
@@ -452,7 +457,7 @@ const SearchPage = () => {
                     </button>
 
                     {/* Three-dash (hamburger) icon */}
-                    <button>
+                    <button onClick={toggleFilterPanel}>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-6 w-6"
