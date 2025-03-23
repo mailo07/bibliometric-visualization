@@ -1,0 +1,327 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+.register-page-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(90deg, #e8e6f0, #6a4ea1);
+    font-family: "Poppins", sans-serif;
+}
+
+.register-page-wrapper * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+    list-style: none;
+}
+
+.register-page-wrapper .container {
+    position: relative;
+    width: 75%;
+    height: 550px;
+    background: #fff;
+    margin: 20px;
+    border-radius: 30px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, .2);
+    overflow: hidden;
+}
+
+.register-page-wrapper .container h1 {
+    font-size: 36px;
+    margin: -10px 0;
+}
+
+.register-page-wrapper .container p {
+    font-size: 14.5px;
+    margin: 15px 0;
+}
+
+.register-page-wrapper form {
+    width: 100%;
+}
+
+.register-page-wrapper .form-box {
+    position: absolute;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    color: #333;
+    text-align: center;
+    padding: 40px;
+    z-index: 1;
+    transition: .6s ease-in-out 1.2s, visibility 0s 1s;
+}
+
+.register-page-wrapper .container.active .form-box {
+    right: 50%;
+}
+
+.register-page-wrapper .form-box.register {
+    visibility: hidden;
+}
+
+.register-page-wrapper .container.active .form-box.register {
+    visibility: visible;
+}
+
+.register-page-wrapper .input-box {
+    position: relative;
+    margin: 30px 0;
+}
+
+.register-page-wrapper .input-box input {
+    width: 100%;
+    padding: 13px 50px 13px 20px;
+    background: #eee;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+}
+
+.register-page-wrapper .input-box input::placeholder {
+    color: #888;
+    font-weight: 400;
+}
+
+.register-page-wrapper .input-box i {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+}
+
+.register-page-wrapper .forgot-link {
+    margin: -15px 0 15px;
+}
+
+.register-page-wrapper .forgot-link a {
+    font-size: 14.5px;
+    color: #333;
+}
+
+.register-page-wrapper .btn {
+    width: 100%;
+    height: 48px;
+    background: #f05a28; /* Fallback for older browsers */
+    background: linear-gradient(90deg, #ff4500, #f05a28, #ff9966, #f05a28); /* Multiple color stops for vibrant effect */
+    background-size: 300% 100%; /* Larger than the element for animation */
+    animation: gradient-shift 3s ease infinite; /* Continuous animation */
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(240, 90, 40, 0.4); /* Enhanced glow effect */
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Add shimmer effect */
+.register-page-wrapper .btn:before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    animation: shimmer 3s linear infinite;
+}
+
+/* Animation for the gradient shift */
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Animation for the shimmer effect */
+@keyframes shimmer {
+    0% { transform: translateX(-100%) rotate(30deg); }
+    100% { transform: translateX(100%) rotate(30deg); }
+}
+
+/* Hover effect for more interaction */
+.register-page-wrapper .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 25px rgba(240, 90, 40, 0.6);
+}
+
+.register-page-wrapper .btn:active {
+    transform: translateY(1px);
+}
+
+.register-page-wrapper .social-icons {
+    display: flex;
+    justify-content: center;
+}
+
+.register-page-wrapper .social-icons a {
+    display: inline-flex;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 24px;
+    color: #333;
+    margin: 0 8px;
+}
+
+.register-page-wrapper .toggle-box {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.register-page-wrapper .toggle-box::before {
+    content: '';
+    position: absolute;
+    left: -250%;
+    width: 300%;
+    height: 100%;
+    background: #6a4ea1;
+    border-radius: 150px;
+    z-index: 2;
+    transition: 1.8s ease-in-out;
+}
+
+.register-page-wrapper .container.active .toggle-box::before {
+    left: 50%;
+}
+
+.register-page-wrapper .toggle-panel {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    transition: .6s ease-in-out;
+}
+
+.register-page-wrapper .toggle-panel.toggle-left {
+    left: 0;
+    transition-delay: 1.2s;
+}
+
+.register-page-wrapper .container.active .toggle-panel.toggle-left {
+    left: -50%;
+    transition-delay: .6s;
+}
+
+.register-page-wrapper .toggle-panel.toggle-right {
+    right: -50%;
+    transition-delay: .6s;
+}
+
+.register-page-wrapper .container.active .toggle-panel.toggle-right {
+    right: 0;
+    transition-delay: 1.2s;
+}
+
+.register-page-wrapper .toggle-panel p {
+    margin-bottom: 20px;
+}
+
+.register-page-wrapper .toggle-panel .btn {
+    width: 160px;
+    height: 46px;
+    background: transparent;
+    background-image: none;
+    animation: none;
+    border: 2px solid #fff;
+    box-shadow: none;
+}
+
+/* Reset effects for toggle panel buttons */
+.register-page-wrapper .toggle-panel .btn:before {
+    display: none;
+}
+
+.register-page-wrapper .toggle-panel .btn:hover {
+    transform: none;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@media screen and (max-width: 650px) {
+    .register-page-wrapper .container {
+        height: calc(100vh - 40px);
+    }
+
+    .register-page-wrapper .form-box {
+        bottom: 0;
+        width: 100%;
+        height: 70%;
+    }
+
+    .register-page-wrapper .container.active .form-box {
+        right: 0;
+        bottom: 30%;
+    }
+
+    .register-page-wrapper .toggle-box::before {
+        left: 0;
+        top: -270%;
+        width: 100%;
+        height: 300%;
+        border-radius: 20vw;
+    }
+
+    .register-page-wrapper .container.active .toggle-box::before {
+        left: 0;
+        top: 70%;
+    }
+
+    .register-page-wrapper .container.active .toggle-panel.toggle-left {
+        left: 0;
+        top: -30%;
+    }
+
+    .register-page-wrapper .toggle-panel {
+        width: 100%;
+        height: 30%;
+    }
+
+    .register-page-wrapper .toggle-panel.toggle-left {
+        top: 0;
+    }
+
+    .register-page-wrapper .toggle-panel.toggle-right {
+        right: 0;
+        bottom: -30%;
+    }
+
+    .register-page-wrapper .container.active .toggle-panel.toggle-right {
+        bottom: 0;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .register-page-wrapper .form-box {
+        padding: 20px;
+    }
+
+    .register-page-wrapper .toggle-panel h1 {
+        font-size: 30px;
+    }
+}

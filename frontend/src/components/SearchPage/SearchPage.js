@@ -3,7 +3,6 @@ import { search } from '../../services/apiService';
 import './SearchPage.css';
 
 const SearchPage = () => {
-    const [isFilterActive, setIsFilterActive] = useState(false); // State for filter panel visibility
     const [activeTab, setActiveTab] = useState("scholarlyWorks");
     const [activeFilter, setActiveFilter] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -22,12 +21,11 @@ const SearchPage = () => {
     const query = queryParams.get('query');
 
     const fetchSearchResults = useCallback(async () => {
-        setLoading(true);
+        setLoading(true); // Show preloader
         setError(null);
         try {
             const results = await search(query);
             setData(results);
-
             // Placeholder metrics
             setMetrics({
                 scholarlyWorks: Math.floor(Math.random() * 100000000),
@@ -40,7 +38,7 @@ const SearchPage = () => {
             setData([]);
             setMetrics({});
         } finally {
-            setLoading(false);
+            setLoading(false); // Hide preloader
         }
     }, [query]);
 
@@ -55,8 +53,6 @@ const SearchPage = () => {
         const subjectMatch =
             !subjectFilter ||
             (item.title && item.title.toLowerCase().includes(subjectFilter.toLowerCase()));
-
-        // Publisher/date/flags can be added similarly if needed
         return authorMatch && subjectMatch;
     });
 
@@ -72,54 +68,17 @@ const SearchPage = () => {
 
     const renderPaginationButtons = () => {
         const buttons = [];
-
-        if (totalPages <= 7) {
-            for (let i = 1; i <= totalPages; i++) {
-                buttons.push(
-                    <button
-                        key={i}
-                        onClick={() => handlePageClick(i)}
-                        className={`pagination-button ${currentPage === i ? 'active' : ''}`}
-                    >
-                        {i}
-                    </button>
-                );
-            }
-        } else {
-            let startPage = Math.max(2, currentPage - 2);
-            let endPage = Math.min(totalPages - 1, currentPage + 2);
-
-            if (currentPage > 4) {
-                buttons.push(<span key="ellipsis-start" className="pagination-info">...</span>);
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                buttons.push(
-                    <button
-                        key={i}
-                        onClick={() => handlePageClick(i)}
-                        className={`pagination-button ${currentPage === i ? 'active' : ''}`}
-                    >
-                        {i}
-                    </button>
-                );
-            }
-
-            if (currentPage < totalPages - 3) {
-                buttons.push(<span key="ellipsis-end" className="pagination-info">...</span>);
-            }
-
+        for (let i = 1; i <= totalPages; i++) {
             buttons.push(
                 <button
-                    key={totalPages}
-                    onClick={() => handlePageClick(totalPages)}
-                    className={`pagination-button ${currentPage === totalPages ? 'active' : ''}`}
+                    key={i}
+                    onClick={() => handlePageClick(i)}
+                    className={`pagination-button ${currentPage === i ? 'active' : ''}`}
                 >
-                    {totalPages}
+                    {i}
                 </button>
             );
         }
-
         return buttons;
     };
 
@@ -133,10 +92,6 @@ const SearchPage = () => {
         setSubjectFilter('');
         setFlags({ flag1: false, flag2: false });
         setDateRange({ start: '', end: '' });
-    };
-
-    const toggleFilterPanel = () => {
-        setIsFilterActive(!isFilterActive);
     };
 
     return (
@@ -176,7 +131,7 @@ const SearchPage = () => {
                 <h1 className="ml-4 text-2xl font-bold">BIBLIOKNOW</h1>
             </header>
 
-            {/* Main Content: 3 columns plus the filter panel overlay */}
+            {/* Main Content: 3 columns, all flex-grow so they expand to the footer */}
             <div className="flex flex-grow">
                 {/* Left Column: Chart */}
                 <aside className="w-full md:w-2/6 p-4 bg-white shadow-md">
@@ -258,9 +213,13 @@ const SearchPage = () => {
                     </div>
 
                     {/* Tab Content */}
-                    {loading && <p className="text-center">Loading search results...</p>}
+                    {loading && (
+                        <div className="text-center py-4">
+                            <div className="loader"></div> {/* Preloader animation */}
+                            <p>Loading search results...</p>
+                        </div>
+                    )}
                     {error && <p className="text-red-500 text-center">Error: {error}</p>}
-
                     {!loading && !error && activeTab === "scholarlyWorks" && (
                         <div className="bg-white shadow-md rounded p-4 overflow-x-auto">
                             <table className="w-full table-auto border-collapse">
@@ -280,19 +239,37 @@ const SearchPage = () => {
                                             <td className="p-2 border">{item.author}</td>
                                             <td className="p-2 border">{item.published}</td>
                                             <td className="p-2 border">{item.journal}</td>
-                                            <td className="p-2 border">{item.identifiers}</td>
+                                            <td className="p-2 border">
+                                                {item.identifiers.split(',').map((identifier, index) => {
+                                                    if (identifier.trim().startsWith('https://')) {
+                                                        return (
+                                                            <a
+                                                                key={index}
+                                                                href={identifier.trim()}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-blue-500 hover:underline"
+                                                            >
+                                                                {identifier.trim()}
+                                                            </a>
+                                                        );
+                                                    } else {
+                                                        return (
+                                                            <span key={index}>{identifier.trim()}</span>
+                                                        );
+                                                    }
+                                                })}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-
                             {/* Pagination */}
                             <div className="pagination-container mt-4 flex justify-center">
                                 {renderPaginationButtons()}
                             </div>
                         </div>
                     )}
-
                     {!loading && !error && activeTab !== "scholarlyWorks" && (
                         <div className="bg-white shadow-md rounded p-4">
                             <p className="text-gray-600">
@@ -304,12 +281,8 @@ const SearchPage = () => {
                     )}
                 </main>
 
-                {/* Filters Column (overlay panel) */}
-                <aside
-                    className={`bg-white text-black flex-1 p-4 filter-panel ${
-                        isFilterActive ? 'active' : ''
-                    }`}
-                >
+                {/* Filters Column */}
+                <div className="bg-white text-black flex-1 p-4">
                     <h2 className="font-semibold mb-4">FILTERS</h2>
                     <div className="space-y-4">
                         <div>
@@ -320,20 +293,14 @@ const SearchPage = () => {
                                 <span>Date Range</span>
                                 <span>{activeFilter === 'dateRange' ? ">" : ">"}</span>
                             </button>
-                            <div
-                                className={`collapse-content ${
-                                    activeFilter === 'dateRange' ? 'open' : ''
-                                }`}
-                            >
+                            <div className={`collapse-content ${activeFilter === 'dateRange' ? 'open' : ''}`}>
                                 <label className="block mt-2">
                                     <span className="text-gray-700">Start Date</span>
                                     <input
                                         type="date"
                                         className="w-full border p-2 rounded mb-2"
                                         value={dateRange.start}
-                                        onChange={(e) =>
-                                            setDateRange({ ...dateRange, start: e.target.value })
-                                        }
+                                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
                                     />
                                 </label>
                                 <label className="block">
@@ -342,14 +309,11 @@ const SearchPage = () => {
                                         type="date"
                                         className="w-full border p-2 rounded"
                                         value={dateRange.end}
-                                        onChange={(e) =>
-                                            setDateRange({ ...dateRange, end: e.target.value })
-                                        }
+                                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
                                     />
                                 </label>
                             </div>
                         </div>
-
                         <div>
                             <button
                                 className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
@@ -358,17 +322,13 @@ const SearchPage = () => {
                                 <span>Flags</span>
                                 <span>{activeFilter === 'flags' ? ">" : ">"}</span>
                             </button>
-                            <div
-                                className={`collapse-content ${activeFilter === 'flags' ? 'open' : ''}`}
-                            >
+                            <div className={`collapse-content ${activeFilter === 'flags' ? 'open' : ''}`}>
                                 <div className="flex items-center space-x-2 mt-2">
                                     <input
                                         type="checkbox"
                                         id="flag1"
                                         checked={flags.flag1}
-                                        onChange={(e) =>
-                                            setFlags({ ...flags, flag1: e.target.checked })
-                                        }
+                                        onChange={(e) => setFlags({ ...flags, flag1: e.target.checked })}
                                     />
                                     <label htmlFor="flag1">Flag 1</label>
                                 </div>
@@ -377,15 +337,12 @@ const SearchPage = () => {
                                         type="checkbox"
                                         id="flag2"
                                         checked={flags.flag2}
-                                        onChange={(e) =>
-                                            setFlags({ ...flags, flag2: e.target.checked })
-                                        }
+                                        onChange={(e) => setFlags({ ...flags, flag2: e.target.checked })}
                                     />
                                     <label htmlFor="flag2">Flag 2</label>
                                 </div>
                             </div>
                         </div>
-
                         <div>
                             <button
                                 className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
@@ -394,9 +351,7 @@ const SearchPage = () => {
                                 <span>Author</span>
                                 <span>{activeFilter === 'author' ? ">" : ">"}</span>
                             </button>
-                            <div
-                                className={`collapse-content ${activeFilter === 'author' ? 'open' : ''}`}
-                            >
+                            <div className={`collapse-content ${activeFilter === 'author' ? 'open' : ''}`}>
                                 <input
                                     type="text"
                                     className="w-full border p-2 rounded mt-2"
@@ -406,7 +361,6 @@ const SearchPage = () => {
                                 />
                             </div>
                         </div>
-
                         <div>
                             <button
                                 className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
@@ -415,11 +369,7 @@ const SearchPage = () => {
                                 <span>Publisher</span>
                                 <span>{activeFilter === 'publisher' ? ">" : ">"}</span>
                             </button>
-                            <div
-                                className={`collapse-content ${
-                                    activeFilter === 'publisher' ? 'open' : ''
-                                }`}
-                            >
+                            <div className={`collapse-content ${activeFilter === 'publisher' ? 'open' : ''}`}>
                                 <input
                                     type="text"
                                     className="w-full border p-2 rounded mt-2"
@@ -429,7 +379,6 @@ const SearchPage = () => {
                                 />
                             </div>
                         </div>
-
                         <div>
                             <button
                                 className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
@@ -438,11 +387,7 @@ const SearchPage = () => {
                                 <span>Subject Matter</span>
                                 <span>{activeFilter === 'subject' ? ">" : ">"}</span>
                             </button>
-                            <div
-                                className={`collapse-content ${
-                                    activeFilter === 'subject' ? 'open' : ''
-                                }`}
-                            >
+                            <div className={`collapse-content ${activeFilter === 'subject' ? 'open' : ''}`}>
                                 <input
                                     type="text"
                                     className="w-full border p-2 rounded mt-2"
@@ -452,14 +397,7 @@ const SearchPage = () => {
                                 />
                             </div>
                         </div>
-
-                        {(authorFilter ||
-                            publisherFilter ||
-                            subjectFilter ||
-                            flags.flag1 ||
-                            flags.flag2 ||
-                            dateRange.start ||
-                            dateRange.end) && (
+                        {(authorFilter || publisherFilter || subjectFilter || flags.flag1 || flags.flag2 || dateRange.start || dateRange.end) && (
                             <button
                                 className="w-full mt-4 p-2 bg-red-500 text-white rounded hover:bg-red-600"
                                 onClick={clearFilters}
@@ -468,7 +406,7 @@ const SearchPage = () => {
                             </button>
                         )}
                     </div>
-                </aside>
+                </div>
 
                 {/* Slim additional panel at the far right with icons */}
                 <div className="bg-gray-800 text-white w-16 flex flex-col items-center py-6">
@@ -489,9 +427,8 @@ const SearchPage = () => {
                             />
                         </svg>
                     </button>
-
                     {/* Three-dash (hamburger) icon */}
-                    <button onClick={toggleFilterPanel}>
+                    <button>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-6 w-6"

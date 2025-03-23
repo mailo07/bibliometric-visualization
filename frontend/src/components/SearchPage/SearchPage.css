@@ -8,16 +8,18 @@
 
 .pagination-button {
     padding: 0.5rem 1rem;
-    border: 1px solid #ccc;
-    background-color: white;
-    color: black;
+    border: 2px solid #4CAF50; /* Outlined style */
+    background-color: transparent;
+    color: #4CAF50;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, color 0.3s;
     margin: 0 0.25rem;
+    border-radius: 50%; /* Circular shape */
 }
 
 .pagination-button:hover {
-    background-color: #f0f0f0;
+    background-color: #4CAF50;
+    color: white;
 }
 
 .pagination-button.active {
@@ -35,31 +37,9 @@
 .collapse-content {
     max-height: 0;
     overflow: hidden;
-    /* Updated to ease-in-out for smoother animations */
-    transition: max-height 0.3s ease-in-out;
+    transition: max-height 0.3s ease-out; /* Adjust transition for smoother animation */
 }
 
 .collapse-content.open {
     max-height: 500px; /* Adjust max-height as needed */
-}
-
-/* Styles for filter panel */
-.filter-panel {
-    transform: translateX(-100%);
-    /* Uses ease-in-out for the filter panel's slide-in */
-    transition: transform 0.5s ease-in-out;
-    width: 100%; /* Ensure it takes the full width of its container */
-    max-width: 400px; /* Limit the maximum width of the panel */
-    position: relative; /* For proper stacking */
-    z-index: 10; /* Ensure it is above other content */
-}
-
-.filter-panel.active {
-    transform: translateX(0);
-}
-
-@media (min-width: 768px) {
-    .filter-panel {
-        max-width: none; /* Remove max width on larger screens if desired */
-    }
 }
