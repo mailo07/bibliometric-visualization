@@ -25,6 +25,7 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^6.22.1",
     "react-scripts": "^4.0.3",
+    "recharts": "^2.15.1",
     "rollup-plugin-terser": "^7.0.2",
     "svgo": "^3.3.2",
     "web-vitals": "^2.1.4"
