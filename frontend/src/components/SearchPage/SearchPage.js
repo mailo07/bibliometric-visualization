@@ -16,16 +16,18 @@ const SearchPage = () => {
     const [resultsPerPage] = useState(10);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isFilterPanelVisible, setIsFilterPanelVisible] = useState(false);
 
     const queryParams = new URLSearchParams(window.location.search);
     const query = queryParams.get('query');
 
     const fetchSearchResults = useCallback(async () => {
-        setLoading(true); // Show preloader
+        setLoading(true);
         setError(null);
         try {
             const results = await search(query);
             setData(results);
+
             // Placeholder metrics
             setMetrics({
                 scholarlyWorks: Math.floor(Math.random() * 100000000),
@@ -38,7 +40,7 @@ const SearchPage = () => {
             setData([]);
             setMetrics({});
         } finally {
-            setLoading(false); // Hide preloader
+            setLoading(false);
         }
     }, [query]);
 
@@ -53,6 +55,8 @@ const SearchPage = () => {
         const subjectMatch =
             !subjectFilter ||
             (item.title && item.title.toLowerCase().includes(subjectFilter.toLowerCase()));
+
+        // Publisher/date/flags can be added similarly if needed
         return authorMatch && subjectMatch;
     });
 
@@ -66,20 +70,129 @@ const SearchPage = () => {
         setCurrentPage(pageNumber);
     };
 
-    const renderPaginationButtons = () => {
-        const buttons = [];
-        for (let i = 1; i <= totalPages; i++) {
-            buttons.push(
-                <button
-                    key={i}
-                    onClick={() => handlePageClick(i)}
-                    className={`pagination-button ${currentPage === i ? 'active' : ''}`}
-                >
-                    {i}
-                </button>
-            );
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
         }
-        return buttons;
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    // Function to toggle filter panel visibility
+    const toggleFilterPanel = () => {
+        setIsFilterPanelVisible(!isFilterPanelVisible);
+    };
+
+    // Function to render clickable identifiers
+    const renderIdentifiers = (identifiers) => {
+        if (!identifiers) return 'N/A';
+        
+        // Split by commas
+        const parts = identifiers.split(',').map(part => part.trim());
+        
+        return parts.map((part, index) => {
+            // Check if the part is a URL starting with https://
+            if (part.startsWith('https://')) {
+                return (
+                    <React.Fragment key={index}>
+                        {index > 0 && ', '}
+                        <a 
+                            href={part} 
+                            className="identifier-link" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                        >
+                            {part}
+                        </a>
+                    </React.Fragment>
+                );
+            }
+            
+            // Not a URL, just display as text
+            return (
+                <React.Fragment key={index}>
+                    {index > 0 && ', '}
+                    {part}
+                </React.Fragment>
+            );
+        });
+    };
+
+    // Modified pagination buttons to match the image design
+    const renderPaginationButtons = () => {
+        if (totalPages === 0) return null;
+
+        return (
+            <div className="pagination-container">
+                {/* Previous button */}
+                <button
+                    onClick={handlePrevPage}
+                    className="pagination-arrow"
+                    disabled={currentPage === 1}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+
+                {/* Page numbers */}
+                {[...Array(Math.min(totalPages, 5))].map((_, i) => {
+                    let pageNumber;
+                    
+                    if (totalPages <= 5) {
+                        // If 5 or fewer pages, show all
+                        pageNumber = i + 1;
+                    } else {
+                        // For more than 5 pages, create a smart window
+                        if (currentPage <= 3) {
+                            // Near the start
+                            pageNumber = i + 1;
+                            if (i === 4) pageNumber = totalPages;
+                        } else if (currentPage >= totalPages - 2) {
+                            // Near the end
+                            if (i === 0) pageNumber = 1;
+                            else pageNumber = totalPages - (4 - i);
+                        } else {
+                            // In the middle
+                            if (i === 0) pageNumber = 1;
+                            else if (i === 4) pageNumber = totalPages;
+                            else pageNumber = currentPage + (i - 2);
+                        }
+                    }
+
+                    // Add ellipsis
+                    if ((i === 1 && pageNumber !== 2 && totalPages > 5) || 
+                        (i === 3 && pageNumber !== totalPages - 1 && totalPages > 5)) {
+                        return <span key={`ellipsis-${i}`} className="pagination-ellipsis">...</span>;
+                    }
+
+                    return (
+                        <button
+                            key={pageNumber}
+                            onClick={() => handlePageClick(pageNumber)}
+                            className={`pagination-button ${currentPage === pageNumber ? 'active' : ''}`}
+                        >
+                            {pageNumber}
+                        </button>
+                    );
+                })}
+
+                {/* Next button */}
+                <button
+                    onClick={handleNextPage}
+                    className="pagination-arrow"
+                    disabled={currentPage === totalPages}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        );
     };
 
     const toggleFilter = (filterName) => {
@@ -93,6 +206,14 @@ const SearchPage = () => {
         setFlags({ flag1: false, flag2: false });
         setDateRange({ start: '', end: '' });
     };
+
+    // Preloader component
+    const Preloader = () => (
+        <div className="preloader">
+            <div className="spinner"></div>
+            <p>Loading search results...</p>
+        </div>
+    );
 
     return (
         <div className="flex flex-col min-h-screen font-sans">
@@ -132,7 +253,7 @@ const SearchPage = () => {
             </header>
 
             {/* Main Content: 3 columns, all flex-grow so they expand to the footer */}
-            <div className="flex flex-grow">
+            <div className="flex flex-grow relative">
                 {/* Left Column: Chart */}
                 <aside className="w-full md:w-2/6 p-4 bg-white shadow-md">
                     <h3 className="font-semibold text-gray-600 mb-4">
@@ -212,14 +333,10 @@ const SearchPage = () => {
                         </button>
                     </div>
 
-                    {/* Tab Content */}
-                    {loading && (
-                        <div className="text-center py-4">
-                            <div className="loader"></div> {/* Preloader animation */}
-                            <p>Loading search results...</p>
-                        </div>
-                    )}
+                    {/* Tab Content with Preloader */}
+                    {loading && <Preloader />}
                     {error && <p className="text-red-500 text-center">Error: {error}</p>}
+
                     {!loading && !error && activeTab === "scholarlyWorks" && (
                         <div className="bg-white shadow-md rounded p-4 overflow-x-auto">
                             <table className="w-full table-auto border-collapse">
@@ -239,37 +356,17 @@ const SearchPage = () => {
                                             <td className="p-2 border">{item.author}</td>
                                             <td className="p-2 border">{item.published}</td>
                                             <td className="p-2 border">{item.journal}</td>
-                                            <td className="p-2 border">
-                                                {item.identifiers.split(',').map((identifier, index) => {
-                                                    if (identifier.trim().startsWith('https://')) {
-                                                        return (
-                                                            <a
-                                                                key={index}
-                                                                href={identifier.trim()}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-blue-500 hover:underline"
-                                                            >
-                                                                {identifier.trim()}
-                                                            </a>
-                                                        );
-                                                    } else {
-                                                        return (
-                                                            <span key={index}>{identifier.trim()}</span>
-                                                        );
-                                                    }
-                                                })}
-                                            </td>
+                                            <td className="p-2 border">{renderIdentifiers(item.identifiers)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+
                             {/* Pagination */}
-                            <div className="pagination-container mt-4 flex justify-center">
-                                {renderPaginationButtons()}
-                            </div>
+                            {renderPaginationButtons()}
                         </div>
                     )}
+
                     {!loading && !error && activeTab !== "scholarlyWorks" && (
                         <div className="bg-white shadow-md rounded p-4">
                             <p className="text-gray-600">
@@ -281,137 +378,144 @@ const SearchPage = () => {
                     )}
                 </main>
 
-                {/* Filters Column */}
-                <div className="bg-white text-black flex-1 p-4">
-                    <h2 className="font-semibold mb-4">FILTERS</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <button
-                                className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
-                                onClick={() => toggleFilter('dateRange')}
-                            >
-                                <span>Date Range</span>
-                                <span>{activeFilter === 'dateRange' ? ">" : ">"}</span>
-                            </button>
-                            <div className={`collapse-content ${activeFilter === 'dateRange' ? 'open' : ''}`}>
-                                <label className="block mt-2">
-                                    <span className="text-gray-700">Start Date</span>
-                                    <input
-                                        type="date"
-                                        className="w-full border p-2 rounded mb-2"
-                                        value={dateRange.start}
-                                        onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                                    />
-                                </label>
-                                <label className="block">
-                                    <span className="text-gray-700">End Date</span>
-                                    <input
-                                        type="date"
-                                        className="w-full border p-2 rounded"
-                                        value={dateRange.end}
-                                        onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                                    />
-                                </label>
-                            </div>
-                        </div>
-                        <div>
-                            <button
-                                className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
-                                onClick={() => toggleFilter('flags')}
-                            >
-                                <span>Flags</span>
-                                <span>{activeFilter === 'flags' ? ">" : ">"}</span>
-                            </button>
-                            <div className={`collapse-content ${activeFilter === 'flags' ? 'open' : ''}`}>
-                                <div className="flex items-center space-x-2 mt-2">
-                                    <input
-                                        type="checkbox"
-                                        id="flag1"
-                                        checked={flags.flag1}
-                                        onChange={(e) => setFlags({ ...flags, flag1: e.target.checked })}
-                                    />
-                                    <label htmlFor="flag1">Flag 1</label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="checkbox"
-                                        id="flag2"
-                                        checked={flags.flag2}
-                                        onChange={(e) => setFlags({ ...flags, flag2: e.target.checked })}
-                                    />
-                                    <label htmlFor="flag2">Flag 2</label>
+                {/* Filters Column - Now with fixed position */}
+                <div className={`filter-panel fixed right-16 top-0 h-full bg-white text-black ${isFilterPanelVisible ? 'visible' : ''}`}>
+                    <div className="p-4">
+                        <h2 className="font-semibold mb-4">FILTERS</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <button
+                                    className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
+                                    onClick={() => toggleFilter('dateRange')}
+                                >
+                                    <span>Date Range</span>
+                                    <span>{activeFilter === 'dateRange' ? ">" : ">"}</span>
+                                </button>
+                                <div className={`collapse-content ${activeFilter === 'dateRange' ? 'open' : ''}`}>
+                                    <label className="block mt-2">
+                                        <span className="text-gray-700">Start Date</span>
+                                        <input
+                                            type="date"
+                                            className="w-full border p-2 rounded mb-2"
+                                            value={dateRange.start}
+                                            onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                                        />
+                                    </label>
+                                    <label className="block">
+                                        <span className="text-gray-700">End Date</span>
+                                        <input
+                                            type="date"
+                                            className="w-full border p-2 rounded"
+                                            value={dateRange.end}
+                                            onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                                        />
+                                    </label>
                                 </div>
                             </div>
-                        </div>
-                        <div>
-                            <button
-                                className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
-                                onClick={() => toggleFilter('author')}
-                            >
-                                <span>Author</span>
-                                <span>{activeFilter === 'author' ? ">" : ">"}</span>
-                            </button>
-                            <div className={`collapse-content ${activeFilter === 'author' ? 'open' : ''}`}>
-                                <input
-                                    type="text"
-                                    className="w-full border p-2 rounded mt-2"
-                                    placeholder="Search Author"
-                                    value={authorFilter}
-                                    onChange={(e) => setAuthorFilter(e.target.value)}
-                                />
+
+                            <div>
+                                <button
+                                    className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
+                                    onClick={() => toggleFilter('flags')}
+                                >
+                                    <span>Flags</span>
+                                    <span>{activeFilter === 'flags' ? ">" : ">"}</span>
+                                </button>
+                                <div className={`collapse-content ${activeFilter === 'flags' ? 'open' : ''}`}>
+                                    <div className="flex items-center space-x-2 mt-2">
+                                        <input
+                                            type="checkbox"
+                                            id="flag1"
+                                            checked={flags.flag1}
+                                            onChange={(e) => setFlags({ ...flags, flag1: e.target.checked })}
+                                        />
+                                        <label htmlFor="flag1">Flag 1</label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="checkbox"
+                                            id="flag2"
+                                            checked={flags.flag2}
+                                            onChange={(e) => setFlags({ ...flags, flag2: e.target.checked })}
+                                        />
+                                        <label htmlFor="flag2">Flag 2</label>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <button
-                                className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
-                                onClick={() => toggleFilter('publisher')}
-                            >
-                                <span>Publisher</span>
-                                <span>{activeFilter === 'publisher' ? ">" : ">"}</span>
-                            </button>
-                            <div className={`collapse-content ${activeFilter === 'publisher' ? 'open' : ''}`}>
-                                <input
-                                    type="text"
-                                    className="w-full border p-2 rounded mt-2"
-                                    placeholder="Search Publisher"
-                                    value={publisherFilter}
-                                    onChange={(e) => setPublisherFilter(e.target.value)}
-                                />
+
+                            <div>
+                                <button
+                                    className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
+                                    onClick={() => toggleFilter('author')}
+                                >
+                                    <span>Author</span>
+                                    <span>{activeFilter === 'author' ? ">" : ">"}</span>
+                                </button>
+                                <div className={`collapse-content ${activeFilter === 'author' ? 'open' : ''}`}>
+                                    <input
+                                        type="text"
+                                        className="w-full border p-2 rounded mt-2"
+                                        placeholder="Search Author"
+                                        value={authorFilter}
+                                        onChange={(e) => setAuthorFilter(e.target.value)}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <button
-                                className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
-                                onClick={() => toggleFilter('subject')}
-                            >
-                                <span>Subject Matter</span>
-                                <span>{activeFilter === 'subject' ? ">" : ">"}</span>
-                            </button>
-                            <div className={`collapse-content ${activeFilter === 'subject' ? 'open' : ''}`}>
-                                <input
-                                    type="text"
-                                    className="w-full border p-2 rounded mt-2"
-                                    placeholder="Search Subject Matter"
-                                    value={subjectFilter}
-                                    onChange={(e) => setSubjectFilter(e.target.value)}
-                                />
+
+                            <div>
+                                <button
+                                    className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
+                                    onClick={() => toggleFilter('publisher')}
+                                >
+                                    <span>Publisher</span>
+                                    <span>{activeFilter === 'publisher' ? ">" : ">"}</span>
+                                </button>
+                                <div className={`collapse-content ${activeFilter === 'publisher' ? 'open' : ''}`}>
+                                    <input
+                                        type="text"
+                                        className="w-full border p-2 rounded mt-2"
+                                        placeholder="Search Publisher"
+                                        value={publisherFilter}
+                                        onChange={(e) => setPublisherFilter(e.target.value)}
+                                    />
+                                </div>
                             </div>
+
+                            <div>
+                                <button
+                                    className="flex justify-between w-full p-2 font-medium text-left text-gray-700"
+                                    onClick={() => toggleFilter('subject')}
+                                >
+                                    <span>Subject Matter</span>
+                                    <span>{activeFilter === 'subject' ? ">" : ">"}</span>
+                                </button>
+                                <div className={`collapse-content ${activeFilter === 'subject' ? 'open' : ''}`}>
+                                    <input
+                                        type="text"
+                                        className="w-full border p-2 rounded mt-2"
+                                        placeholder="Search Subject Matter"
+                                        value={subjectFilter}
+                                        onChange={(e) => setSubjectFilter(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            {(authorFilter || publisherFilter || subjectFilter || flags.flag1 || flags.flag2 || dateRange.start || dateRange.end) && (
+                                <button
+                                    className="w-full mt-4 p-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                    onClick={clearFilters}
+                                >
+                                    Clear Filters
+                                </button>
+                            )}
                         </div>
-                        {(authorFilter || publisherFilter || subjectFilter || flags.flag1 || flags.flag2 || dateRange.start || dateRange.end) && (
-                            <button
-                                className="w-full mt-4 p-2 bg-red-500 text-white rounded hover:bg-red-600"
-                                onClick={clearFilters}
-                            >
-                                Clear Filters
-                            </button>
-                        )}
                     </div>
                 </div>
 
-                {/* Slim additional panel at the far right with icons */}
-                <div className="bg-gray-800 text-white w-16 flex flex-col items-center py-6">
+                {/* Slim additional panel at the far right with icons - Always visible with fixed position */}
+                <div className="bg-gray-800 text-white w-16 flex flex-col items-center py-6 fixed right-0 top-0 h-full z-20">
                     {/* Home Icon */}
-                    <button className="mb-8">
+                    <button className="mb-8 icon-button">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-6 w-6"
@@ -427,8 +531,12 @@ const SearchPage = () => {
                             />
                         </svg>
                     </button>
-                    {/* Three-dash (hamburger) icon */}
-                    <button>
+
+                    {/* Three-dash (hamburger) icon for toggling filter panel */}
+                    <button 
+                        className={`icon-button ${isFilterPanelVisible ? 'active' : ''}`}
+                        onClick={toggleFilterPanel}
+                    >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-6 w-6"

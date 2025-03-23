@@ -10,7 +10,13 @@ DB_PORT = "8080"
 def connect_to_db():
     """Connects to the PostgreSQL database."""
     try:
-        conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST, port=DB_PORT)
+        conn = psycopg2.connect(
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASS,
+            host=DB_HOST,
+            port=DB_PORT
+        )
         return conn
     except psycopg2.Error as e:
         print(f"Error connecting to database: {e}")
@@ -70,36 +76,18 @@ def fetch_by_id(table_name, id_value):
         print(f"Error fetching data from {table_name}: {e}")
         return None
 
-# Example usage (you can remove this later)
-if __name__ == '__main__':
-    # Test connection
-    connection = connect_to_db()
-    if connection:
-        print("Database connection successful!")
-        connection.close()
-
-    # Example: Fetch all authors
-    authors = fetch_all("authors")
-    if authors:
-        print("\nAll Authors:")
-        for author in authors:
-            print(author)
-
-    # Example: Insert a new author
-    new_author = {
-        "name": "Jane Doe",
-        "affiliation": "Example University",
-        "publication_count": "10",
-        "citations": "100",
-        "h_index": "5",
-        "keywords": ["keyword1", "keyword2"]
-    }
-    if insert_data("authors", new_author):
-        print("\nNew author inserted successfully!")
-
-    # Example: Fetch author by ID (assuming you know the ID)
-    author_id = 1  # Replace with an actual author ID
-    author = fetch_by_id("authors", author_id)
-    if author:
-        print(f"\nAuthor with ID {author_id}:")
-        print(author)
+def fetch_filtered(query, params):
+    """Executes a custom SQL query with parameters and returns the results."""
+    conn = connect_to_db()
+    if conn is None:
+        return []
+    try:
+        cur = conn.cursor()
+        cur.execute(query, params)  # DO NOT use % here
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        return rows
+    except psycopg2.Error as e:
+        print(f"Error executing filtered query: {e}")
+        return []
