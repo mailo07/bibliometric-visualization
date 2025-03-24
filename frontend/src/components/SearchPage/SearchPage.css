@@ -1,11 +1,9 @@
-/* Styles for pagination buttons */
 .pagination-container {
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 1rem;
 }
-
 .pagination-button {
     width: 40px;
     height: 40px;
@@ -21,17 +19,14 @@
     transition: background-color 0.3s, color 0.3s;
     font-weight: medium;
 }
-
 .pagination-button:hover {
     background-color: #f0f0f0;
 }
-
 .pagination-button.active {
-    background-color: #9370DB; /* Purple color as shown in the image */
+    background-color: #9370DB; 
     color: white;
     border-color: #9370DB;
 }
-
 .pagination-arrow {
     width: 40px;
     height: 40px;
@@ -45,33 +40,25 @@
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
 }
-
 .pagination-arrow:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
-
 .pagination-arrow:hover:not(:disabled) {
     background-color: #f0f0f0;
 }
-
 .pagination-ellipsis {
     margin: 0 5px;
     color: #666;
 }
-
-/* Styles for collapse content */
 .collapse-content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.8s cubic-bezier(0.25, 0.1, 0.25, 1); /* Relaxed speed */
+    transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
 }
-
 .collapse-content.open {
-    max-height: 500px; /* Adjust max-height as needed */
+    max-height: 500px; 
 }
-
-/* Preloader styles */
 .preloader {
     display: flex;
     flex-direction: column;
@@ -82,17 +69,15 @@
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
-
 .spinner {
     border: 4px solid rgba(0, 0, 0, 0.1);
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    border-left-color: #9370DB; /* Match pagination active color */
+    border-left-color: #9370DB;
     animation: spin 1s linear infinite;
     margin-bottom: 1rem;
 }
-
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -101,58 +86,101 @@
         transform: rotate(360deg);
     }
 }
-
-/* Modified filter panel animation with relaxed speed */
 .filter-panel {
     width: 0;
     overflow: hidden;
-    transition: width 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: width 1.2s cubic-bezier(0.25, 0.1, 0.25, 1); /* More relaxed ease-in timing */
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-    position: absolute;
-    top: 0;
+    position: fixed;
+    top: 60px; /* Position below header */
     bottom: 0;
-    height: 100%;
-    z-index: 5;
+    height: calc(100% - 60px); /* Adjust height to account for header */
+    z-index: 15;
     background-color: rgba(255, 255, 255, 0.95);
+    right: 16px; /* Position to the right of side menu */
 }
-
 .filter-panel.visible {
     width: 300px;
 }
-
-/* Active icon styles */
-.icon-button {
-    transition: color 0.3s;
+.filter-panel-content {
+    opacity: 0;
+    transition: opacity 1s ease-in;
+    padding: 1rem;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
 }
-
+.filter-panel.visible .filter-panel-content {
+    opacity: 1;
+}
+.icon-button {
+    transition: color 0.3s ease-in-out;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.icon-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
 .icon-button.active {
     color: #9370DB;
+    background-color: rgba(255, 255, 255, 0.3);
 }
-
-/* Clickable identifiers */
 .identifier-link {
     color: #0066cc;
     text-decoration: underline;
     cursor: pointer;
 }
-
 .identifier-link:hover {
     text-decoration: none;
 }
-
-/* Tab switching animation */
 .tab-content {
-    transition: opacity 0.6s ease-in-out;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-/* Gradient background */
-.gradient-bg {
-    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-    background-attachment: fixed;
-    background-size: cover;
+.results-container {
+    transition: margin-right 1.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
-
-/* Query results reveal animation */
-.transition-opacity {
-    transition: opacity 0.6s ease-in-out;
+.results-container.shifted {
+    margin-right: 300px; /* Same as filter panel width */
+}
+.side-menu {
+    background-image: linear-gradient(to bottom, #4338CA, #7E22CE);
+    color: white;
+    width: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 1.5rem;
+    position: fixed;
+    right: 0;
+    top: 60px; /* Position below header */
+    height: calc(100% - 60px);
+    z-index: 20;
+    transition: width 0.3s ease-in-out;
+}
+.side-menu:hover {
+    width: 50px;
+}
+.side-menu .icon-text {
+    display: none;
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    text-align: center;
+}
+.side-menu:hover .icon-text {
+    display: block;
+}
+.left-column {
+    width: 30%; /* Reduced from 40% to 30% */
+    transition: width 0.8s ease-in-out;
+}
+.main-column {
+    width: 70%; /* Increased from 60% to 70% */
+    transition: width 0.8s ease-in-out, margin-right 1.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.main-column.shifted {
+    margin-right: 300px;
 }

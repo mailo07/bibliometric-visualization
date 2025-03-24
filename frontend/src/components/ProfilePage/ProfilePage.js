@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import './ProfilePage.css';
 
 const UserProfile = ({ username, handleSignOut, navigateToChangePassword, navigateToUpdate, profileImage }) => {
@@ -12,62 +11,70 @@ const UserProfile = ({ username, handleSignOut, navigateToChangePassword, naviga
     const hiddenPassword = "•".repeat(10);
 
     return (
-        <div className="container">
-            <h1 className="login__title">User Profile</h1>
+        <div className="profilePage-container">
+            <div className="profilePage-header-link">
+                <a href="/" className="profilePage-home-link">
+                    <i className="ri-home-line"></i>
+                </a>
+            </div>
             
-            <div className="profile-header">
+            <h1 className="profilePage__title">User Profile</h1>
+            
+            <div className="profilePage-header-info">
                 {profileImage ? (
-                    <img src={profileImage} alt="Profile" className="profile-image" />
+                    <img src={profileImage} alt="Profile" className="profilePage-image" />
                 ) : (
-                    <i className="ri-user-3-line profile-image-icon"></i>
+                    <div className="profilePage-image">
+                        <i className="ri-user-3-line profilePage-image-icon"></i>
+                    </div>
                 )}
                 <div>
-                    <h2 className="profile-username">{username}</h2>
-                    <p className="profile-email">JohnDoe1234@example.com</p>
+                    <h2 className="profilePage-username">{username}</h2>
+                    <p className="profilePage-email">JohnDoe1234@example.com</p>
                 </div>
             </div>
 
-            <div className="login__content">
-                <div className="profile-info-section">
-                    <h3 className="profile-info-title">Profile Information</h3>
+            <div className="profilePage__content">
+                <div className="profilePage-info-section">
+                    <h3 className="profilePage-info-title">Profile Information</h3>
                     
-                    <div className="login__box">
-                        <i className="ri-user-3-line login__icon"></i>
-                        <div className="login__box-input">
-                            <input type="text" className="login__input" value={username} disabled placeholder=" " />
-                            <label className="login__label">Username</label>
+                    <div className="profilePage__box">
+                        <i className="ri-user-3-line profilePage__icon"></i>
+                        <div className="profilePage__box-input">
+                            <input type="text" className="profilePage__input" value={username} disabled placeholder=" " />
+                            <label className="profilePage__label">Username</label>
                         </div>
                     </div>
                     
-                    <div className="login__box">
-                        <i className="ri-mail-line login__icon"></i>
-                        <div className="login__box-input">
-                            <input type="email" className="login__input" value="JohnDoe1234@example.com" disabled placeholder=" " />
-                            <label className="login__label">Email</label>
+                    <div className="profilePage__box">
+                        <i className="ri-mail-line profilePage__icon"></i>
+                        <div className="profilePage__box-input">
+                            <input type="email" className="profilePage__input" value="JohnDoe1234@example.com" disabled placeholder=" " />
+                            <label className="profilePage__label">Email</label>
                         </div>
                     </div>
                     
-                    <div className="login__box">
-                        <i className="ri-calendar-line login__icon"></i>
-                        <div className="login__box-input">
-                            <input type="text" className="login__input" value="2025-03-04 10:13:17" disabled placeholder=" " />
-                            <label className="login__label">Account Created</label>
+                    <div className="profilePage__box">
+                        <i className="ri-calendar-line profilePage__icon"></i>
+                        <div className="profilePage__box-input">
+                            <input type="text" className="profilePage__input" value="2025-03-04 10:13:17" disabled placeholder=" " />
+                            <label className="profilePage__label">Account Created</label>
                         </div>
                     </div>
                     
-                    <div className="login__box">
-                        <i className="ri-lock-2-line login__icon"></i>
-                        <div className="login__box-input">
+                    <div className="profilePage__box">
+                        <i className="ri-lock-2-line profilePage__icon"></i>
+                        <div className="profilePage__box-input">
                             <input 
                                 type={passwordVisible ? "text" : "password"} 
-                                className="login__input" 
+                                className="profilePage__input" 
                                 value={passwordVisible ? "password123" : hiddenPassword} 
                                 disabled 
                                 placeholder=" " 
                             />
-                            <label className="login__label">Password</label>
+                            <label className="profilePage__label">Password</label>
                             <i 
-                                className={`${passwordVisible ? 'ri-eye-line' : 'ri-eye-off-line'} login__eye`}
+                                className={`${passwordVisible ? 'ri-eye-line' : 'ri-eye-off-line'} profilePage__eye`}
                                 onClick={togglePasswordVisibility}
                             ></i>
                         </div>
@@ -75,14 +82,14 @@ const UserProfile = ({ username, handleSignOut, navigateToChangePassword, naviga
                 </div>
             </div>
 
-            <div className="profile-actions">
-                <button onClick={navigateToUpdate} className="login__button update-button">
+            <div className="profilePage-actions">
+                <button onClick={navigateToUpdate} className="profilePage__button profilePage-update-button">
                     Update Profile
                 </button>
-                <button onClick={navigateToChangePassword} className="login__button password-button">
+                <button onClick={navigateToChangePassword} className="profilePage__button profilePage-password-button">
                     Change Password
                 </button>
-                <button onClick={handleSignOut} className="login__button logout-button">
+                <button onClick={handleSignOut} className="profilePage__button profilePage-logout-button">
                     Sign Out
                 </button>
             </div>
@@ -92,8 +99,20 @@ const UserProfile = ({ username, handleSignOut, navigateToChangePassword, naviga
 
 const ChangePasswordDialog = ({ isOpen, onClose, onSave }) => {
     const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [passwordError, setPasswordError] = useState("");
 
     const handleSave = () => {
+        if (newPassword !== confirmPassword) {
+            setPasswordError("Passwords do not match");
+            return;
+        }
+        
+        if (newPassword.length < 6) {
+            setPasswordError("Password must be at least 6 characters");
+            return;
+        }
+        
         onSave(newPassword);
         onClose();
     };
@@ -103,29 +122,45 @@ const ChangePasswordDialog = ({ isOpen, onClose, onSave }) => {
     }
 
     return (
-        <div className="change-password-dialog">
-            <div className="change-password-content container">
-                <h2 className="login__title">Change Password</h2>
+        <div className="profilePage-change-password-dialog">
+            <div className="profilePage-change-password-content profilePage-container">
+                <h2 className="profilePage__title">Change Password</h2>
                 
-                <div className="login__box">
-                    <i className="ri-lock-2-line login__icon"></i>
-                    <div className="login__box-input">
+                <div className="profilePage__box">
+                    <i className="ri-lock-2-line profilePage__icon"></i>
+                    <div className="profilePage__box-input">
                         <input 
                             type="password" 
-                            className="login__input" 
+                            className="profilePage__input" 
                             placeholder=" "
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                         />
-                        <label className="login__label">New Password</label>
+                        <label className="profilePage__label">New Password</label>
                     </div>
                 </div>
                 
-                <div className="change-password-actions">
-                    <button onClick={onClose} className="login__button cancel-button">
+                <div className="profilePage__box">
+                    <i className="ri-lock-2-line profilePage__icon"></i>
+                    <div className="profilePage__box-input">
+                        <input 
+                            type="password" 
+                            className="profilePage__input" 
+                            placeholder=" "
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                        <label className="profilePage__label">Confirm Password</label>
+                    </div>
+                </div>
+                
+                {passwordError && <p className="profilePage-error-message">{passwordError}</p>}
+                
+                <div className="profilePage-change-password-actions">
+                    <button onClick={onClose} className="profilePage__button profilePage-cancel-button">
                         Cancel
                     </button>
-                    <button onClick={handleSave} className="login__button save-button">
+                    <button onClick={handleSave} className="profilePage__button profilePage-save-button">
                         Save
                     </button>
                 </div>
@@ -139,6 +174,7 @@ const UpdateProfileDialog = ({ isOpen, onClose, onSave, profileImageProp }) => {
     const [newEmail, setNewEmail] = useState("JohnDoe1234@example.com");
     const [selectedImage, setSelectedImage] = useState(profileImageProp);
     const [newProfileImage, setNewProfileImage] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleImageChange = (e) => {
         if (e.target.files && e.target.files[0]) {
@@ -148,13 +184,32 @@ const UpdateProfileDialog = ({ isOpen, onClose, onSave, profileImageProp }) => {
         }
     };
 
-    const handleSave = () => {
-        onSave({
-            newUsername,
-            newEmail,
-            newProfileImage
-        });
-        onClose();
+    const handleSave = async () => {
+        setIsLoading(true);
+        
+        try {
+            // Simulate API call to save profile data
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Mock database update
+            const profileData = {
+                newUsername: newUsername || undefined,
+                newEmail: newEmail,
+                newProfileImage
+            };
+            
+            // Save to local storage to simulate database persistence
+            if (newUsername) localStorage.setItem('username', newUsername);
+            if (newEmail) localStorage.setItem('email', newEmail);
+            if (newProfileImage) localStorage.setItem('profileImage', newProfileImage);
+            
+            onSave(profileData);
+        } catch (error) {
+            console.error("Error updating profile:", error);
+        } finally {
+            setIsLoading(false);
+            onClose();
+        }
     };
 
     if (!isOpen) {
@@ -162,64 +217,73 @@ const UpdateProfileDialog = ({ isOpen, onClose, onSave, profileImageProp }) => {
     }
 
     return (
-        <div className="change-password-dialog">
-            <div className="change-password-content container">
-                <h2 className="login__title">Update Profile</h2>
+        <div className="profilePage-change-password-dialog">
+            <div className="profilePage-change-password-content profilePage-container">
+                <h2 className="profilePage__title">Update Profile</h2>
                 
-                <div className="profile-image-upload">
+                <div className="profilePage-image-upload">
                     {selectedImage && (
-                        <img src={selectedImage} alt="Profile Preview" className="profile-image-preview" />
+                        <img src={selectedImage} alt="Profile Preview" className="profilePage-image-preview" />
                     )}
-                    <div className="login__box image-upload-box">
-                        <i className="ri-image-line login__icon"></i>
-                        <div className="login__box-input">
+                    <div className="profilePage__box profilePage-image-upload-box">
+                        <i className="ri-image-line profilePage__icon"></i>
+                        <div className="profilePage__box-input">
                             <input 
                                 type="file" 
                                 id="profile-image-input"
                                 onChange={handleImageChange}
-                                className="file-input"
+                                className="profilePage-file-input"
+                                accept="image/*"
                             />
-                            <label htmlFor="profile-image-input" className="file-input-label">
+                            <label htmlFor="profile-image-input" className="profilePage-file-input-label">
                                 Choose Profile Picture
                             </label>
                         </div>
                     </div>
                 </div>
                 
-                <div className="login__box">
-                    <i className="ri-user-3-line login__icon"></i>
-                    <div className="login__box-input">
+                <div className="profilePage__box">
+                    <i className="ri-user-3-line profilePage__icon"></i>
+                    <div className="profilePage__box-input">
                         <input 
                             type="text" 
-                            className="login__input" 
+                            className="profilePage__input" 
                             placeholder=" "
                             value={newUsername}
                             onChange={(e) => setNewUsername(e.target.value)}
                         />
-                        <label className="login__label">New Username</label>
+                        <label className="profilePage__label">New Username</label>
                     </div>
                 </div>
                 
-                <div className="login__box">
-                    <i className="ri-mail-line login__icon"></i>
-                    <div className="login__box-input">
+                <div className="profilePage__box">
+                    <i className="ri-mail-line profilePage__icon"></i>
+                    <div className="profilePage__box-input">
                         <input 
                             type="email" 
-                            className="login__input" 
+                            className="profilePage__input" 
                             placeholder=" "
                             value={newEmail}
                             onChange={(e) => setNewEmail(e.target.value)}
                         />
-                        <label className="login__label">New Email</label>
+                        <label className="profilePage__label">New Email</label>
                     </div>
                 </div>
                 
-                <div className="change-password-actions">
-                    <button onClick={onClose} className="login__button cancel-button">
+                <div className="profilePage-change-password-actions">
+                    <button 
+                        onClick={onClose} 
+                        className="profilePage__button profilePage-cancel-button"
+                        disabled={isLoading}
+                    >
                         Cancel
                     </button>
-                    <button onClick={handleSave} className="login__button save-button">
-                        Save
+                    <button 
+                        onClick={handleSave} 
+                        className="profilePage__button profilePage-save-button"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Saving...' : 'Save'}
                     </button>
                 </div>
             </div>
@@ -232,9 +296,24 @@ const ProfilePage = () => {
     const [profileImage, setProfileImage] = useState(null);
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
     const [isUpdateProfileOpen, setIsUpdateProfileOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+
+    // Load data from localStorage on component mount (simulating database)
+    useEffect(() => {
+        const savedUsername = localStorage.getItem('username');
+        const savedProfileImage = localStorage.getItem('profileImage');
+        
+        if (savedUsername) setUsername(savedUsername);
+        if (savedProfileImage) setProfileImage(savedProfileImage);
+    }, []);
 
     const handleSignOut = () => {
-        alert("Signing out. Since I cannot persist data, this is just a demo.");
+        // Simulate signing out
+        // In a real app, you would clear auth tokens, etc.
+        setTimeout(() => {
+            // Redirect to main page
+            window.location.href = '/';
+        }, 1000);
     };
 
     const navigateToChangePassword = () => {
@@ -258,24 +337,34 @@ const ProfilePage = () => {
             setProfileImage(profileData.newProfileImage);
         }
 
-        alert("Profile updated successfully!");
+        // Show success message
+        setSuccessMessage("Profile updated successfully!");
+        setTimeout(() => {
+            setSuccessMessage("");
+        }, 3000);
+    };
+
+    const handlePasswordChange = (newPassword) => {
+        // In a real app, you would make an API call to update the password in the database
+        localStorage.setItem('passwordUpdated', 'true');
+        
+        // Show success message
+        setSuccessMessage("Password changed successfully!");
+        setTimeout(() => {
+            setSuccessMessage("");
+        }, 3000);
     };
 
     return (
-        <div className="login">
-            <img 
-                src="https://images.unsplash.com/photo-1502700807168-484a3e7889d0?q=80&w=2074&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
-                className="login__img" 
-                alt="Background" 
-            />
+        <div className="profilePage">
+            <img src="https://images.pexels.com/photos/7516490/pexels-photo-7516490.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" className="profilePage__img" alt="Background" />
             
-            <div className="page-content">
-                <header className="page-header">
-                    <Link to="/" className="home-link">
-                        <i className="ri-home-line"></i>
-                        <span>Home</span>
-                    </Link>
-                </header>
+            <div className="profilePage-content">
+                {successMessage && (
+                    <div className="profilePage-success-message">
+                        {successMessage}
+                    </div>
+                )}
                 
                 <UserProfile
                     username={username}
@@ -288,9 +377,7 @@ const ProfilePage = () => {
                 <ChangePasswordDialog
                     isOpen={isChangePasswordOpen}
                     onClose={() => setIsChangePasswordOpen(false)}
-                    onSave={(newPassword) => {
-                        alert("Password changed successfully! (Not really, though.)");
-                    }}
+                    onSave={handlePasswordChange}
                 />
                 
                 <UpdateProfileDialog
@@ -299,10 +386,6 @@ const ProfilePage = () => {
                     onSave={handleUpdateProfileSave}
                     profileImageProp={profileImage}
                 />
-                
-                <footer className="page-footer">
-                    <p>This website is just an educational project and is not meant for intended use. User discretion is advised.</p>
-                </footer>
             </div>
         </div>
     );

@@ -1,0 +1,38 @@
+.error-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f8f9; /* Light gray background */
+  }
+  
+  .error-content {
+    text-align: center;
+  }
+  
+  .error-title {
+    font-size: 3rem;
+    color: #5a1cc4;
+    margin-bottom: 10px;
+  }
+  
+  .error-gif {
+    width: 600px; /* Adjust the size of the GIF as needed */
+    height: auto;
+    margin-bottom: 10px;
+  }
+  
+  .home-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #734aed; /* Bootstrap blue */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .home-button:hover {
+    background-color: #3c258a; /* Darker shade on hover */
+  }
