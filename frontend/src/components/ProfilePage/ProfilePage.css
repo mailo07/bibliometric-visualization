@@ -1,48 +1,6 @@
-/*=============== GOOGLE FONTS ===============*/
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap");
 @import url("https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css");
 
-/*=============== BASE ===============*/
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-body,
-input,
-button {
-  font-size: 1rem;
-  font-family: "Poppins", sans-serif;
-}
-
-body {
-  color: hsl(0, 0%, 100%);
-  font-family: 'Playfair Display', serif;
-  background-color: #f3f4f6;
-  height: 100vh;
-  width: 100%;
-  overflow-x: hidden;
-}
-
-input,
-button {
-  border: none;
-  outline: none;
-}
-
-a {
-  text-decoration: none;
-  color: #fff;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/*=============== PROFILE PAGE ===============*/
 .profilePage {
   position: relative;
   height: 105vh;
@@ -50,8 +8,8 @@ img {
   display: grid;
   align-items: center;
   overflow-x: hidden;
+    font-family: 'Playfair Display', serif;
 }
-
 .profilePage__img {
   position: absolute;
   width: 100%;
@@ -59,7 +17,6 @@ img {
   object-fit: cover;
   object-position: center;
 }
-
 .profilePage-content {
   width: 100%;
   height: 100%;
@@ -69,7 +26,6 @@ img {
   position: relative;
   z-index: 1;
 }
-
 .profilePage-container {
   position: relative;
   background-color: hsla(283, 18%, 48%, 0.332);
@@ -83,13 +39,11 @@ img {
   margin: 2rem auto;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
-
 .profilePage-header-link {
   position: absolute;
   top: 1rem;
   left: 1rem;
 }
-
 .profilePage-home-link {
   display: flex;
   align-items: center;
@@ -100,15 +54,12 @@ img {
   background-color: rgba(255, 255, 255, 0.2);
   transition: background-color 0.3s;
 }
-
 .profilePage-home-link i {
   font-size: 1.2rem;
 }
-
 .profilePage-home-link:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
-
 .profilePage__title {
   text-align: center;
   font-size: 1.75rem;
@@ -116,17 +67,14 @@ img {
   margin-bottom: 2rem;
   color: #fff;
 }
-
 .profilePage__content,
 .profilePage__box {
   display: grid;
 }
-
 .profilePage__content {
   row-gap: 1.75rem;
   margin-bottom: 1.5rem;
 }
-
 .profilePage__box {
   grid-template-columns: max-content 1fr;
   align-items: center;
@@ -134,7 +82,6 @@ img {
   border-bottom: 2px solid hsl(0, 0%, 100%);
   margin-bottom: 1rem;
 }
-
 .profilePage__icon,
 .profilePage__eye {
   font-size: 1.25rem;
@@ -149,11 +96,9 @@ img {
   position: relative;
   z-index: 1;
 }
-
 .profilePage__box-input {
   position: relative;
 }
-
 .profilePage__label {
   position: absolute;
   left: 0;
@@ -162,7 +107,6 @@ img {
   transition: top 0.3s, font-size 0.3s;
   color: white;
 }
-
 .profilePage__eye {
   position: absolute;
   right: 0;

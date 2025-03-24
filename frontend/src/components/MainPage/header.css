@@ -1,0 +1,220 @@
+.MainPage {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(to bottom, #f5f5f5, #e5e5e5);
+    animation: fadeIn 1s ease-in;
+    color: #2c2c2c;
+}
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+.MainPage .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.MainPage .reveal.active {
+    opacity: 1;
+    transform: none;
+}
+.MainPage .header {
+    position: relative;
+    background: linear-gradient(rgba(0, 0, 0, 0.097), rgba(0, 0, 0, 0.097)), url('https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') no-repeat center center;
+    background-size: cover;
+    background-position: center;
+    height: 95vh;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 0 0 50px 50px;
+    overflow: hidden;
+    text-align: center;
+    padding-top: 80px;
+}
+.MainPage .header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+.MainPage .header-content {
+    position: relative;
+    padding: 40px;
+    max-width: 800px;
+}
+.MainPage .header-content h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 5em;
+    margin: 0;
+}
+.MainPage .header-content p {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.2em;
+    margin-top: 20px;
+}
+.MainPage .nav {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    z-index: 10;
+}
+.MainPage .nav .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2em;
+}
+
+.MainPage .header-buttons {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px; 
+}
+.MainPage .header-buttons button,
+.MainPage .header-buttons a {
+    color: white;
+    text-decoration: none;
+    font-weight: 400;
+    border: 2px solid white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.3s ease, border 0.3s ease;
+    background: none;
+}
+.MainPage .header-buttons button:hover,
+.MainPage .header-buttons a:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.MainPage .header-buttons .about-button,
+.MainPage .header-buttons .register-button {
+    color: white;
+    text-decoration: none;
+    font-weight: 400;
+    border: 2px solid white;
+    padding: 10px 20px; 
+    border-radius: 30px;
+    background: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.3s ease, border 0.3s ease;
+}
+.MainPage .header-buttons .about-button:hover,
+.MainPage .header-buttons .register-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.MainPage .main {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),url('https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    padding: 100px 30px;
+    transition: padding 0.3s;
+}
+.MainPage .main h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+.MainPage .main p {
+    font-size: 18px;
+    margin-bottom: 40px;
+}
+.MainPage .search-box {
+    background-image: linear-gradient(to bottom, #00509e, #003366);
+    padding: 40px 20px;
+    border-radius: 10px;
+    margin: 40px auto;
+    max-width: 600px;
+    text-align: left;
+    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s;
+}
+.MainPage .search-box h2 {
+    color: white;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+.MainPage .search-box h3 {
+    color: #87ceeb;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+.MainPage .search-box .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    position: relative;
+}
+.MainPage .search-box .tabs a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 5px 10px;
+    position: relative;
+    margin-right: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.MainPage .search-box .tabs a:hover {
+    background-color: #006bb3;
+    border-radius: 5px;
+}
+.MainPage .search-box .tabs .glider {
+    position: absolute;
+    bottom: -2px;
+    width: 100%;
+    height: 2px;
+    background-color: #00aaff;
+    transition: width 0.5s, left 0.5s ease;
+    margin-left: 5px;
+}
+.MainPage .search-box .search-bar {
+    display: flex;
+    width: 100%;
+}
+.MainPage .search-box .search-bar form {
+    display: flex;
+    width: 100%;
+}
+.MainPage .search-box .search-bar input {
+    flex: 4;
+    padding: 10px;
+    border-radius: 5px 0 0 5px;
+    border: none;
+    transition: box-shadow 0.3s;
+    color: #000;
+    font-size: 16px;
+}
+.MainPage .search-box .search-bar input:focus {
+    box-shadow: 0 0 5px #87ceeb;
+    outline: none;
+}
+.MainPage .search-box .search-bar button {
+    flex: 1;
+    background-color: hsl(221, 84%, 71%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+}
+.MainPage .search-box .search-bar button:hover {
+    background-color: #0088cc;
+}

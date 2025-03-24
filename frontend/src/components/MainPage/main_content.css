@@ -1,0 +1,283 @@
+.MainPage .collaboration-carousel-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+.MainPage .container {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 50px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.MainPage .testimonial {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 20px;
+}
+.MainPage .author {
+    display: flex;
+    align-items: center;
+}
+.MainPage .author img {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+    object-fit: cover;
+}
+.MainPage .author-info {
+    font-size: 14px;
+    color: #007bff;
+}
+.MainPage .author-info span {
+    display: block;
+    color: #666;
+}
+.MainPage .left-column {
+    width: 60%;
+    padding-right: 20px;
+}
+.MainPage .right-column {
+    width: 40%;
+    position: relative;
+}
+.MainPage .right-column img {
+    width: 100%;
+    border-radius: 10px;
+    max-height: 200px;
+    object-fit: cover;
+}
+.MainPage .section-title {
+    color: #007bff;
+    font-size: 14px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+.MainPage .main-title {
+    font-size: 36px;
+    color: #333;
+    margin-bottom: 20px;
+}
+.MainPage .description {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 40px;
+}
+.MainPage .carousel {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 800px;
+    margin: 40px auto;
+}
+.MainPage .carousel-inner {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+.MainPage .carousel-item {
+    min-width: 100%;
+    box-sizing: border-box;
+}
+.MainPage .carousel-controls {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    transform: translateY(-50%);
+}
+.MainPage .carousel-controls i {
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.MainPage .carousel-controls i:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+.MainPage .carousel-indicators {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.MainPage .carousel-indicators div {
+    width: 10px;
+    height: 10px;
+    background-color: #ccc;
+    border-radius: 50%;
+    margin: 0 5px;
+    cursor: pointer;
+}
+.MainPage .carousel-indicators .active {
+    background-color: #007bff;
+}
+.MainPage .news-card {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 20px;
+}
+.MainPage .news-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.MainPage .news-card .news-content {
+    padding: 20px;
+}
+.MainPage .news-card .news-content h4 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+.MainPage .news-card .news-content p {
+    font-size: 14px;
+    color: #555;
+}
+.MainPage .news-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+.MainPage .news-card a {
+    color: #0a0a0a; /* Purple color for links */
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.MainPage .news-card a:hover {
+    color: #0a0a0a; /* Darker purple on hover */
+    text-decoration: underline;
+}
+
+.MainPage .news-card .read-more {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #f0e6ff;
+    border-radius: 4px;
+}
+.MainPage .footer {
+    background-color: #1a1a1a;
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Playfair Display', serif;
+}
+.MainPage .footer-content {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    margin: 20px auto;
+    text-align: center;
+}
+.MainPage .footer-section {
+    margin: 0 20px;
+    flex: 1;
+    min-width: 200px;
+}
+.MainPage .footer h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+.MainPage .footer p {
+    font-size: 1em;
+    line-height: 1.5;
+    margin: 0;
+}
+.MainPage .footer a {
+    color: #87ceeb;
+    text-decoration: none;
+}
+.MainPage .footer a:hover {
+    text-decoration: underline;
+}
+.MainPage .footer-title {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+.MainPage .footer-subtitle {
+    font-size: 1em;
+    font-weight: 400;
+    margin-top: 5px;
+}
+.MainPage .right-column h2 {
+    font-size: 2em;
+    font-weight: bold;
+}
+.MainPage .signup-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    border-radius: 8px;
+    min-width: 300px;
+}
+.MainPage .signup-dialog input {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.MainPage .signup-dialog button[type="submit"] {
+    background: #1e3a8a;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%;
+}
+.MainPage .dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+.MainPage .plain-text-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+}
+.MainPage .plain-text-container h1 {
+    font-size: 6rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.MainPage .tabs button {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+    margin-right: 10px;
+}
+.MainPage .tabs button.active {
+    font-weight: bold;
+}
