@@ -257,7 +257,7 @@ const MainPage = () => {
         </div>
       )}
 
-      <section className="bg-gray-100 py-12 text-center reveal">
+      <section className="py-12 text-center reveal">
         <h1 className="text-2xl md:text-3xl font-bold">OUR PRIMARY FOCUS AND OBJECTIVES</h1>
         <p className="text-lg mt-2">
           To provide a platform for researchers, scholars, and academics to
@@ -266,7 +266,7 @@ const MainPage = () => {
         </p>
       </section>
 
-      <section className="bg-gray-100 py-12 text-center reveal">
+      <section className="py-12 text-center reveal">
         <h1 className="text-2xl md:text-3xl font-bold">Discover, Analyse, and Map Global Innovation Knowledge</h1>
         <p className="text-lg mt-2">Connecting Worlds &amp; Building Cultural Bridges</p>
       </section>

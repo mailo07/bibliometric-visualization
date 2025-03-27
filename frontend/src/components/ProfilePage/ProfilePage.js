@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ProfilePage.css';
+import profileBackground from '../../assets/profilebg.jpg';
 
 const UserProfile = ({ username, handleSignOut, navigateToChangePassword, navigateToUpdate, profileImage }) => {
     const [passwordVisible, setPasswordVisible] = useState(false);
@@ -357,7 +358,7 @@ const ProfilePage = () => {
 
     return (
         <div className="profilePage">
-            <img src="https://images.pexels.com/photos/7516490/pexels-photo-7516490.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" className="profilePage__img" alt="Background" />
+           <img src={profileBackground} className="profilePage__img" alt="Background" />
             
             <div className="profilePage-content">
                 {successMessage && (

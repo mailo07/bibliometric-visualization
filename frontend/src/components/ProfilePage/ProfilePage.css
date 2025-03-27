@@ -28,17 +28,18 @@
 }
 .profilePage-container {
   position: relative;
-  background-color: hsla(283, 18%, 48%, 0.332);
+  background: transparent;
   border: 2px solid white;
   margin-inline: 1.5rem;
   padding: 2.5rem 1.5rem;
   border-radius: 2rem;
-  backdrop-filter: blur(15px);
-  max-width: 800px;
+  backdrop-filter: blur(30px);
+  max-width: 700px;
   max-height: 700px;
   margin: 2rem auto;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
+
+  }
 .profilePage-header-link {
   position: absolute;
   top: 1rem;
@@ -91,7 +92,7 @@
 .profilePage__input {
   width: 100%;
   padding-block: 0.8rem;
-  background: none;
+  background: transparent;
   color: hsl(0, 0%, 100%);
   position: relative;
   z-index: 1;
