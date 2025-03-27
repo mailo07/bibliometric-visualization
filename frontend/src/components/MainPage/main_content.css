@@ -1,283 +1,253 @@
-.MainPage .collaboration-carousel-slide {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    margin: 20px 0;
+.MainPage {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(to bottom, #f0ebeb, #c9cdec, #7d88c4, #1a2980);;
+    animation: fadeIn 1s ease-in;
+    color: #e8e0e0;
 }
-.MainPage .container {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 50px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
 }
-.MainPage .testimonial {
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 20px;
+.MainPage .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
-.MainPage .author {
-    display: flex;
-    align-items: center;
+.MainPage .reveal.active {
+    opacity: 1;
+    transform: none;
 }
-.MainPage .author img {
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    margin-right: 10px;
-    object-fit: cover;
-}
-.MainPage .author-info {
-    font-size: 14px;
-    color: #007bff;
-}
-.MainPage .author-info span {
-    display: block;
-    color: #666;
-}
-.MainPage .left-column {
-    width: 60%;
-    padding-right: 20px;
-}
-.MainPage .right-column {
-    width: 40%;
+.MainPage .header {
     position: relative;
-}
-.MainPage .right-column img {
-    width: 100%;
-    border-radius: 10px;
-    max-height: 200px;
-    object-fit: cover;
-}
-.MainPage .section-title {
-    color: #007bff;
-    font-size: 14px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-}
-.MainPage .main-title {
-    font-size: 36px;
-    color: #333;
-    margin-bottom: 20px;
-}
-.MainPage .description {
-    font-size: 18px;
-    color: #666;
-    margin-bottom: 40px;
-}
-.MainPage .carousel {
-    position: relative;
-    overflow: hidden;
-    width: 100%;
-    max-width: 800px;
-    margin: 40px auto;
-}
-.MainPage .carousel-inner {
-    display: flex;
-    transition: transform 0.5s ease-in-out;
-}
-.MainPage .carousel-item {
-    min-width: 100%;
-    box-sizing: border-box;
-}
-.MainPage .carousel-controls {
-    position: absolute;
-    top: 50%;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    transform: translateY(-50%);
-}
-.MainPage .carousel-controls i {
-    background: rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+    height: 95vh;
     color: white;
-    padding: 10px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-.MainPage .carousel-controls i:hover {
-    background: rgba(0, 0, 0, 0.8);
-}
-.MainPage .carousel-indicators {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.MainPage .carousel-indicators div {
-    width: 10px;
-    height: 10px;
-    background-color: #ccc;
-    border-radius: 50%;
-    margin: 0 5px;
-    cursor: pointer;
-}
-.MainPage .carousel-indicators .active {
-    background-color: #007bff;
-}
-.MainPage .news-card {
     display: flex;
     flex-direction: column;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 0 0 50px 50px;
     overflow: hidden;
-    transition: transform 0.3s, box-shadow 0.3s;
-    margin-bottom: 20px;
-}
-.MainPage .news-card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-}
-.MainPage .news-card .news-content {
-    padding: 20px;
-}
-.MainPage .news-card .news-content h4 {
-    font-size: 20px;
-    margin-bottom: 10px;
-}
-.MainPage .news-card .news-content p {
-    font-size: 14px;
-    color: #555;
-}
-.MainPage .news-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-.MainPage .news-card a {
-    color: #0a0a0a; /* Purple color for links */
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s;
-}
-
-.MainPage .news-card a:hover {
-    color: #0a0a0a; /* Darker purple on hover */
-    text-decoration: underline;
-}
-
-.MainPage .news-card .read-more {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 5px 10px;
-    background-color: #f0e6ff;
-    border-radius: 4px;
-}
-.MainPage .footer {
-    background-color: #1a1a1a;
-    color: white;
-    padding: 40px 20px;
     text-align: center;
-    position: relative;
-    overflow: hidden;
-    font-family: 'Playfair Display', serif;
+    padding-top: 80px;
 }
-.MainPage .footer-content {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    max-width: 1000px;
-    margin: 20px auto;
-    text-align: center;
-}
-.MainPage .footer-section {
-    margin: 0 20px;
-    flex: 1;
-    min-width: 200px;
-}
-.MainPage .footer h3 {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-}
-.MainPage .footer p {
-    font-size: 1em;
-    line-height: 1.5;
-    margin: 0;
-}
-.MainPage .footer a {
-    color: #87ceeb;
-    text-decoration: none;
-}
-.MainPage .footer a:hover {
-    text-decoration: underline;
-}
-.MainPage .footer-title {
-    font-size: 1.5em;
-    font-weight: bold;
-}
-.MainPage .footer-subtitle {
-    font-size: 1em;
-    font-weight: 400;
-    margin-top: 5px;
-}
-.MainPage .right-column h2 {
-    font-size: 2em;
-    font-weight: bold;
-}
-.MainPage .signup-dialog {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    border-radius: 8px;
-    min-width: 300px;
-}
-.MainPage .signup-dialog input {
-    display: block;
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-.MainPage .signup-dialog button[type="submit"] {
-    background: #1e3a8a;
-    color: #fff;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    width: 100%;
-}
-.MainPage .dialog-overlay {
-    position: fixed;
+.MainPage .header::before {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    background: rgba(0, 0, 0, 0.2);
 }
-.MainPage .plain-text-container {
+.MainPage .header-content {
+    position: relative;
+    padding: 40px;
+    max-width: 800px;
+}
+.MainPage .header-content h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 5em;
+    margin: 0;
+}
+.MainPage .header-content p {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.2em;
+    margin-top: 20px;
+}
+.MainPage .nav {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    min-height: 100px;
+    padding: 0 40px;
+    z-index: 10;
 }
-.MainPage .plain-text-container h1 {
-    font-size: 6rem;
-    white-space: nowrap;
-    overflow: hidden;
+.MainPage .nav .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2em;
 }
-.MainPage .tabs button {
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
-    cursor: pointer;
-    outline: inherit;
-    color: inherit;
+
+.MainPage .header-buttons {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px; 
+}
+.MainPage .header-buttons button,
+.MainPage .header-buttons a {
+    color: white;
     text-decoration: none;
-    transition: all 0.3s;
-    margin-right: 10px;
+    font-weight: 400;
+    border: 2px solid white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.3s ease, border 0.3s ease;
+    background: none;
 }
-.MainPage .tabs button.active {
-    font-weight: bold;
+.MainPage .header-buttons button:hover,
+.MainPage .header-buttons a:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.MainPage .header-buttons .about-button,
+.MainPage .header-buttons .register-button {
+    color: white;
+    text-decoration: none;
+    font-weight: 400;
+    border: 2px solid white;
+    padding: 10px 20px; 
+    border-radius: 30px;
+    background: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.3s ease, border 0.3s ease;
+}
+.MainPage .header-buttons .about-button:hover,
+.MainPage .header-buttons .register-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.MainPage .main {
+   background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    padding: 100px 30px;
+    transition: padding 0.3s;
+}
+.MainPage .main h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+.MainPage .main p {
+    font-size: 18px;
+    margin-bottom: 40px;
+}
+.MainPage .search-box {
+    background-image: linear-gradient(to bottom, #00509e, #003366);
+    padding: 40px 20px;
+    border-radius: 10px;
+    margin: 40px auto;
+    max-width: 600px;
+    text-align: left;
+    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s;
+}
+.MainPage .search-box h2 {
+    color: white;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+.MainPage .search-box h3 {
+    color: #87ceeb;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+.MainPage .search-box .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    position: relative;
+}
+.MainPage .search-box .tabs a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 5px 10px;
+    position: relative;
+    margin-right: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.MainPage .search-box .tabs a:hover {
+    background-color: #006bb3;
+    border-radius: 5px;
+}
+.MainPage .search-box .tabs .glider {
+    position: absolute;
+    bottom: -2px;
+    width: 100%;
+    height: 2px;
+    background-color: #00aaff;
+    transition: width 0.5s, left 0.5s ease;
+    margin-left: 5px;
+}
+.MainPage .search-box .search-bar {
+    display: flex;
+    width: 100%;
+}
+.MainPage .search-box .search-bar form {
+    display: flex;
+    width: 100%;
+}
+.MainPage .search-box .search-bar input {
+    flex: 4;
+    padding: 10px;
+    border-radius: 5px 0 0 5px;
+    border: none;
+    transition: box-shadow 0.3s;
+    color: #000;
+    font-size: 16px;
+}
+.MainPage .search-box .search-bar input:focus {
+    box-shadow: 0 0 5px #87ceeb;
+    outline: none;
+}
+.MainPage .search-box .search-bar button {
+    flex: 1;
+    background-color: hsl(221, 84%, 71%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+}
+.MainPage .search-box .search-bar button:hover {
+    background-color: #0088cc;
+}
+
+/* New dialog animations */
+.MainPage .signup-dialog {
+    opacity: 0;
+    transform: translateY(20px) translateX(-50%);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+.MainPage .dialog-overlay {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+    pointer-events: none;
+    backdrop-filter: blur(5px);
+}
+
+.MainPage .dialog-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.MainPage .dialog-overlay.active .signup-dialog {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%);
+    animation: dialogAppear 0.5s ease-out forwards;
+}
+
+@keyframes dialogAppear {
+    0% {
+        transform: translateY(20px) translateX(-50%) scale(0.95);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0) translateX(-50%) scale(1);
+        opacity: 1;
+    }
 }

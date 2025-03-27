@@ -80,3 +80,13 @@ export const getScopusDataSept = async () => {
     throw error;
   }
 };
+
+export const getBibliometricVideos = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/youtube_bibliometrics`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching YouTube videos:', error);
+    throw error;
+  }
+};

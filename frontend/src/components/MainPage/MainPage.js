@@ -140,8 +140,11 @@ const MainPage = () => {
     window.addEventListener('scroll', reveal);
     window.addEventListener('load', reveal);
 
-    // Cleanup interval on component unmount
-    return () => clearInterval(newsInterval);
+    return () => {
+      clearInterval(newsInterval);
+      window.removeEventListener('scroll', reveal);
+      window.removeEventListener('load', reveal);
+    };
   }, []);
 
   const toggleLoginBox = () => {
@@ -164,6 +167,16 @@ const MainPage = () => {
     }, 10);
   };
 
+  const handleLoginClick = (e) => {
+    e.preventDefault();
+    window.location.href = '/registerlogin?show=login';
+  };
+
+  const handleRegisterClick = (e) => {
+    e.preventDefault();
+    window.location.href = '/registerlogin?show=register';
+  };
+
   return (
     <div className="MainPage">
       <header className="header">
@@ -172,10 +185,10 @@ const MainPage = () => {
             <a href="/about" className="about-button">
               <i className="fas fa-info-circle"></i> About
             </a>
-            <a href="/register" className="register-button">
+            <a href="/register-login?show=register" className="register-button" onClick={handleRegisterClick}>
               <i className="fas fa-user"></i> Register
             </a>
-            <button className="login-button" onClick={toggleLoginBox}>
+            <button className="login-button" onClick={handleLoginClick}>
               <i className="fas fa-sign-in-alt"></i> Login
             </button>
             <button className="contact-button" onClick={toggleContactBox}>
@@ -208,7 +221,9 @@ const MainPage = () => {
       {loginBoxVisible && (
         <div className={`dialog-overlay ${loginBoxVisible ? 'active' : ''}`} onClick={toggleLoginBox}>
           <div className="signup-dialog" onClick={(e) => e.stopPropagation()}>
-            <button onClick={toggleLoginBox} style={{ position: 'absolute', top: '10px', right: '10px' }}> X </button>
+            <button onClick={toggleLoginBox} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', color: '#f5f5f5', cursor: 'pointer' }}> 
+              <i className="fas fa-times"></i>
+            </button>
             <h1>Log-in to Biblioknow</h1>
             <form>
               <label>Email address or Username</label>
@@ -217,6 +232,9 @@ const MainPage = () => {
               <input type="password" />
               <button type="submit">Log in</button>
             </form>
+            <p style={{ marginTop: '15px', textAlign: 'center' }}>
+              Don't have an account? <a href="/register-login?show=register" style={{ color: '#26d0ce' }} onClick={handleRegisterClick}>Register here</a>
+            </p>
           </div>
         </div>
       )}
@@ -224,11 +242,13 @@ const MainPage = () => {
       {contactBoxVisible && (
         <div className={`dialog-overlay ${contactBoxVisible ? 'active' : ''}`} onClick={toggleContactBox}>
           <div className="signup-dialog" onClick={(e) => e.stopPropagation()}>
-            <button onClick={toggleContactBox} style={{ position: 'absolute', top: '10px', right: '10px' }}> X </button>
+            <button onClick={toggleContactBox} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', color: '#f5f5f5', cursor: 'pointer' }}>
+              <i className="fas fa-times"></i>
+            </button>
             <h2>Contact Information</h2>
             <p>
               For inquiries and support, please contact the admin at:{' '}
-              <a href="mailto:Biblioknow00@outlook.com">BiblioKnow00@outlook.com</a>
+              <a href="mailto:Biblioknow00@outlook.com" style={{ color: '#26d0ce' }}>BiblioKnow00@outlook.com</a>
               <br />
               You can also reach us at (+91) 123467890.
             </p>
@@ -238,8 +258,8 @@ const MainPage = () => {
       )}
 
       <section className="bg-gray-100 py-12 text-center reveal">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-600">OUR PRIMARY FOCUS AND OBJECTIVES</h1>
-        <p className="text-lg text-gray-600 mt-2">
+        <h1 className="text-2xl md:text-3xl font-bold">OUR PRIMARY FOCUS AND OBJECTIVES</h1>
+        <p className="text-lg mt-2">
           To provide a platform for researchers, scholars, and academics to
           connect, collaborate, <br /> and exchange knowledge. We aim to foster a collaborative environment
           where researchers can share their findings, discover new insights, <br /> and contribute to the advancement of knowledge.
@@ -247,8 +267,8 @@ const MainPage = () => {
       </section>
 
       <section className="bg-gray-100 py-12 text-center reveal">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-600">Discover, Analyse, and Map Global Innovation Knowledge</h1>
-        <p className="text-lg text-gray-600 mt-2">Connecting Worlds &amp; Building Cultural Bridges</p>
+        <h1 className="text-2xl md:text-3xl font-bold">Discover, Analyse, and Map Global Innovation Knowledge</h1>
+        <p className="text-lg mt-2">Connecting Worlds &amp; Building Cultural Bridges</p>
       </section>
 
       <div className="container reveal">

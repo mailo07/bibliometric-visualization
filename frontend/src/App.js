@@ -6,7 +6,7 @@ import MainPage from './components/MainPage/MainPage';
 import AboutPage from './components/AboutPage/AboutPage';
 import ErrorPage from './components/ErrorPage/ErrorPage';
 import ProfilePage from './components/ProfilePage/ProfilePage';
-import RegisterPage from './components/RegisterPage/RegisterPage';
+import RegisterLoginPage from './components/RegisterLoginPage/RegisterLoginPage';
 import SearchPage from './components/SearchPage/SearchPage';
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
         <Route path="/" element={<MainPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/registerlogin" element={<RegisterLoginPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="*" element={<ErrorPage />} />
       </Routes>

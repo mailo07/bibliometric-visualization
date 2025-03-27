@@ -1,6 +1,8 @@
+// SearchPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { search } from '../../services/apiService';
 import './SearchPage.css';
+
 const SearchPage = () => {
     const [activeTab, setActiveTab] = useState("scholarlyWorks");
     const [activeFilter, setActiveFilter] = useState(null);
@@ -10,17 +12,31 @@ const SearchPage = () => {
     const [authorFilter, setAuthorFilter] = useState('');
     const [subjectFilter, setSubjectFilter] = useState('');
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
-    const [resultsPerPage] = useState(10);
+    const [journalFilter, setJournalFilter] = useState('');
+    const [titleFilter, setTitleFilter] = useState('');
+    const [publisherFilter, setPublisherFilter] = useState('');
+    const [identifierTypes, setIdentifierTypes] = useState({
+        doi: false,
+        pmid: false,
+        pmcid: false,
+        arxiv: false,
+        isbn: false
+    });
+    const [resultsPerPage] = useState(4);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isFilterPanelVisible, setIsFilterPanelVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [tabTransition, setTabTransition] = useState(false);
     const [resultsTransition, setResultsTransition] = useState(false);
+
     const queryParams = new URLSearchParams(window.location.search);
     const query = queryParams.get('query') || '';
-    useEffect(() => { setSearchQuery(query);
+
+    useEffect(() => {
+        setSearchQuery(query);
     }, [query]);
+
     const fetchSearchResults = useCallback(async (searchTerm) => {
         setLoading(true);
         setError(null);
@@ -41,28 +57,49 @@ const SearchPage = () => {
             setLoading(false);
         }
     }, []);
+
     useEffect(() => {
         if (query) {
             fetchSearchResults(query);
         }
     }, [fetchSearchResults, query]);
+
     const handleSearch = (e) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            // Update URL with the new search query
             const newUrl = `${window.location.pathname}?query=${encodeURIComponent(searchQuery.trim())}`;
             window.history.pushState({ path: newUrl }, '', newUrl);
             fetchSearchResults(searchQuery.trim());
-        }};
+        }
+    };
+
     const filteredData = data.filter((item) => {
         const authorMatch = !authorFilter || (item.author && item.author.toLowerCase().includes(authorFilter.toLowerCase()));
         const subjectMatch = !subjectFilter || (item.title && item.title.toLowerCase().includes(subjectFilter.toLowerCase()));
-        return authorMatch && subjectMatch;
+        const journalMatch = !journalFilter || (item.journal && item.journal.toLowerCase().includes(journalFilter.toLowerCase()));
+        const titleMatch = !titleFilter || (item.title && item.title.toLowerCase().includes(titleFilter.toLowerCase()));
+        const publisherMatch = !publisherFilter || (item.publisher && item.publisher.toLowerCase().includes(publisherFilter.toLowerCase()));
+        
+        const dateMatch = !dateRange.start || !dateRange.end || 
+                         (item.published && new Date(item.published) >= new Date(dateRange.start) && 
+                         new Date(item.published) <= new Date(dateRange.end));
+        
+        const identifierMatch = !Object.values(identifierTypes).some(v => v) || 
+                              (item.identifiers && (
+                                  (identifierTypes.doi && item.identifiers.includes('doi')) ||
+                                  (identifierTypes.pmid && item.identifiers.includes('pmid')) ||
+                                  (identifierTypes.pmcid && item.identifiers.includes('pmcid')) ||
+                                  (identifierTypes.arxiv && item.identifiers.includes('arxiv')) ||
+                                  (identifierTypes.isbn && item.identifiers.includes('isbn'))
+                              ));
+        
+        return authorMatch && subjectMatch && journalMatch && titleMatch && publisherMatch && dateMatch && identifierMatch;
     });
+
     const totalPages = Math.ceil(filteredData.length / resultsPerPage);
     const paginatedData = filteredData.slice((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage);
+
     const handlePageClick = (pageNumber) => {
-        // Add transition effect for pagination
         setResultsTransition(true);
         setTimeout(() => {
             setCurrentPage(pageNumber);
@@ -71,7 +108,8 @@ const SearchPage = () => {
             }, 300);
         }, 300);
     };
-const handlePrevPage = () => {
+
+    const handlePrevPage = () => {
         if (currentPage > 1) {
             setResultsTransition(true);
             setTimeout(() => {
@@ -82,6 +120,7 @@ const handlePrevPage = () => {
             }, 300);
         }
     };
+
     const handleNextPage = () => {
         if (currentPage < totalPages) {
             setResultsTransition(true);
@@ -93,12 +132,15 @@ const handlePrevPage = () => {
             }, 300);
         }
     };
+
     const navigateToHome = () => {
         window.location.href = '/';
     };
+
     const toggleFilterPanel = () => {
         setIsFilterPanelVisible(!isFilterPanelVisible);
     };
+
     const handleTabSwitch = (tab) => {
         if (activeTab !== tab) {
             setTabTransition(true);
@@ -106,15 +148,15 @@ const handlePrevPage = () => {
                 setActiveTab(tab);
                 setTimeout(() => {
                     setTabTransition(false);
-                }, 400); // Increased duration for more relaxed animation
-            }, 400); // Increased duration for more relaxed animation
+                }, 400);
+            }, 400);
         }
     };
+
     const renderIdentifiers = (identifiers) => {
         if (!identifiers) return 'N/A';
         const parts = identifiers.split(',').map(part => part.trim());
         return parts.map((part, index) => {
-            // Check if the part is a URL starting with https://
             if (part.startsWith('https://')) {
                 return (
                     <React.Fragment key={index}>{index > 0 && ', '}
@@ -132,27 +174,22 @@ const handlePrevPage = () => {
         if (totalPages === 0) return null;
         return (
             <div className="pagination-container">
-                <button  onClick={handlePrevPage}  className="pagination-arrow" disabled={currentPage === 1}>
+                <button onClick={handlePrevPage} className="pagination-arrow" disabled={currentPage === 1}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="15 18 9 12 15 6"></polyline> </svg></button>
                 
                 {[...Array(Math.min(totalPages, 5))].map((_, i) => {
                     let pageNumber;
                     if (totalPages <= 5) {
-                        // If 5 or fewer pages, show all
                         pageNumber = i + 1;
                     } else {
-                        // For more than 5 pages, create a smart window
                         if (currentPage <= 3) {
-                            // Near the start
                             pageNumber = i + 1;
                             if (i === 4) pageNumber = totalPages;
                         } else if (currentPage >= totalPages - 2) {
-                            // Near the end
                             if (i === 0) pageNumber = 1;
                             else pageNumber = totalPages - (4 - i);
                         } else {
-                            // In the middle
                             if (i === 0) pageNumber = 1;
                             else if (i === 4) pageNumber = totalPages;
                             else pageNumber = currentPage + (i - 2);
@@ -172,14 +209,40 @@ const handlePrevPage = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="9 18 15 12 9 6"></polyline></svg></button></div> );
     };
+
     const toggleFilter = (filterName) => {
         setActiveFilter(activeFilter === filterName ? null : filterName);
     };
-const clearFilters = () => {
+
+    const handleIdentifierChange = (type) => {
+        setIdentifierTypes({
+            ...identifierTypes,
+            [type]: !identifierTypes[type]
+        });
+    };
+
+    const applyFilters = () => {
+        setCurrentPage(1);
+        setIsFilterPanelVisible(false);
+    };
+
+    const resetAllFilters = () => {
         setAuthorFilter('');
         setSubjectFilter('');
         setDateRange({ start: '', end: '' });
+        setJournalFilter('');
+        setTitleFilter('');
+        setPublisherFilter('');
+        setIdentifierTypes({
+            doi: false,
+            pmid: false,
+            pmcid: false,
+            arxiv: false,
+            isbn: false
+        });
+        setCurrentPage(1);
     };
+
     const Preloader = () => (
         <div className="preloader"> <div className="spinner"></div> <p>Loading search results...</p></div> );
 
@@ -189,8 +252,8 @@ const clearFilters = () => {
                 <div className="flex-grow flex justify-center">
                     <form onSubmit={handleSearch} className="relative w-full max-w-md">
                         <input type="text" placeholder="Search" className="w-full bg-black/50 text-white placeholder-gray-400 rounded-full pl-4 pr-10 py-2 focus:outline-none"
-                            value={searchQuery}  onChange={(e) => setSearchQuery(e.target.value)} />
-                        <button  type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+                            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                        <button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
                             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                         </button>
@@ -200,7 +263,7 @@ const clearFilters = () => {
             </header>
             
             <div className="flex flex-grow relative">
-                <aside className={`left-column p-4 bg-white/90 shadow-md`}>
+                <aside className="left-column p-4 bg-white/90 shadow-md">
                     <h3 className="font-semibold text-purple-800 mb-4">Chart Visualization of Citation Counts</h3>
                     <div className="h-64 bg-gray-200 flex items-center justify-center">
                         <p className="text-gray-700">[Chart/Plot for citation metrics goes here]</p>
@@ -304,6 +367,52 @@ const clearFilters = () => {
                         <div className="space-y-4">
                             <div>
                                 <button className="flex justify-between w-full p-2 font-medium text-left text-gray-700" 
+                                    onClick={() => toggleFilter('title')}>
+                                    <span>Title</span> <span>{activeFilter === 'title' ? "▼" : "▶"}</span>
+                                </button>
+                                <div className={`collapse-content ${activeFilter === 'title' ? 'open' : ''}`}>
+                                    <input type="text" className="w-full border p-2 rounded mt-2" placeholder="Search by title"
+                                        value={titleFilter} onChange={(e) => setTitleFilter(e.target.value)}/>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <button className="flex justify-between w-full p-2 font-medium text-left text-gray-700" 
+                                    onClick={() => toggleFilter('author')}>
+                                    <span>Author</span><span>{activeFilter === 'author' ? "▼" : "▶"}</span>
+                                </button>
+                                <div className={`collapse-content ${activeFilter === 'author' ? 'open' : ''}`}>
+                                    <input type="text" className="w-full border p-2 rounded mt-2" placeholder="Search Author" 
+                                        value={authorFilter} onChange={(e) => setAuthorFilter(e.target.value)}/>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <button className="flex justify-between w-full p-2 font-medium text-left text-gray-700" 
+                                    onClick={() => toggleFilter('journal')}>
+                                    <span>Journal/Source</span>
+                                    <span>{activeFilter === 'journal' ? "▼" : "▶"}</span>
+                                </button>
+                                <div className={`collapse-content ${activeFilter === 'journal' ? 'open' : ''}`}>
+                                    <input type="text" className="w-full border p-2 rounded mt-2" placeholder="Search Journal/Source"
+                                        value={journalFilter} onChange={(e) => setJournalFilter(e.target.value)}/>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <button className="flex justify-between w-full p-2 font-medium text-left text-gray-700" 
+                                    onClick={() => toggleFilter('publisher')}>
+                                    <span>Publisher</span>
+                                    <span>{activeFilter === 'publisher' ? "▼" : "▶"}</span>
+                                </button>
+                                <div className={`collapse-content ${activeFilter === 'publisher' ? 'open' : ''}`}>
+                                    <input type="text" className="w-full border p-2 rounded mt-2" placeholder="Search Publisher"
+                                        value={publisherFilter} onChange={(e) => setPublisherFilter(e.target.value)}/>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <button className="flex justify-between w-full p-2 font-medium text-left text-gray-700" 
                                     onClick={() => toggleFilter('dateRange')}>
                                     <span>Date Range</span> <span>{activeFilter === 'dateRange' ? "▼" : "▶"}</span>
                                 </button>
@@ -320,50 +429,79 @@ const clearFilters = () => {
                             </div>
                             
                             <div>
-                                <button className="flex justify-between w-full p-2 font-medium text-left text-gray-700" onClick={() => toggleFilter('author')}>
-                                    <span>Author</span><span>{activeFilter === 'author' ? "▼" : "▶"}</span>
+                                <button className="flex justify-between w-full p-2 font-medium text-left text-gray-700" 
+                                    onClick={() => toggleFilter('identifiers')}>
+                                    <span>Identifier Types</span>
+                                    <span>{activeFilter === 'identifiers' ? "▼" : "▶"}</span>
                                 </button>
-                                <div className={`collapse-content ${activeFilter === 'author' ? 'open' : ''}`}>
-                                    <input type="text" className="w-full border p-2 rounded mt-2" placeholder="Search Author" 
-                                        value={authorFilter} onChange={(e) => setAuthorFilter(e.target.value)}/>
+                                <div className={`collapse-content ${activeFilter === 'identifiers' ? 'open' : ''}`}>
+                                    <div className="checkbox-group">
+                                        <div className="checkbox-item">
+                                            <input type="checkbox" id="doi" checked={identifierTypes.doi} 
+                                                onChange={() => handleIdentifierChange('doi')}/>
+                                            <label htmlFor="doi">DOI</label>
+                                        </div>
+                                        <div className="checkbox-item">
+                                            <input type="checkbox" id="pmid" checked={identifierTypes.pmid} 
+                                                onChange={() => handleIdentifierChange('pmid')}/>
+                                            <label htmlFor="pmid">PMID</label>
+                                        </div>
+                                        <div className="checkbox-item">
+                                            <input type="checkbox" id="pmcid" checked={identifierTypes.pmcid} 
+                                                onChange={() => handleIdentifierChange('pmcid')}/>
+                                            <label htmlFor="pmcid">PMCID</label>
+                                        </div>
+                                        <div className="checkbox-item">
+                                            <input type="checkbox" id="arxiv" checked={identifierTypes.arxiv} 
+                                                onChange={() => handleIdentifierChange('arxiv')}/>
+                                            <label htmlFor="arxiv">arXiv</label>
+                                        </div>
+                                        <div className="checkbox-item">
+                                            <input type="checkbox" id="isbn" checked={identifierTypes.isbn} 
+                                                onChange={() => handleIdentifierChange('isbn')}/>
+                                            <label htmlFor="isbn">ISBN</label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div>
-                                <button className="flex justify-between w-full p-2 font-medium text-left text-gray-700" onClick={() => toggleFilter('subject')}>
-                                    <span>Subject Matter</span>
-                                    <span>{activeFilter === 'subject' ? "▼" : "▶"}</span>
+                            <div className="filter-actions">
+                                <button className="apply-btn" onClick={applyFilters}>
+                                    Apply Filters
                                 </button>
-                                <div className={`collapse-content ${activeFilter === 'subject' ? 'open' : ''}`}>
-                                    <input type="text" className="w-full border p-2 rounded mt-2" placeholder="Search Subject Matter" value={subjectFilter} 
-                                        onChange={(e) => setSubjectFilter(e.target.value)}
-                                    />
-                                </div>
+                                <button className="reset-btn" onClick={resetAllFilters}>
+                                    Reset All
+                                </button>
                             </div>
-                            
-                            {(authorFilter || subjectFilter || dateRange.start || dateRange.end) && (
-                                <button className="w-full mt-4 p-2 bg-red-500 text-white rounded hover:bg-red-600" 
-                                    onClick={clearFilters}> Clear Filters
-                                </button>
-                            )}
                         </div>
                     </div>
                 </div>
                 
                 <div className="side-menu">
-                    <button className="mb-8 icon-button" onClick={navigateToHome}>
+                    <button 
+                        className="mb-8 icon-button" 
+                        onClick={navigateToHome}
+                        data-tooltip="Home"
+                    >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                        </svg><span className="icon-text">Home</span></button>
-                    <button className={`icon-button ${isFilterPanelVisible ? 'active' : ''}`} onClick={toggleFilterPanel}>
+                        </svg>
+                    </button>
+                    <button 
+                        className={`icon-button ${isFilterPanelVisible ? 'active' : ''}`} 
+                        onClick={toggleFilterPanel}
+                        data-tooltip="Filters"
+                    >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                        </svg><span className="icon-text">Filter</span></button>
+                        </svg>
+                    </button>
                 </div>
             </div>
             <footer className="bg-gradient-to-r from-indigo-900 to-purple-900 text-white text-center py-10">
                 <p className="text-gray-300 text-sm">This website is just an educational project and is not meant for intended used.</p>
-            </footer></div>
+            </footer>
+        </div>
     );
 };
 
