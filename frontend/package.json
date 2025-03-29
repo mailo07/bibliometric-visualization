@@ -14,10 +14,11 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/d3": "^7.4.3",
     "3d-force-graph": "^1.77.0",
-    "axios": "^1.8.1",
+    "axios": "^1.8.4",
     "cors": "^2.8.5",
     "cssnano": "^7.0.6",
     "d3": "^7.9.0",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "framer-motion": "^10.16.4",
     "pg": "^8.14.1",
@@ -31,6 +32,7 @@
     "react-router-dom": "^6.22.1",
     "react-scripts": "^4.0.3",
     "recharts": "^2.15.1",
+    "redis": "^4.7.0",
     "rollup-plugin-terser": "^7.0.2",
     "svgo": "^3.3.2",
     "three": "^0.132.2",
@@ -68,8 +70,7 @@
     "tailwindcss": "^4.0.14"
   },
   "resolutions": {
-  "three": "0.132.2"
-}, 
-
+    "three": "0.132.2"
+  },
   "proxy": "http://localhost:5000"
 }

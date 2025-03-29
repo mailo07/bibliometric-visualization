@@ -110,7 +110,6 @@ def get_scopus_data_sept():
             "scopus_load_date": item[8]
         } for item in data])
     return jsonify({"error": "Could not retrieve data"}), 500
-
 # --- Search API across 5 major tables ---
 @app.route('/api/search', methods=['GET'])
 def api_search():

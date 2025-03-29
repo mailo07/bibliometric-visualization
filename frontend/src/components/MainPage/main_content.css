@@ -148,14 +148,14 @@
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 .MainPage .news-card a {
-    color: #0a0a0a; /* Purple color for links */
+    color: #0a0a0a;
     text-decoration: none;
     font-weight: 600;
     transition: color 0.3s;
 }
 
 .MainPage .news-card a:hover {
-    color: #0a0a0a; /* Darker purple on hover */
+    color: #0a0a0a;
     text-decoration: underline;
 }
 
@@ -290,38 +290,38 @@
     padding: 20px;
     background-color: #f4f4f4;
     border-radius: 10px;
-  }
+}
   
-  .MainPage .video-container iframe {
+.MainPage .video-container iframe {
     max-width: 100%;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
+}
   
-  .MainPage .video-details {
+.MainPage .video-details {
     margin-top: 15px;
     text-align: center;
-  }
+}
   
-  .MainPage .video-details h3 {
+.MainPage .video-details h3 {
     font-size: 18px;
     color: #333;
     margin-bottom: 5px;
-  }
+}
   
-  .MainPage .video-details p {
+.MainPage .video-details p {
     font-size: 14px;
     color: #666;
-  }
+}
   
-  .MainPage .carousel-controls {
+.MainPage .carousel-controls {
     display: flex;
     justify-content: center;
     gap: 15px;
     margin-top: 15px;
-  }
+}
   
-  .MainPage .carousel-controls button {
+.MainPage .carousel-controls button {
     padding: 10px 15px;
     background-color: #007bff;
     color: white;
@@ -329,8 +329,51 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-  }
+}
   
-  .MainPage .carousel-controls button:hover {
+.MainPage .carousel-controls button:hover {
     background-color: #0056b3;
-  }
+}
+
+/* New styles for video carousel */
+.MainPage .video-carousel {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.MainPage .video-carousel-item {
+    padding: 20px;
+    text-align: center;
+}
+
+.MainPage .video-carousel iframe {
+    width: 100%;
+    min-height: 400px;
+    border: none;
+    border-radius: 8px;
+}
+
+.MainPage .video-carousel-nav {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.MainPage .video-carousel-nav button {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.MainPage .video-carousel-nav button:hover {
+    background: #0056b3;
+}

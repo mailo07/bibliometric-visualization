@@ -8,7 +8,7 @@
   display: grid;
   align-items: center;
   overflow-x: hidden;
-    font-family: 'Playfair Display', serif;
+    font-family: 'Cambria', Georgia, 'Times New Roman', Times, serif;
 }
 .profilePage__img {
   position: absolute;

@@ -1,10 +1,11 @@
+# db_utils.py
 import psycopg2
 
 # Database credentials
 DB_NAME = "bibliometric_data"
 DB_USER = "postgres"
 DB_PASS = "vivo18#"
-DB_HOST = "localhost"  # Change this if your database is hosted elsewhere
+DB_HOST = "localhost"  # Change if your database is hosted elsewhere
 DB_PORT = "8080"
 
 def connect_to_db():

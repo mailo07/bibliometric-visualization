@@ -7,6 +7,7 @@ const MainPage = () => {
   const [contactBoxVisible, setContactBoxVisible] = useState(false);
   const [news, setNews] = useState([]);
   const [loadingNews, setLoadingNews] = useState(true);
+  
 
   // Research news with images from various universities
   const researchNews = [
