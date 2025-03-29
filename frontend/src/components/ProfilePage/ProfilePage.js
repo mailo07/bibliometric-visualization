@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ProfilePage.css';
-import profileBackground from '../../assets/profilebg.jpg';
+import profileBackground from '../../assets/forest.jpg';
 
 const UserProfile = ({ username, handleSignOut, navigateToChangePassword, navigateToUpdate, profileImage }) => {
     const [passwordVisible, setPasswordVisible] = useState(false);

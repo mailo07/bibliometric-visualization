@@ -228,3 +228,51 @@
 .checkbox-item input {
     margin-right: 8px;
 }
+
+/* Add to your SearchPage.css file */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .network-graph-container {
+    width: 100%;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    background: #fafafa;
+  }
+  
+  .network-graph-container svg {
+    display: block;
+    background: #fafafa;
+  }
+  
+  .control-button text:hover {
+    fill: #6f42c1;
+  }
+  
+  /* For nodes and links in the graph */
+  .node circle:hover {
+    stroke: #000;
+    cursor: pointer;
+  }
+  
+  .node.paper circle {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+  }
+  
+  .node.author circle {
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+  }
