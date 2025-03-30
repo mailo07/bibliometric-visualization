@@ -1,26 +1,72 @@
 // src/components/SearchPage/Sidebar.js
-import React from 'react';
-import './SearchPage.css';
+import React, { useState } from 'react';
+import './Sidebar.css';
 
 const Sidebar = ({
-  isFilterPanelVisible,
-  toggleFilterPanel,
   navigateToHome,
-  authorFilter,
-  setAuthorFilter,
-  titleFilter,
-  setTitleFilter,
-  journalFilter,
-  setJournalFilter,
-  dateRange,
-  setDateRange,
-  publisherFilter,
-  setPublisherFilter,
-  identifierTypes,
-  handleIdentifierChange,
-  applyFilters,
-  resetAllFilters
+  applyFiltersCallback,
+  resetAllFiltersCallback
 }) => {
+  // Migrated state from SearchPage.js
+  const [isFilterPanelVisible, setIsFilterPanelVisible] = useState(false);
+  const [authorFilter, setAuthorFilter] = useState('');
+  const [subjectFilter, setSubjectFilter] = useState('');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [journalFilter, setJournalFilter] = useState('');
+  const [titleFilter, setTitleFilter] = useState('');
+  const [publisherFilter, setPublisherFilter] = useState('');
+  const [identifierTypes, setIdentifierTypes] = useState({
+    doi: false,
+    pmid: false,
+    pmcid: false,
+    arxiv: false,
+    isbn: false
+  });
+
+  const toggleFilterPanel = () => {
+    setIsFilterPanelVisible(!isFilterPanelVisible);
+  };
+
+  const handleIdentifierChange = (type) => {
+    setIdentifierTypes({
+      ...identifierTypes,
+      [type]: !identifierTypes[type]
+    });
+  };
+
+  const applyFilters = () => {
+    // Pass all filter states to the parent component
+    applyFiltersCallback({
+      authorFilter,
+      subjectFilter,
+      dateRange,
+      journalFilter,
+      titleFilter,
+      publisherFilter,
+      identifierTypes
+    });
+    setIsFilterPanelVisible(false);
+  };
+
+  const resetAllFilters = () => {
+    setAuthorFilter('');
+    setSubjectFilter('');
+    setDateRange({ start: '', end: '' });
+    setJournalFilter('');
+    setTitleFilter('');
+    setPublisherFilter('');
+    setIdentifierTypes({
+      doi: false,
+      pmid: false,
+      pmcid: false,
+      arxiv: false,
+      isbn: false
+    });
+    
+    // Notify parent component about reset
+    resetAllFiltersCallback();
+  };
+
   return (
     <>
       <div className="side-menu">

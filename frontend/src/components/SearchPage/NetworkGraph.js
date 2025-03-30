@@ -1,13 +1,77 @@
 // src/components/SearchPage/NetworkGraph.js
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as d3 from 'd3';
-import './SearchPage.css';
+import './NetworkGraph.css';
 
-const NetworkGraph = ({ data }) => {
+const NetworkGraph = ({ searchResults }) => {
   const svgRef = useRef();
+  const [networkData, setNetworkData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const generateNetworkData = useCallback((searchResults) => {
+    if (!searchResults || searchResults.length === 0) return null;
+    
+    const nodes = [];
+    const links = [];
+    const nodeMap = {};
+
+    const addNode = (id, type) => {
+      if (!nodeMap[id]) {
+        nodeMap[id] = { id, type };
+        nodes.push(nodeMap[id]);
+      }
+    };
+
+    for (const result of searchResults) {
+      const paperTitle = result.title || 'Untitled';
+      addNode(paperTitle, 'paper');
+
+      if (result.author && result.author !== 'N/A') {
+        const authorList = result.author.split(',').map(a => a.trim());
+        authorList.forEach(authorName => {
+          addNode(authorName, 'author');
+          links.push({
+            source: paperTitle,
+            target: authorName,
+            value: 1
+          });
+        });
+
+        if (authorList.length > 1) {
+          for (let i = 0; i < authorList.length; i++) {
+            for (let j = i + 1; j < authorList.length; j++) {
+              links.push({
+                source: authorList[i],
+                target: authorList[j],
+                value: 1
+              });
+            }
+          }
+        }
+      }
+    }
+
+    return { nodes, links };
+  }, []);
 
   useEffect(() => {
-    if (!data || !data.nodes || !data.links) return;
+    if (searchResults && searchResults.length > 0) {
+      setLoading(true);
+      try {
+        const netData = generateNetworkData(searchResults);
+        setNetworkData(netData);
+      } catch (err) {
+        console.error('Error generating network data:', err);
+        setError('Failed to generate network visualization');
+      } finally {
+        setLoading(false);
+      }
+    }
+  }, [searchResults, generateNetworkData]);
+
+  useEffect(() => {
+    if (!networkData || !networkData.nodes || !networkData.links) return;
 
     const width = 800;
     const height = 600;
@@ -30,8 +94,8 @@ const NetworkGraph = ({ data }) => {
       }));
 
     // Create the simulation
-    const simulation = d3.forceSimulation(data.nodes)
-      .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
+    const simulation = d3.forceSimulation(networkData.nodes)
+      .force('link', d3.forceLink(networkData.links).id(d => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collision', d3.forceCollide().radius(40));
@@ -39,7 +103,7 @@ const NetworkGraph = ({ data }) => {
     // Create links
     const link = g.append('g')
       .selectAll('line')
-      .data(data.links)
+      .data(networkData.links)
       .enter().append('line')
       .attr('stroke', '#999')
       .attr('stroke-opacity', 0.6)
@@ -48,7 +112,7 @@ const NetworkGraph = ({ data }) => {
     // Create nodes
     const node = g.append('g')
       .selectAll('g')
-      .data(data.nodes)
+      .data(networkData.nodes)
       .enter().append('g')
       .call(d3.drag()
         .on('start', dragstarted)
@@ -107,7 +171,19 @@ const NetworkGraph = ({ data }) => {
     return () => {
       simulation.stop();
     };
-  }, [data]);
+  }, [networkData]);
+
+  if (loading) {
+    return <div className="network-loading">Loading network visualization...</div>;
+  }
+
+  if (error) {
+    return <div className="network-error">Error: {error}</div>;
+  }
+
+  if (!networkData || !networkData.nodes || networkData.nodes.length === 0) {
+    return <div className="network-empty">No network data available</div>;
+  }
 
   return (
     <div className="network-graph-container">

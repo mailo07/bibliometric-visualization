@@ -1,0 +1,100 @@
+.collapse-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+.collapse-content.open {
+    max-height: 500px; 
+}
+
+.filter-panel {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.5s ease-in-out;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 60px;
+    right: 66px;
+    bottom: 0;
+    height: calc(100% - 60px);
+    z-index: 15;
+    background-color: rgba(255, 255, 255, 0.95);
+}
+.filter-panel.visible {
+    width: 300px;
+}
+.filter-panel-content {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    padding: 1rem;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
+.filter-panel.visible .filter-panel-content {
+    opacity: 1;
+}
+.icon-button {
+    transition: color 0.3s ease-in-out;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+}
+.filter-actions button {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.apply-btn {
+    background-color: #9370DB;
+    color: white;
+    border: none;
+}
+.apply-btn:hover {
+    background-color: #7b5dc5;
+}
+.reset-btn {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+}
+.reset-btn:hover {
+    background-color: #e0e0e0;
+}
+.checkbox-group {
+    margin-top: 8px;
+}
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.checkbox-item input {
+    margin-right: 8px;
+}
+
+/* Add to your SearchPage.css file */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }

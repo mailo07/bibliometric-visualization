@@ -1,6 +1,6 @@
-// src/components/SearchPage/Pagination.js
 import React from 'react';
-import './SearchPage.css';
+import './Pagination.css';
+
 const Pagination = ({ 
   currentPage, 
   totalPages, 

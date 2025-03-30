@@ -10,8 +10,6 @@ import './SearchPage.css';
 
 const SearchPage = () => {
   const [activeTab, setActiveTab] = useState('scholarlyWorks');
-  // Removing unused state variables
-  // const [activeFilter, setActiveFilter] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [data, setData] = useState([]);
   const [metrics, setMetrics] = useState({
@@ -19,31 +17,34 @@ const SearchPage = () => {
     worksCited: 0,
     frequentlyCited: 0
   });
-  const [authorFilter, setAuthorFilter] = useState('');
-  const [subjectFilter, setSubjectFilter] = useState('');
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
-  const [journalFilter, setJournalFilter] = useState('');
-  const [titleFilter, setTitleFilter] = useState('');
-  const [publisherFilter, setPublisherFilter] = useState('');
-  const [identifierTypes, setIdentifierTypes] = useState({
-    doi: false,
-    pmid: false,
-    pmcid: false,
-    arxiv: false,
-    isbn: false
-  });
+  // Filter states removed - now managed in Sidebar.js
   const [resultsPerPage] = useState(4);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isFilterPanelVisible, setIsFilterPanelVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [tabTransition, setTabTransition] = useState(false);
   const [resultsTransition, setResultsTransition] = useState(false);
-  const [networkData, setNetworkData] = useState(null);
   const [bibliometricCharts, setBibliometricCharts] = useState({
     citationTrends: [],
     topAuthors: [],
     publicationDistribution: []
+  });
+  
+  // Current filter state (received from Sidebar)
+  const [currentFilters, setCurrentFilters] = useState({
+    authorFilter: '',
+    subjectFilter: '',
+    dateRange: { start: '', end: '' },
+    journalFilter: '',
+    titleFilter: '',
+    publisherFilter: '',
+    identifierTypes: {
+      doi: false,
+      pmid: false,
+      pmcid: false,
+      arxiv: false,
+      isbn: false
+    }
   });
 
   const queryParams = new URLSearchParams(window.location.search);
@@ -104,10 +105,19 @@ const SearchPage = () => {
   };
 
   const filteredData = data.filter((item) => {
+    const { 
+      authorFilter, 
+      titleFilter, 
+      journalFilter, 
+      publisherFilter, 
+      dateRange, 
+      identifierTypes 
+    } = currentFilters;
+
     const authorMatch = !authorFilter ||
       (item.author && item.author.toLowerCase().includes(authorFilter.toLowerCase()));
-    const subjectMatch = !subjectFilter ||
-      (item.title && item.title.toLowerCase().includes(subjectFilter.toLowerCase()));
+    const subjectMatch = !titleFilter ||
+      (item.title && item.title.toLowerCase().includes(titleFilter.toLowerCase()));
     const journalMatch = !journalFilter ||
       (item.journal && item.journal.toLowerCase().includes(journalFilter.toLowerCase()));
     const titleMatch = !titleFilter ||
@@ -185,8 +195,28 @@ const SearchPage = () => {
     window.location.href = '/';
   };
 
-  const toggleFilterPanel = () => {
-    setIsFilterPanelVisible(!isFilterPanelVisible);
+  const handleApplyFilters = (newFilters) => {
+    setCurrentFilters(newFilters);
+    setCurrentPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setCurrentFilters({
+      authorFilter: '',
+      subjectFilter: '',
+      dateRange: { start: '', end: '' },
+      journalFilter: '',
+      titleFilter: '',
+      publisherFilter: '',
+      identifierTypes: {
+        doi: false,
+        pmid: false,
+        pmcid: false,
+        arxiv: false,
+        isbn: false
+      }
+    });
+    setCurrentPage(1);
   };
 
   const handleTabSwitch = (tab) => {
@@ -229,92 +259,16 @@ const SearchPage = () => {
     });
   };
 
-  const generateNetworkData = useCallback((searchResults) => {
-    const nodes = [];
-    const links = [];
-    const nodeMap = {};
-
-    const addNode = (id, type) => {
-      if (!nodeMap[id]) {
-        nodeMap[id] = { id, type };
-        nodes.push(nodeMap[id]);
-      }
-    };
-
-    for (const result of searchResults) {
-      const paperTitle = result.title || 'Untitled';
-      addNode(paperTitle, 'paper');
-
-      if (result.author && result.author !== 'N/A') {
-        const authorList = result.author.split(',').map(a => a.trim());
-        authorList.forEach(authorName => {
-          addNode(authorName, 'author');
-          links.push({
-            source: paperTitle,
-            target: authorName,
-            value: 1
-          });
-        });
-
-        if (authorList.length > 1) {
-          for (let i = 0; i < authorList.length; i++) {
-            for (let j = i + 1; j < authorList.length; j++) {
-              links.push({
-                source: authorList[i],
-                target: authorList[j],
-                value: 1
-              });
-            }
-          }
-        }
-      }
-    }
-
-    return { nodes, links };
-  }, []);
-
   const generateBibliometricCharts = useCallback((searchResults) => {
     return bibliometricCharts;
   }, [bibliometricCharts]);
 
   useEffect(() => {
     if (data.length > 0) {
-      const netData = generateNetworkData(data);
-      setNetworkData(netData);
-
       const finalCharts = generateBibliometricCharts(data);
       setBibliometricCharts(finalCharts);
     }
-  }, [data, generateNetworkData, generateBibliometricCharts]);
-
-  const handleIdentifierChange = (type) => {
-    setIdentifierTypes({
-      ...identifierTypes,
-      [type]: !identifierTypes[type]
-    });
-  };
-
-  const applyFilters = () => {
-    setCurrentPage(1);
-    setIsFilterPanelVisible(false);
-  };
-
-  const resetAllFilters = () => {
-    setAuthorFilter('');
-    setSubjectFilter('');
-    setDateRange({ start: '', end: '' });
-    setJournalFilter('');
-    setTitleFilter('');
-    setPublisherFilter('');
-    setIdentifierTypes({
-      doi: false,
-      pmid: false,
-      pmcid: false,
-      arxiv: false,
-      isbn: false
-    });
-    setCurrentPage(1);
-  };
+  }, [data, generateBibliometricCharts]);
 
   return (
     <div className="flex flex-col min-h-screen font-sans gradient-bg">
@@ -353,7 +307,7 @@ const SearchPage = () => {
       <div className="flex flex-grow relative">
         <LeftMenu bibliometricCharts={bibliometricCharts} />
 
-        <main className={`main-column p-6 ${isFilterPanelVisible ? 'shifted' : ''}`}>
+        <main className={`main-column p-6`}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-white/90 shadow-md p-4 rounded divide-x-2 divide-gray-200">
             <div className="text-center">
               <h3 className="font-semibold text-purple-800">Scholarly Works</h3>
@@ -430,7 +384,7 @@ const SearchPage = () => {
               <div
                 className={`results-container bg-white/90 shadow-md rounded p-4 overflow-x-auto transition-opacity duration-800 ease-in-out ${
                   resultsTransition ? 'opacity-0' : 'opacity-100'
-                } ${isFilterPanelVisible ? 'shifted' : ''}`}
+                }`}
               >
                 {filteredData.length > 0 ? (
                   <>
@@ -484,33 +438,19 @@ const SearchPage = () => {
               </div>
             )}
 
-            {!loading && !error && activeTab === 'analysis' && networkData && (
+            {!loading && !error && activeTab === 'analysis' && (
               <div className="bg-white/90 shadow-md rounded p-4">
                 <h3 className="font-semibold text-purple-800 mb-4">Research Network</h3>
-                <NetworkGraph data={networkData} />
+                <NetworkGraph searchResults={data} />
               </div>
             )}
           </div>
         </main>
 
         <Sidebar
-          isFilterPanelVisible={isFilterPanelVisible}
-          toggleFilterPanel={toggleFilterPanel}
           navigateToHome={navigateToHome}
-          authorFilter={authorFilter}
-          setAuthorFilter={setAuthorFilter}
-          titleFilter={titleFilter}
-          setTitleFilter={setTitleFilter}
-          journalFilter={journalFilter}
-          setJournalFilter={setJournalFilter}
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-          publisherFilter={publisherFilter}
-          setPublisherFilter={setPublisherFilter}
-          identifierTypes={identifierTypes}
-          handleIdentifierChange={handleIdentifierChange}
-          applyFilters={applyFilters}
-          resetAllFilters={resetAllFilters}
+          applyFiltersCallback={handleApplyFilters}
+          resetAllFiltersCallback={handleResetFilters}
         />
       </div>
 
