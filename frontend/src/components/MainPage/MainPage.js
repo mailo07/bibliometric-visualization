@@ -50,11 +50,7 @@ const MainPage = () => {
 
     setSearchLoading(true);
     try {
-      let endpoint = '/search';
-      if (searchType === 'authors') endpoint = '/search/authors';
-      else if (searchType === 'fields') endpoint = '/search/fields';
-      else if (searchType === 'works') endpoint = '/search/works';
-      
+      // Removed the unused endpoint variable
       window.location.href = `/search?query=${encodeURIComponent(searchQuery)}&type=${searchType}`;
     } catch (error) {
       console.error('Search error:', error);

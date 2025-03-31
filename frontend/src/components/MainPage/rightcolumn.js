@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import './newscard.css';
 
 const RightColumn = () => {
   const [news, setNews] = useState([]);
   const [loadingNews, setLoadingNews] = useState(true);
 
-  // Real research news with actual sources
-  const realResearchNews = [
+  // Memoize the research news array so it doesn't change on every render
+  const realResearchNews = useMemo(() => [
     {
       title: 'Topological phenomenon could usher in a new era of quantum materials research',
       date: '2025-03-27',
@@ -49,9 +49,9 @@ const RightColumn = () => {
       link: 'https://news.berkeley.edu/2025/03/15/scientists-develop-biodegradable-plastic-breaks-down-days/',
       image: 'https://images.unsplash.com/photo-1605600659873-d808a13e4d9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'
     }
-  ];
+  ], []);
 
-  const fetchLatestNews = () => {
+  const fetchLatestNews = useCallback(() => {
     setLoadingNews(true);
     try {
       setTimeout(() => {
@@ -64,7 +64,7 @@ const RightColumn = () => {
       setNews(realResearchNews.slice(0, 2));
       setLoadingNews(false);
     }
-  };
+  }, [realResearchNews]);
 
   useEffect(() => {
     fetchLatestNews();
@@ -75,7 +75,7 @@ const RightColumn = () => {
     return () => {
       clearInterval(newsInterval);
     };
-  }, []);
+  }, [fetchLatestNews]);
 
   return (
     <div className="right-column">

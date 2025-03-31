@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import './videos.css';
 
 const LeftColumn = () => {
@@ -6,8 +6,8 @@ const LeftColumn = () => {
   const [loadingVideos, setLoadingVideos] = useState(true);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
-  // Updated: Real YouTube videos about bibliometric and data science visualization
-  const videoLibrary = [
+  // Use useMemo to memoize the videoLibrary
+  const videoLibrary = useMemo(() => [
     {
       id: 'AJp-oNfO1n8',
       title: 'Bibliometric Analysis for Research Impact',
@@ -43,9 +43,9 @@ const LeftColumn = () => {
       affiliation: 'University of Naples',
       source: 'https://www.youtube.com/watch?v=E1SPQbbYpUs'
     }
-  ];
+  ], []); // Empty dependency array means it's only created once
 
-  const fetchVideos = () => {
+  const fetchVideos = useCallback(() => {
     setLoadingVideos(true);
     try {
       setTimeout(() => {
@@ -59,7 +59,7 @@ const LeftColumn = () => {
       setBibliometricVideos(videoLibrary.slice(0, 3));
       setLoadingVideos(false);
     }
-  };
+  }, [videoLibrary]); // Now this dependency won't change
 
   const nextVideo = () => {
     setCurrentVideoIndex((prevIndex) =>
@@ -82,7 +82,7 @@ const LeftColumn = () => {
     return () => {
       clearInterval(videosInterval);
     };
-  }, []);
+  }, [fetchVideos]);
 
   return (
     <div className="left-column">

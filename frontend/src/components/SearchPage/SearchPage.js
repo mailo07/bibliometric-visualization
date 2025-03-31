@@ -239,14 +239,7 @@ const SearchPage = () => {
         return (
           <React.Fragment key={index}>
             {index > 0 && ', '}
-            <a
-              href={part}
-              className="identifier-link"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {part}
-            </a>
+            <a href={part} className="identifier-link" target="_blank" rel="noopener noreferrer" > {part} </a>
           </React.Fragment>
         );
       }
@@ -275,33 +268,12 @@ const SearchPage = () => {
       <header className="bg-gradient-to-r from-indigo-700 to-purple-800 px-4 py-3 text-white flex items-center sticky top-0 z-50">
         <div className="flex-grow flex justify-center">
           <form onSubmit={handleSearch} className="relative w-full max-w-md">
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full bg-black/50 text-white placeholder-gray-400 rounded-full pl-4 pr-10 py-2 focus:outline-none"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button
-              type="submit"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </button>
+            <input type="text" placeholder="Search" className="w-full bg-black/50 text-white placeholder-gray-400 rounded-full pl-4 pr-10 py-2 focus:outline-none" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            <button type="submit" className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /> <line x1="21" y1="21" x2="16.65" y2="16.65" /></svg> </button>
           </form>
-        </div>
-        <h1 className="ml-4 text-2xl font-bold">BIBLIOKNOW</h1>
+        </div> <h1 className="ml-4 text-2xl font-bold">BIBLIOKNOW</h1>
       </header>
 
       <div className="flex flex-grow relative">
@@ -309,99 +281,46 @@ const SearchPage = () => {
 
         <main className={`main-column p-6`}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-white/90 shadow-md p-4 rounded divide-x-2 divide-gray-200">
-            <div className="text-center">
-              <h3 className="font-semibold text-purple-800">Scholarly Works</h3>
+            <div className="text-center"> <h3 className="font-semibold text-purple-800">Scholarly Works</h3>
               <p className="text-2xl font-bold">{metrics.scholarlyWorks}</p>
             </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-purple-800">Works Cited</h3>
+            <div className="text-center"> <h3 className="font-semibold text-purple-800">Works Cited</h3>
               <p className="text-2xl font-bold">{metrics.worksCited}</p>
             </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-purple-800">Frequently Cited Works</h3>
+            <div className="text-center"> <h3 className="font-semibold text-purple-800">Frequently Cited Works</h3>
               <p className="text-2xl font-bold">{metrics.frequentlyCited}</p>
             </div>
           </div>
 
           <div className="mb-6 bg-white/90 shadow-md p-4 rounded">
             <h3 className="font-semibold text-purple-800">Query Information</h3>
-            <p className="text-gray-700">
-              Query Name: <span className="font-medium">{query}</span>
-            </p>
-            <p className="text-gray-700">
-              Total Results: <span className="font-medium">{filteredData.length}</span>
-            </p>
+            <p className="text-gray-700"> Query Name: <span className="font-medium">{query}</span></p>
+            <p className="text-gray-700"> Total Results: <span className="font-medium">{filteredData.length}</span></p>
           </div>
 
           <div className="flex space-x-4 mb-4 border-b-2 border-gray-200">
-            <button
-              className={`px-4 py-2 transition-all duration-800 ease-in-out ${
-                activeTab === 'scholarlyWorks'
-                  ? 'border-b-2 border-purple-600 font-semibold text-purple-600'
-                  : 'text-gray-600 hover:text-purple-400'
-              }`}
-              onClick={() => handleTabSwitch('scholarlyWorks')}
-            >
-              Lists
-            </button>
-            <button
-              className={`px-4 py-2 transition-all duration-800 ease-in-out ${
-                activeTab === 'citation'
-                  ? 'border-b-2 border-purple-600 font-semibold text-purple-600'
-                  : 'text-gray-600 hover:text-purple-400'
-              }`}
-              onClick={() => handleTabSwitch('citation')}
-            >
-              Summary
-            </button>
-            <button
-              className={`px-4 py-2 transition-all duration-800 ease-in-out ${
-                activeTab === 'analysis'
-                  ? 'border-b-2 border-purple-600 font-semibold text-purple-600'
-                  : 'text-gray-600 hover:text-purple-400'
-              }`}
-              onClick={() => handleTabSwitch('analysis')}
-            >
-              Analysis
-            </button>
+            <button className={`px-4 py-2 transition-all duration-800 ease-in-out ${activeTab === 'scholarlyWorks' ? 'border-b-2 border-purple-600 font-semibold text-purple-600' : 'text-gray-600 hover:text-purple-400' }`}onClick={() => handleTabSwitch('scholarlyWorks')}>Lists</button>
+            <button className={`px-4 py-2 transition-all duration-800 ease-in-out ${ activeTab === 'citation' ? 'border-b-2 border-purple-600 font-semibold text-purple-600' :'text-gray-600 hover:text-purple-400' }`} onClick={() => handleTabSwitch('citation')} > Summary </button>
+            <button className={`px-4 py-2 transition-all duration-800 ease-in-out ${ activeTab === 'analysis' ? 'border-b-2 border-purple-600 font-semibold text-purple-600' : 'text-gray-600 hover:text-purple-400'}`} onClick={() => handleTabSwitch('analysis')} > Analysis </button> 
           </div>
 
-          {loading && <Preloader />}
-          {error && <p className="text-red-500 text-center">Error: {error}</p>}
+          {loading && <Preloader />} {error && <p className="text-red-500 text-center">Error: {error}</p>}
 
-          {!loading && !error && !query && data.length === 0 && (
-            <div className="bg-white/90 shadow-md rounded p-4">
-              <p className="text-gray-600">Enter a search query to see results</p>
-            </div>
-          )}
+          {!loading && !error && !query && data.length === 0 && ( <div className="bg-white/90 shadow-md rounded p-4"> <p className="text-gray-600">Enter a search query to see results</p> </div>)}
 
-          <div
-            className={`transition-opacity duration-800 ease-in-out ${
-              tabTransition ? 'opacity-0' : 'opacity-100'
-            }`}
-          >
+          <div className={`transition-opacity duration-800 ease-in-out ${ tabTransition ? 'opacity-0' : 'opacity-100' }`} >
             {!loading && !error && activeTab === 'scholarlyWorks' && (
-              <div
-                className={`results-container bg-white/90 shadow-md rounded p-4 overflow-x-auto transition-opacity duration-800 ease-in-out ${
-                  resultsTransition ? 'opacity-0' : 'opacity-100'
-                }`}
-              >
+              <div className={`results-container bg-white/90 shadow-md rounded p-4 overflow-x-auto transition-opacity duration-800 ease-in-out ${ resultsTransition ? 'opacity-0' : 'opacity-100' }`}>
                 {filteredData.length > 0 ? (
                   <>
                     <table className="w-full table-auto border-collapse">
-                      <thead>
-                        <tr className="bg-purple-100 text-left">
+                      <thead> <tr className="bg-purple-100 text-left">
                           <th className="p-2 border font-semibold text-purple-800">Title</th>
                           <th className="p-2 border font-semibold text-purple-800">Author</th>
                           <th className="p-2 border font-semibold text-purple-800">Published</th>
-                          <th className="p-2 border font-semibold text-purple-800">
-                            Journal / Source
-                          </th>
-                          <th className="p-2 border font-semibold text-purple-800">
-                            Identifiers
-                          </th>
-                        </tr>
-                      </thead>
+                          <th className="p-2 border font-semibold text-purple-800"> Journal / Source</th>
+                          <th className="p-2 border font-semibold text-purple-800"> Identifiers</th>
+                        </tr> </thead>
                       <tbody>
                         {paginatedData.map((item) => (
                           <tr key={item.title} className="hover:bg-purple-50">
@@ -414,51 +333,28 @@ const SearchPage = () => {
                         ))}
                       </tbody>
                     </table>
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      handlePageClick={handlePageClick}
-                      handlePrevPage={handlePrevPage}
-                      handleNextPage={handleNextPage}
-                    />
+                    <Pagination currentPage={currentPage} totalPages={totalPages} handlePageClick={handlePageClick} handlePrevPage={handlePrevPage} handleNextPage={handleNextPage} />
                   </>
                 ) : (
-                  query && (
-                    <p className="text-gray-600 text-center">
-                      No results found for your search query
-                    </p>
-                  )
+                  query && ( <p className="text-gray-600 text-center"> No results found for your search query</p>)
                 )}
               </div>
             )}
 
             {!loading && !error && activeTab === 'citation' && (
-              <div className="bg-white/90 shadow-md rounded p-4">
-                <p className="text-gray-600">Summary view content goes here...</p>
-              </div>
+              <div className="bg-white/90 shadow-md rounded p-4"> <p className="text-gray-600">Summary view content goes here...</p> </div>
             )}
 
             {!loading && !error && activeTab === 'analysis' && (
-              <div className="bg-white/90 shadow-md rounded p-4">
-                <h3 className="font-semibold text-purple-800 mb-4">Research Network</h3>
-                <NetworkGraph searchResults={data} />
-              </div>
+              <div className="bg-white/90 shadow-md rounded p-4"> <h3 className="font-semibold text-purple-800 mb-4">Research Network</h3> <NetworkGraph searchResults={data} /></div>
             )}
           </div>
         </main>
 
-        <Sidebar
-          navigateToHome={navigateToHome}
-          applyFiltersCallback={handleApplyFilters}
-          resetAllFiltersCallback={handleResetFilters}
-        />
-      </div>
+        <Sidebar navigateToHome={navigateToHome} applyFiltersCallback={handleApplyFilters} resetAllFiltersCallback={handleResetFilters} /> </div>
 
       <footer className="bg-gradient-to-r from-indigo-900 to-purple-900 text-white text-center py-10">
-        <p className="text-gray-300 text-sm">
-          This website is just an educational project and is not meant for
-          intended use.
-        </p>
+        <p className="text-gray-300 text-sm"> This website is just an educational project and is not meant for intended use. </p>
       </footer>
     </div>
   );
