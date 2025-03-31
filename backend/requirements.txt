@@ -21,7 +21,7 @@ nltk==3.8.1
 # (Optional) Deploy
 gunicorn==20.1.0
 
-psycopg2-binary==2.9.1
+psycopg2-binary==2.9.6
 neo4j==4.4.0
 
 google-api-python-client>=2.0.0
