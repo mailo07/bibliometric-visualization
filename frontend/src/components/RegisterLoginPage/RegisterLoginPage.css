@@ -263,6 +263,72 @@
     background: rgba(255, 255, 255, 0.2);
 }
 
+/* Home button styling */
+.register-page-wrapper .home-button-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+}
+
+.register-page-wrapper .home-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #ad6aeb;
+    border: none;
+    color: white;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(173, 106, 235, 0.4);
+}
+
+.register-page-wrapper .home-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(173, 106, 235, 0.6);
+    background: #9656d1;
+}
+
+.register-page-wrapper .home-btn:active {
+    transform: translateY(1px);
+}
+
+/* Mobile responsiveness for home button */
+@media screen and (max-width: 650px) {
+    /* Ensure home button stays visible on mobile */
+    .register-page-wrapper .home-button-container {
+        top: 10px;
+        left: 10px;
+    }
+}
+
+/* Error and success messages */
+.register-page-wrapper .error-message {
+    padding: 8px;
+    background-color: rgba(255, 87, 87, 0.1);
+    border-left: 3px solid #ff5757;
+    color: #d32f2f;
+    margin-bottom: 15px;
+    text-align: left;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.register-page-wrapper .success-message {
+    padding: 8px;
+    background-color: rgba(76, 175, 80, 0.1);
+    border-left: 3px solid #4caf50;
+    color: #388e3c;
+    margin-bottom: 15px;
+    text-align: left;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
 @media screen and (max-width: 650px) {
     .register-page-wrapper .container {
         height: calc(100vh - 40px);

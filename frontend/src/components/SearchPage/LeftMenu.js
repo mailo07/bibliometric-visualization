@@ -26,7 +26,7 @@ const LeftMenu = ({ bibliometricCharts }) => {
           <LineChart width={250} height={150} data={bibliometricCharts.citationTrends}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="year" />
-            <YAxis />
+            <YAxis domain={[0, 'auto']} allowDataOverflow={true} />
             <Tooltip />
             <Legend />
             <Line type="monotone" dataKey="citations" stroke="#9370DB" />
@@ -38,7 +38,7 @@ const LeftMenu = ({ bibliometricCharts }) => {
           <BarChart width={250} height={150} data={bibliometricCharts.topAuthors}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis />
+            <YAxis domain={[0, 'auto']} allowDataOverflow={true} />
             <Tooltip />
             <Bar dataKey="citations" fill="#9370DB" />
           </BarChart>

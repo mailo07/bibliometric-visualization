@@ -14,123 +14,63 @@ const NetworkGraph = ({ searchResults }) => {
   const [showLabels, setShowLabels] = useState(true);
   const [highlightMode, setHighlightMode] = useState('none'); // none, citations, authors
 
-  // Generate network data with citations and co-authorship
-  const generateNetworkData = useCallback((searchResults) => {
-    if (!searchResults || searchResults.length === 0) return null;
-    
+  const generateNetworkData = useCallback((searchResults) => { if (!searchResults || searchResults.length === 0) return null;
     const nodes = [];
     const links = [];
     const nodeMap = {};
     
-    // Helper function to add a node if it doesn't exist
     const addNode = (id, type, metadata = {}) => {
       if (!nodeMap[id]) {
-        nodeMap[id] = { 
-          id, 
-          type, 
-          citations: metadata.citations || 0,
-          year: metadata.year || null,
-          journal: metadata.journal || null,
-          connections: 0,
-          ...metadata
-        };
+        nodeMap[id] = {  id, type, citations: metadata.citations || 0, year: metadata.year || null,journal: metadata.journal || null, connections: 0,...metadata };
         nodes.push(nodeMap[id]);
       }
       return nodeMap[id];
     };
 
-    // Add all papers first
-    for (const result of searchResults) {
+   for (const result of searchResults) {
       const paperTitle = result.title || 'Untitled';
       const year = result.year || result.publication_year || result.published || 'Unknown';
       const journal = result.journal || result.publisher || result.source || 'Unknown';
       const citations = result.cited_by || result.citations || result.citation_count || 0;
-      
-      addNode(paperTitle, 'paper', { 
-        citations, 
-        year: typeof year === 'string' ? year.substring(0, 4) : year,
-        journal,
-        authors: result.author || 'Unknown'
-      });
+      addNode(paperTitle, 'paper', { citations,  year: typeof year === 'string' ? year.substring(0, 4) : year, journal, authors: result.author || 'Unknown'});
     }
 
-    // Add authors and connections
-    for (const result of searchResults) {
+    for (const result of searchResults) { 
       const paperTitle = result.title || 'Untitled';
       const paperNode = nodeMap[paperTitle];
       
-      // Add author nodes and paper-author links
       if (result.author && result.author !== 'N/A') {
         const authorList = result.author.split(',').map(a => a.trim());
-        authorList.forEach(authorName => {
-          const authorNode = addNode(authorName, 'author', { papers: [paperTitle] });
-          
-          // Create link between paper and author
-          links.push({
-            source: paperTitle,
-            target: authorName,
-            value: 1,
-            type: 'paper-author'
-          });
-          
-          // Increment connection count for both nodes
+        authorList.forEach(authorName => { const authorNode = addNode(authorName, 'author', { papers: [paperTitle] });
+         links.push({ source: paperTitle, target: authorName, value: 1, type: 'paper-author' });
           paperNode.connections++;
           authorNode.connections++;
         });
 
         // Create co-authorship links
-        if (authorList.length > 1) {
+        if (authorList.length > 1) { 
           for (let i = 0; i < authorList.length; i++) {
             for (let j = i + 1; j < authorList.length; j++) {
-              links.push({
-                source: authorList[i],
-                target: authorList[j],
-                value: 1,
-                type: 'co-author'
-              });
-              
-              // Increment connection count for both authors
+              links.push({ source: authorList[i], target: authorList[j], value: 1, type: 'co-author' });
               nodeMap[authorList[i]].connections++;
               nodeMap[authorList[j]].connections++;
-            }
-          }
-        }
-      }
-    }
+            }}}}}
 
-    // Add citation links between papers (using dummy data since we don't have actual citations)
-    // In a real implementation, you would use actual citation data from your API
     for (let i = 0; i < searchResults.length; i++) {
       const paper1 = searchResults[i];
       const paper1Title = paper1.title || 'Untitled';
       
-      // Find some papers to connect as citations (for demonstration)
-      for (let j = 0; j < searchResults.length; j++) {
-        if (i === j) continue;
-        
+      for (let j = 0; j < searchResults.length; j++) { if (i === j) continue;
         const paper2 = searchResults[j];
         const paper2Title = paper2.title || 'Untitled';
-        
-        // Create citation links based on some heuristics
-        // In a real implementation, use actual citation data
         const paper1Year = paper1.year || paper1.publication_year || 0;
         const paper2Year = paper2.year || paper2.publication_year || 0;
-        
-        // Only create citation link if paper1 is older than paper2
+       
         if (paper1Year < paper2Year && Math.random() > 0.7) {
-          links.push({
-            source: paper2Title,
-            target: paper1Title,
-            value: 1,
-            type: 'citation'
-          });
-          
-          // Increment connection count
+          links.push({ source: paper2Title, target: paper1Title, value: 1, type: 'citation' });
           nodeMap[paper2Title].connections++;
           nodeMap[paper1Title].connections++;
-        }
-      }
-    }
+        }}}
 
     return { nodes, links };
   }, []);
@@ -138,35 +78,25 @@ const NetworkGraph = ({ searchResults }) => {
   useEffect(() => {
     if (searchResults && searchResults.length > 0) {
       setLoading(true);
-      try {
-        const netData = generateNetworkData(searchResults);
+      try { const netData = generateNetworkData(searchResults);
         setNetworkData(netData);
-      } catch (err) {
-        console.error('Error generating network data:', err);
+      } catch (err) { console.error('Error generating network data:', err);
         setError('Failed to generate network visualization');
-      } finally {
-        setLoading(false);
-      }
-    }
+      } finally { setLoading(false);
+      }}
   }, [searchResults, generateNetworkData]);
 
-  // Function to get node size based on type and citations/connections
-  const getNodeSize = (d) => {
+ const getNodeSize = (d) => {
     if (d.type === 'paper') {
-      // Scale paper nodes by citation count (min 8, max 25)
       return Math.max(8, Math.min(25, 8 + Math.sqrt(d.citations) * 1.5));
     } else if (d.type === 'author') {
-      // Scale author nodes by connection count (min 6, max 18)
       return Math.max(6, Math.min(18, 6 + d.connections * 0.8));
-    }
-    return 8; // Default size
+    }return 8; // Default size
   };
 
-  // Function to get node color based on type and other attributes
-  const getNodeColor = (d) => {
+    const getNodeColor = (d) => {
     if (d.type === 'paper') {
-      // Color papers by journal or year ranges
-      if (d.year) {
+    if (d.year) {
         const year = parseInt(d.year);
         if (year < 2000) return '#9467bd'; // purple for older papers
         if (year < 2010) return '#8c564b'; // brown for 2000s
@@ -175,16 +105,13 @@ const NetworkGraph = ({ searchResults }) => {
       }
       return '#9370DB'; // Default purple for papers
     }
-    
     if (d.type === 'author') {
-      return '#FF7F50'; // Coral for authors
+      return '#FF7F50';
     }
-    
     return '#4682B4'; // Default Steel Blue
   };
 
-  // Function to get link style based on type
-  const getLinkStyle = (d) => {
+ const getLinkStyle = (d) => {
     if (d.type === 'citation') {
       return {
         stroke: '#2ca02c', // Green for citations
@@ -206,22 +133,16 @@ const NetworkGraph = ({ searchResults }) => {
     }
   };
 
-  // Main rendering of the network graph
-  useEffect(() => {
+ useEffect(() => {
     if (!networkData || !networkData.nodes || !networkData.links) return;
-
     const width = 800;
     const height = 600;
-
-    // Clear previous graph
     const svg = d3.select(svgRef.current)
       .attr('width', width)
       .attr('height', height);
-    
-    svg.selectAll('*').remove();
+       svg.selectAll('*').remove();
 
-    // Add tooltip div if it doesn't exist
-    let tooltip = d3.select(tooltipRef.current);
+     let tooltip = d3.select(tooltipRef.current);
     if (tooltip.empty()) {
       tooltip = d3.select('body').append('div')
         .attr('class', 'network-tooltip')
@@ -236,51 +157,36 @@ const NetworkGraph = ({ searchResults }) => {
         .style('max-width', '200px')
         .style('z-index', 1000);
     }
-
-    // Create a group for zoom/pan
     const g = svg.append('g');
-
-    // Add zoom/pan behavior
     const zoom = d3.zoom()
       .scaleExtent([0.1, 8])
       .on('zoom', (event) => {
         g.attr('transform', event.transform);
       });
-    
     svg.call(zoom);
-
-    // Add a legend
-    const legend = svg.append('g')
+  const legend = svg.append('g')
       .attr('class', 'legend')
       .attr('transform', 'translate(20,20)');
-    
-    // Paper legend
-    legend.append('circle')
+   legend.append('circle')
       .attr('r', 6)
       .attr('fill', '#9370DB')
       .attr('cx', 10)
       .attr('cy', 10);
-    
     legend.append('text')
       .attr('x', 20)
       .attr('y', 14)
       .text('Paper')
       .style('font-size', '12px');
-    
-    // Author legend
     legend.append('circle')
       .attr('r', 6)
       .attr('fill', '#FF7F50')
       .attr('cx', 10)
       .attr('cy', 30);
-    
     legend.append('text')
       .attr('x', 20)
       .attr('y', 34)
       .text('Author')
       .style('font-size', '12px');
-    
-    // Paper-Author link
     legend.append('line')
       .attr('x1', 0)
       .attr('y1', 50)
@@ -288,14 +194,11 @@ const NetworkGraph = ({ searchResults }) => {
       .attr('y2', 50)
       .attr('stroke', '#999')
       .attr('stroke-width', 1);
-    
     legend.append('text')
       .attr('x', 25)
       .attr('y', 54)
       .text('Paper-Author')
       .style('font-size', '12px');
-    
-    // Co-author link
     legend.append('line')
       .attr('x1', 0)
       .attr('y1', 70)
@@ -303,14 +206,11 @@ const NetworkGraph = ({ searchResults }) => {
       .attr('y2', 70)
       .attr('stroke', '#d62728')
       .attr('stroke-width', 1.2);
-    
     legend.append('text')
       .attr('x', 25)
       .attr('y', 74)
       .text('Co-Author')
       .style('font-size', '12px');
-    
-    // Citation link
     legend.append('line')
       .attr('x1', 0)
       .attr('y1', 90)
@@ -319,23 +219,16 @@ const NetworkGraph = ({ searchResults }) => {
       .attr('stroke', '#2ca02c')
       .attr('stroke-width', 1.5)
       .attr('stroke-dasharray', '5,5');
-    
     legend.append('text')
       .attr('x', 25)
       .attr('y', 94)
       .text('Citation')
       .style('font-size', '12px');
-
-    // Add controls
     const controls = svg.append('g')
       .attr('class', 'controls')
       .attr('transform', `translate(${width - 150}, 20)`);
-    
-    // Layout buttons
     const layoutButtons = controls.append('g')
       .attr('class', 'layout-buttons');
-    
-    // Force layout button
     layoutButtons.append('rect')
       .attr('x', 0)
       .attr('y', 0)
@@ -347,7 +240,6 @@ const NetworkGraph = ({ searchResults }) => {
       .on('click', () => {
         setLayoutMode('force');
       });
-    
     layoutButtons.append('text')
       .attr('x', 40)
       .attr('y', 14)
@@ -356,8 +248,6 @@ const NetworkGraph = ({ searchResults }) => {
       .text('Force')
       .style('font-size', '12px')
       .style('pointer-events', 'none');
-    
-    // Radial layout button
     layoutButtons.append('rect')
       .attr('x', 0)
       .attr('y', 25)
@@ -369,7 +259,6 @@ const NetworkGraph = ({ searchResults }) => {
       .on('click', () => {
         setLayoutMode('radial');
       });
-    
     layoutButtons.append('text')
       .attr('x', 40)
       .attr('y', 39)
@@ -378,8 +267,6 @@ const NetworkGraph = ({ searchResults }) => {
       .text('Radial')
       .style('font-size', '12px')
       .style('pointer-events', 'none');
-    
-    // Cluster layout button
     layoutButtons.append('rect')
       .attr('x', 0)
       .attr('y', 50)
@@ -391,7 +278,6 @@ const NetworkGraph = ({ searchResults }) => {
       .on('click', () => {
         setLayoutMode('cluster');
       });
-    
     layoutButtons.append('text')
       .attr('x', 40)
       .attr('y', 64)
@@ -400,10 +286,7 @@ const NetworkGraph = ({ searchResults }) => {
       .text('Cluster')
       .style('font-size', '12px')
       .style('pointer-events', 'none');
-
-    // Create the simulation
     let simulation;
-    
     if (layoutMode === 'force') {
       simulation = d3.forceSimulation(networkData.nodes)
         .force('link', d3.forceLink(networkData.links).id(d => d.id).distance(100))
@@ -446,8 +329,6 @@ const NetworkGraph = ({ searchResults }) => {
         }).strength(0.1))
         .force('collision', d3.forceCollide().radius(d => getNodeSize(d) * 1.2));
     }
-
-    // Create links with styling based on type
     const link = g.append('g')
       .selectAll('line')
       .data(networkData.links)
@@ -456,8 +337,6 @@ const NetworkGraph = ({ searchResults }) => {
       .attr('stroke-opacity', 0.6)
       .attr('stroke-width', d => getLinkStyle(d).strokeWidth)
       .attr('stroke-dasharray', d => getLinkStyle(d).strokeDasharray);
-
-    // Create node groups
     const node = g.append('g')
       .selectAll('g')
       .data(networkData.nodes)
@@ -472,10 +351,8 @@ const NetworkGraph = ({ searchResults }) => {
         tooltip.transition()
           .duration(200)
           .style('opacity', .9);
-        
-        let tooltipContent = '';
-        
-        if (d.type === 'paper') {
+          let tooltipContent = '';
+           if (d.type === 'paper') {
           tooltipContent = `
             <strong>${d.id}</strong><br/>
             Year: ${d.year || 'Unknown'}<br/>
@@ -489,12 +366,10 @@ const NetworkGraph = ({ searchResults }) => {
             Number of connections: ${d.connections}
           `;
         }
-        
         tooltip.html(tooltipContent)
           .style('left', (event.pageX + 10) + 'px')
           .style('top', (event.pageY - 28) + 'px');
         
-        // Highlight connected nodes and links
         const connectedNodeIds = new Set();
         networkData.links.forEach(link => {
           if (link.source.id === d.id || link.target.id === d.id) {
@@ -502,42 +377,29 @@ const NetworkGraph = ({ searchResults }) => {
             connectedNodeIds.add(link.target.id);
           }
         });
-        
         node.style('opacity', node => connectedNodeIds.has(node.id) ? 1 : 0.2);
         link.style('opacity', link => 
           link.source.id === d.id || link.target.id === d.id ? 1 : 0.05
         );
-        
-        // Highlight the current node
         d3.select(event.currentTarget).style('opacity', 1);
-        
         setSelectedNode(d);
       })
       .on('mouseout', () => {
-        // Hide tooltip
         tooltip.transition()
           .duration(500)
           .style('opacity', 0);
-        
-        // Reset highlight
         node.style('opacity', 1);
         link.style('opacity', 0.6);
-        
         setSelectedNode(null);
       })
       .on('click', (event, d) => {
-        // Handle node selection (could show detail panel, etc.)
-        console.log('Selected node:', d);
+      console.log('Selected node:', d);
       });
-
-    // Add circles to nodes with dynamic sizing
     node.append('circle')
       .attr('r', d => getNodeSize(d))
       .attr('fill', d => getNodeColor(d))
       .attr('stroke', '#fff')
       .attr('stroke-width', 1.5);
-
-    // Add labels to nodes with conditional display
     if (showLabels) {
       node.append('text')
         .attr('dx', d => getNodeSize(d) + 2)
@@ -546,16 +408,13 @@ const NetworkGraph = ({ searchResults }) => {
         .style('font-size', '10px')
         .style('pointer-events', 'none');
     }
-
-    // Update positions on tick
     simulation.on('tick', () => {
       link
         .attr('x1', d => d.source.x)
         .attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x)
         .attr('y2', d => d.target.y);
-
-      node
+node
         .attr('transform', d => `translate(${d.x},${d.y})`);
     });
 
@@ -576,42 +435,27 @@ const NetworkGraph = ({ searchResults }) => {
       d.fx = null;
       d.fy = null;
     }
-
-    return () => {
+return () => {
       simulation.stop();
     };
   }, [networkData, layoutMode, showLabels, highlightMode]);
-
-  if (loading) {
+if (loading) {
     return <div className="network-loading">Loading network visualization...</div>;
   }
-
-  if (error) {
+if (error) {
     return <div className="network-error">Error: {error}</div>;
   }
-
-  if (!networkData || !networkData.nodes || networkData.nodes.length === 0) {
+if (!networkData || !networkData.nodes || networkData.nodes.length === 0) {
     return <div className="network-empty">No network data available</div>;
   }
-
-  return (
+return (
     <div className="network-graph-container">
       <div className="network-controls">
         <div className="control-group">
-          <label>
-            <input 
-              type="checkbox" 
-              checked={showLabels} 
-              onChange={(e) => setShowLabels(e.target.checked)} 
-            />
-            Show Labels
-          </label>
+          <label><input type="checkbox" checked={showLabels} onChange={(e) => setShowLabels(e.target.checked)}/>Show Labels</label>
         </div>
         <div className="control-group">
-          <select 
-            value={highlightMode} 
-            onChange={(e) => setHighlightMode(e.target.value)}
-          >
+          <select value={highlightMode} onChange={(e) => setHighlightMode(e.target.value)}>
             <option value="none">No Highlighting</option>
             <option value="citations">Highlight Citations</option>
             <option value="authors">Highlight Co-Authors</option>
@@ -623,14 +467,11 @@ const NetworkGraph = ({ searchResults }) => {
       {selectedNode && (
         <div className="node-details-panel">
           <h3>{selectedNode.type === 'paper' ? 'Paper Details' : 'Author Details'}</h3>
-          <h4>{selectedNode.id}</h4>
-          {selectedNode.type === 'paper' && (
-            <>
-              <p><strong>Year:</strong> {selectedNode.year || 'Unknown'}</p>
+          <h4>{selectedNode.id}</h4> {selectedNode.type === 'paper' && (
+            <><p><strong>Year:</strong> {selectedNode.year || 'Unknown'}</p>
               <p><strong>Citations:</strong> {selectedNode.citations}</p>
               <p><strong>Journal:</strong> {selectedNode.journal || 'Unknown'}</p>
-              <p><strong>Authors:</strong> {selectedNode.authors || 'Unknown'}</p>
-            </>
+              <p><strong>Authors:</strong> {selectedNode.authors || 'Unknown'}</p></>
           )}
           {selectedNode.type === 'author' && (
             <p><strong>Connections:</strong> {selectedNode.connections}</p>

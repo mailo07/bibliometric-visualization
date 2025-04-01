@@ -6,6 +6,7 @@ import Preloader from './Preloader';
 import Sidebar from './Sidebar';
 import LeftMenu from './LeftMenu';
 import Pagination from './Pagination';
+import SummaryTab from './SummaryTab';
 import './SearchPage.css';
 
 const SearchPage = () => {
@@ -29,6 +30,8 @@ const SearchPage = () => {
     topAuthors: [],
     publicationDistribution: []
   });
+  // New state for selected scholarly work
+  const [selectedWork, setSelectedWork] = useState(null);
   
   // Current filter state (received from Sidebar)
   const [currentFilters, setCurrentFilters] = useState({
@@ -59,9 +62,16 @@ const SearchPage = () => {
     setError(null);
     try {
       const results = await search(searchTerm);
-      setData(results.data || results || []);
+      
+      // Ensure each item has an ID
+      const resultsWithIds = Array.isArray(results) ? results.map((item, index) => ({
+        ...item,
+        id: item.id || item.doi || `result-${index}`
+      })) : [];
+      
+      setData(resultsWithIds);
       setMetrics({
-        scholarlyWorks: results.metrics?.totalWorks || 0,
+        scholarlyWorks: results.metrics?.totalWorks || (Array.isArray(results) ? results.length : 0),
         worksCited: results.metrics?.worksCited || 0,
         frequentlyCited: results.metrics?.frequentlyCited || 0
       });
@@ -101,7 +111,17 @@ const SearchPage = () => {
       window.history.pushState({ path: newUrl }, '', newUrl);
       fetchSearchResults(searchQuery.trim());
       fetchBibliometricMetrics(searchQuery.trim());
+      setSelectedWork(null); // Reset selected work when performing a new search
     }
+  };
+
+  const handleWorkSelection = (work) => {
+    setSelectedWork(work);
+    handleTabSwitch('citation'); // Switch to the Summary tab
+  };
+
+  const resetSelectedWork = () => {
+    setSelectedWork(null);
   };
 
   const filteredData = data.filter((item) => {
@@ -323,7 +343,11 @@ const SearchPage = () => {
                         </tr> </thead>
                       <tbody>
                         {paginatedData.map((item) => (
-                          <tr key={item.title} className="hover:bg-purple-50">
+                          <tr 
+                            key={item.id || item.title} 
+                            className="hover:bg-purple-50 cursor-pointer" 
+                            onClick={() => handleWorkSelection(item)}
+                          >
                             <td className="p-2 border">{item.title}</td>
                             <td className="p-2 border">{item.author}</td>
                             <td className="p-2 border">{item.published}</td>
@@ -342,7 +366,7 @@ const SearchPage = () => {
             )}
 
             {!loading && !error && activeTab === 'citation' && (
-              <div className="bg-white/90 shadow-md rounded p-4"> <p className="text-gray-600">Summary view content goes here...</p> </div>
+              <SummaryTab selectedWork={selectedWork} resetSelectedWork={resetSelectedWork} />
             )}
 
             {!loading && !error && activeTab === 'analysis' && (
