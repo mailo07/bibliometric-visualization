@@ -8,6 +8,7 @@ import ErrorPage from './components/ErrorPage/ErrorPage';
 import ProfileHomePage from './components/ProfilePage/ProfileHomePage';
 import RegisterLoginPage from './components/RegisterLoginPage/RegisterLoginPage';
 import SearchPage from './components/SearchPage/SearchPage';
+import AdminHomePage from './components/AdminPage/AdminHomePage';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/registerlogin" element={<RegisterLoginPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="*" element={<ErrorPage />} />
+        <Route path="/admin/*" element={<AdminHomePage />} />
       </Routes>
     </Router>
   );

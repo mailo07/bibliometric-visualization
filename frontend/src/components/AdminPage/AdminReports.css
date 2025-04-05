@@ -1,0 +1,314 @@
+/* AdminReports.css */
+.admin-reports {
+  background-color: #f5f7fa;
+  padding: 2rem;
+}
+
+.admin-reports h1 {
+  color: #2c3e50;
+  margin-bottom: 2rem;
+}
+
+.time-range-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.time-range-btn {
+  padding: 0.6rem 1.2rem;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #7f8c8d;
+}
+
+.time-range-btn.active {
+  background-color: #3498db;
+  border-color: #3498db;
+  color: white;
+}
+
+.chart-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.chart-title {
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.stat-title {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.stat-change {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.change-up {
+  color: #27ae60;
+}
+
+.change-down {
+  color: #e74c3c;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* Responsive styles for smaller screens */
+@media (max-width: 600px) {
+  .admin-reports {
+    padding: 1rem;
+  }
+
+  .time-range-selector {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .chart-container {
+    padding: 1rem;
+  }
+
+  .chart-title {
+    font-size: 1.1rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-title {
+    font-size: 0.8rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+}
+/* Add these styles to the existing AdminReports.css */
+
+/* Table Styles */
+.compact-table {
+  padding: 1rem;
+}
+
+.logs-table, .events-table {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.logs-table table, .events-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.logs-table th, .events-table th {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.logs-table td, .events-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: top;
+}
+
+.logs-table tr:not(:last-child), .events-table tr:not(:last-child) {
+  border-bottom: 1px solid #eee;
+}
+
+.logs-table tr:hover, .events-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Status Messages */
+.no-data-message, .loading-message {
+  padding: 20px;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  border: 1px dashed #dee2e6;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+.loading-message {
+  color: #17a2b8;
+}
+
+/* Severity Indicators */
+.severity-error {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.severity-warning {
+  color: #ffc107;
+  font-weight: 500;
+}
+
+.severity-info {
+  color: #17a2b8;
+  font-weight: 500;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .logs-table, .events-table {
+    max-height: 300px;
+    font-size: 0.8rem;
+  }
+  
+  .logs-table th, 
+  .logs-table td,
+  .events-table th,
+  .events-table td {
+    padding: 6px 8px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Add these styles to AdminReports.css */
+
+.error-message {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.compact-table {
+  padding: 1rem;
+}
+
+.logs-table, .events-table {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.logs-table table, .events-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.logs-table th, .events-table th {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.logs-table td, .events-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: top;
+}
+
+.logs-table tr:not(:last-child), .events-table tr:not(:last-child) {
+  border-bottom: 1px solid #eee;
+}
+
+.logs-table tr:hover, .events-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.loading-message {
+  padding: 20px;
+  text-align: center;
+  color: #17a2b8;
+  font-style: italic;
+  border: 1px dashed #dee2e6;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+.severity-error {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.severity-warning {
+  color: #ffc107;
+  font-weight: 500;
+}
+
+.severity-info {
+  color: #17a2b8;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .logs-table, .events-table {
+    max-height: 300px;
+    font-size: 0.8rem;
+  }
+  
+  .logs-table th, 
+  .logs-table td,
+  .events-table th,
+  .events-table td {
+    padding: 6px 8px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

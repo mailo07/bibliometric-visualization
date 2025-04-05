@@ -263,3 +263,54 @@ export const getBibliometricMetrics = async (query, type = 'all') => {
     };
   }
 };
+
+// Get all users with filtering, pagination and search
+export const getUsers = async (page = 1, limit = 10, status = '', search = '') => {
+  try {
+    const response = await axios.get(`${API_URL}/users`, {
+      params: {
+        page,
+        limit,
+        status,
+        search
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+};
+
+// Delete a user by ID
+export const deleteUser = async (userId) => {
+  try {
+    const response = await axios.delete(`${API_URL}/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw error;
+  }
+};
+
+// Update user status
+export const updateUserStatus = async (userId, status) => {
+  try {
+    const response = await axios.patch(`${API_URL}/users/${userId}/status`, { status });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    throw error;
+  }
+};
+
+// Update user role
+export const updateUserRole = async (userId, role) => {
+  try {
+    const response = await axios.patch(`${API_URL}/users/${userId}/role`, { role });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    throw error;
+  }
+};
