@@ -1,90 +1,157 @@
-.MainPage .collaboration-carousel-slide {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    margin: 10px;
-    }
+.video-section-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #000;
+  text-align: left;
+}
 
-    .MainPage .video-details {
-    margin-top: 15px;
-    text-align: center;
-    }
-    
-    .MainPage .video-details h3 {
-    font-size: 18px;
-    color: #333;
-    margin-bottom: 5px;
-    }
-    
-    .MainPage .video-details p {
-    font-size: 14px;
-    color: #666;
-    }
+.loading-videos {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
 
-    .MainPage .video-carousel {
-    width: 100%;
-    margin: 0 auto;
-    }
-    
-    .MainPage .video-carousel-item {
-    padding: 20px;
-    text-align: center;
-    }
-    
-    .MainPage .video-carousel iframe {
-    width: 100%;
-    min-height: 400px;
-    border: none;
-    border-radius: 8px;
-    }
-    
-    .MainPage .video-carousel-nav {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-    gap: 10px;
-    }
-    
-    .MainPage .video-carousel-nav button {
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    }
-    
-    .MainPage .video-carousel-nav button:hover {
-    background: #0056b3;
-    }
-    
-    /* Video info styles */
-    .MainPage .video-info {
-    margin-top: 15px;
-    text-align: center;
-    }
-    
-    .MainPage .video-info h3 {
-    font-size: 1.2rem;
-    margin-bottom: 5px;
-    }
-    
-    .MainPage .video-info .author-info {
-    font-size: 0.9rem;
-    color: #666;
-    }
-    
-    .MainPage .video-info .author-info span {
-    display: block;
-    font-size: 0.8rem;
-    color: #999;
-    margin-top: 3px;
-    }
+/* Left-aligned container */
+.left-aligned-container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0;
+}
+
+/* Carousel container */
+.carousel-container {
+  width: 100%;
+  height: 350px;
+  position: relative;
+  transform-style: preserve-3d;
+  margin-bottom: 15px;
+}
+
+input[type=radio] {
+  display: none;
+}
+
+.cards {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.card {
+  position: absolute;
+  width: 60%;
+  height: 100%;
+  left: 0;
+  right: 0;
+  margin: auto;
+  transition: transform .4s ease, opacity .4s ease;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0px 0px 5px 0px rgba(81, 81, 81, 0.47);
+  transform: translatex(0) scale(0.8);
+  opacity: 0.4;
+  z-index: 0;
+}
+
+.card.active {
+  transform: translatex(0) scale(1);
+  opacity: 1;
+  z-index: 1;
+}
+
+.card:not(.active) {
+  transform: translatex(40%) scale(0.8);
+  opacity: 0.4;
+  z-index: 0;
+}
+
+.card:not(.active) + .card:not(.active) {
+  transform: translatex(-40%) scale(0.8);
+}
+
+.card .video-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.card .video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Video Description Container */
+.video-description-container {
+  width: 100%;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.video-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.video-author {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 10px 0;
+}
+
+.video-description {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #444;
+  margin: 0;
+}
+
+/* Ellipses Navigation */
+.ellipses-navigation {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.nav-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ccc;
+  margin: 0 5px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.nav-dot.active {
+  background: #6a5acd;
+  transform: scale(1.2);
+}
+
+/* Left column overall styling */
+.left-column {
+  padding: 20px;
+  max-width: 600px;
+}
+
+.video-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}

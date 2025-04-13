@@ -2,11 +2,17 @@ import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import './AdminLayout.css';
 
-function AdminLayout() {
+function AdminLayout({ onLogout }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    navigate('/login');
+    // Call the onLogout prop function if it exists
+    if (onLogout) {
+      onLogout();
+    }
+    
+    // Navigate to the main page
+    navigate('/');
   };
 
   return (

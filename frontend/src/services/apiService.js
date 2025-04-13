@@ -2,6 +2,11 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api';
 
+// Client-side cache implementation
+const searchCache = new Map();
+const paperDetailsCache = new Map();
+const metricsCache = new Map();
+
 const processMetricsData = (data) => {
   // Make sure data is an array
   const dataArray = Array.isArray(data) ? data : [];
@@ -118,7 +123,15 @@ const generatePlaceholderTimeSeries = () => {
   return years;
 };
 
-export const search = async (query, type = 'all') => {
+// Enhanced search with caching and pagination
+export const search = async (query, type = 'all', page = 1, perPage = 10, includeExternal = true) => {
+  const cacheKey = `${query}-${type}-${page}-${perPage}-${includeExternal}`;
+  
+  // Check cache first
+  if (searchCache.has(cacheKey)) {
+    return searchCache.get(cacheKey);
+  }
+
   try {
     let endpoint = '/search';
     if (type === 'authors') endpoint = '/search/authors';
@@ -126,11 +139,55 @@ export const search = async (query, type = 'all') => {
     else if (type === 'works') endpoint = '/search/works';
 
     const response = await axios.get(`${API_URL}${endpoint}`, {
-      params: { query },
+      params: { 
+        query,
+        page,
+        per_page: perPage,
+        include_external: includeExternal
+      },
     });
-    return response.data || [];
+
+    // Cache the response
+    const responseData = response.data || [];
+    searchCache.set(cacheKey, responseData);
+    
+    // Set cache expiration (5 minutes)
+    setTimeout(() => {
+      searchCache.delete(cacheKey);
+    }, 300000);
+
+    return responseData;
   } catch (error) {
     console.error('Error fetching search data:', error);
+    throw error;
+  }
+};
+
+// Get detailed paper information with caching
+export const getPaperDetails = async (id, source) => {
+  const cacheKey = `${id}-${source}`;
+  
+  // Check cache first
+  if (paperDetailsCache.has(cacheKey)) {
+    return paperDetailsCache.get(cacheKey);
+  }
+
+  try {
+    const response = await axios.get(`${API_URL}/paper_details`, {
+      params: { id, source }
+    });
+    
+    // Cache the response
+    paperDetailsCache.set(cacheKey, response.data);
+    
+    // Set cache expiration (5 minutes)
+    setTimeout(() => {
+      paperDetailsCache.delete(cacheKey);
+    }, 300000);
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching paper details:', error);
     throw error;
   }
 };
@@ -216,6 +273,13 @@ export const getBibliometricVideos = async () => {
 };
 
 export const getBibliometricMetrics = async (query, type = 'all') => {
+  const cacheKey = `${query}-${type}`;
+  
+  // Check cache first
+  if (metricsCache.has(cacheKey)) {
+    return metricsCache.get(cacheKey);
+  }
+
   try {
     const searchResults = await search(query, type);
     
@@ -233,16 +297,24 @@ export const getBibliometricMetrics = async (query, type = 'all') => {
         return Number(item.cited_by || item.citations || item.citation_count || 0) > 10;
       }).length;
       
-      return {
+      // Cache the results
+      const result = {
         ...metrics,
         scholarlyWorks,
         worksCited,
         frequentlyCited
       };
+      
+      metricsCache.set(cacheKey, result);
+      setTimeout(() => {
+        metricsCache.delete(cacheKey);
+      }, 300000);
+
+      return result;
     }
 
     // Return default data structure with empty arrays and placeholders
-    return {
+    const defaultResult = {
       citationTrends: generatePlaceholderTimeSeries(),
       topAuthors: [{ name: "No data available", citations: 0 }],
       publicationDistribution: [{ name: "No data available", count: 1 }],
@@ -250,6 +322,13 @@ export const getBibliometricMetrics = async (query, type = 'all') => {
       worksCited: 0,
       frequentlyCited: 0
     };
+    
+    metricsCache.set(cacheKey, defaultResult);
+    setTimeout(() => {
+      metricsCache.delete(cacheKey);
+    }, 300000);
+
+    return defaultResult;
   } catch (error) {
     console.error('Error fetching bibliometric metrics:', error);
     // Return default data structure even on error
@@ -264,7 +343,6 @@ export const getBibliometricMetrics = async (query, type = 'all') => {
   }
 };
 
-// Get all users with filtering, pagination and search
 export const getUsers = async (page = 1, limit = 10, status = '', search = '') => {
   try {
     const response = await axios.get(`${API_URL}/users`, {
@@ -282,7 +360,6 @@ export const getUsers = async (page = 1, limit = 10, status = '', search = '') =
   }
 };
 
-// Delete a user by ID
 export const deleteUser = async (userId) => {
   try {
     const response = await axios.delete(`${API_URL}/users/${userId}`);
@@ -293,7 +370,6 @@ export const deleteUser = async (userId) => {
   }
 };
 
-// Update user status
 export const updateUserStatus = async (userId, status) => {
   try {
     const response = await axios.patch(`${API_URL}/users/${userId}/status`, { status });
@@ -304,7 +380,6 @@ export const updateUserStatus = async (userId, status) => {
   }
 };
 
-// Update user role
 export const updateUserRole = async (userId, role) => {
   try {
     const response = await axios.patch(`${API_URL}/users/${userId}/role`, { role });

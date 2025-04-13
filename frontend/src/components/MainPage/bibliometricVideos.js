@@ -1,154 +1,191 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import './videos.css';
 
 const LeftColumn = () => {
   const [bibliometricVideos, setBibliometricVideos] = useState([]);
   const [loadingVideos, setLoadingVideos] = useState(true);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const autoplayTimerRef = useRef(null);
 
-  // Use useMemo to memoize the videoLibrary
+  // Updated videoLibrary with real academic videos
   const videoLibrary = useMemo(() => [
     {
-      id: 'AJp-oNfO1n8',
-      title: 'Bibliometric Analysis for Research Impact',
-      author: 'Dr. Lisa Thompson',
-      affiliation: 'Harvard University',
-      source: 'https://www.youtube.com/watch?v=AJp-oNfO1n8'
+      id: 'mtLPd2u4DiA',
+      title: 'Research Ethics | Ethics in Research',
+      author: 'SciToons',
+      source: 'https://www.youtube.com/watch?v=mtLPd2u4DiA',
+      description: 'This video explains the importance of ethics in research and how to conduct research ethically.'
     },
     {
-      id: 'WqnrN_G4WHk',
-      title: 'VOSviewer Bibliometric Network Analysis Tutorial',
-      author: 'Prof. James Wilson',
-      affiliation: 'Leiden University',
-      source: 'https://www.youtube.com/watch?v=WqnrN_G4WHk'
+      id: '8AKdsDMPv20',
+      title: 'What is academic Integrity?',
+      author: 'RMIT University Library',
+      source: 'https://www.youtube.com/watch?v=8AKdsDMPv20',
+      description: 'Learn about academic integrity, what it means, and why it matters in educational settings.'
     },
     {
-      id: 'bNrZSdDVk1U',
-      title: 'Introduction to Bibliometric Analysis using R',
-      author: 'Dr. Sarah Johnson',
-      affiliation: 'Stanford University',
-      source: 'https://www.youtube.com/watch?v=bNrZSdDVk1U'
+      id: 'UiyKfYh5BJM',
+      title: 'Bibliometrics in under 2 minutes',
+      author: 'Leeds University Library',
+      source: 'https://www.youtube.com/watch?v=UiyKfYh5BJM',
+      description: 'Analysis of citations to find out what\'s popular in research and scholarly communication.'
     },
     {
-      id: 'OwT38BPHEuY',
-      title: 'CiteSpace Tutorial for Science Mapping',
-      author: 'Dr. Michael Chen',
-      affiliation: 'Drexel University',
-      source: 'https://www.youtube.com/watch?v=OwT38BPHEuY'
+      id: 'wBux-te-uxE',
+      title: 'Bibliometrics (1): Concepts in literature reviews',
+      author: 'U RESEARCH HUB',
+      source: 'https://www.youtube.com/watch?v=wBux-te-uxE',
+      description: 'An introduction to bibliometric analysis concepts and their application in literature reviews.'
     },
     {
-      id: 'E1SPQbbYpUs',
-      title: 'Biblioshiny: A Web Interface for Bibliometrix',
-      author: 'Prof. Emily Davis',
-      affiliation: 'University of Naples',
-      source: 'https://www.youtube.com/watch?v=E1SPQbbYpUs'
+      id: 'X3paOmcrTjQ',
+      title: 'Data Science In 5 Minutes | Data Science For Beginners | What Is Data Science?',
+      author: 'SimplilearnOfficial',
+      source: 'https://www.youtube.com/watch?v=X3paOmcrTjQ',
+      description: 'A quick introduction to data science concepts and applications for beginners.'
+    },
+    {
+      id: 'JW49jg7SUUE',
+      title: 'Farmer cinematic video || Village of Assam || Agriculture cinematic video',
+      author: 'Cinematic World',
+      source: 'https://www.youtube.com/watch?v=JW49jg7SUUE',
+      description: 'A cinematic exploration of farming life and agricultural practices in the villages of Assam.'
     }
-  ], []); // Empty dependency array means it's only created once
+  ], []);
 
   const fetchVideos = useCallback(() => {
     setLoadingVideos(true);
     try {
       setTimeout(() => {
-        const shuffled = [...videoLibrary].sort(() => 0.5 - Math.random());
-        setBibliometricVideos(shuffled.slice(0, 3));
+        setBibliometricVideos([...videoLibrary]);
         setCurrentVideoIndex(0);
         setLoadingVideos(false);
       }, 800);
     } catch (error) {
       console.error('Error fetching videos:', error);
-      setBibliometricVideos(videoLibrary.slice(0, 3));
+      setBibliometricVideos(videoLibrary);
       setLoadingVideos(false);
     }
-  }, [videoLibrary]); // Now this dependency won't change
+  }, [videoLibrary]);
 
-  const nextVideo = () => {
+  const nextVideo = useCallback(() => {
     setCurrentVideoIndex((prevIndex) =>
       prevIndex === bibliometricVideos.length - 1 ? 0 : prevIndex + 1
     );
-  };
+  }, [bibliometricVideos.length]);
 
-  const prevVideo = () => {
-    setCurrentVideoIndex((prevIndex) =>
-      prevIndex === 0 ? bibliometricVideos.length - 1 : prevIndex - 1
-    );
-  };
+  // Set up autoplay functionality with 20 seconds interval
+  useEffect(() => {
+    if (isPlaying && bibliometricVideos.length > 0) {
+      if (autoplayTimerRef.current) {
+        clearInterval(autoplayTimerRef.current);
+      }
+      
+      autoplayTimerRef.current = setInterval(() => {
+        nextVideo();
+      }, 20000); // 20 seconds autoplay interval
+    } else if (autoplayTimerRef.current) {
+      clearInterval(autoplayTimerRef.current);
+    }
+
+    return () => {
+      if (autoplayTimerRef.current) {
+        clearInterval(autoplayTimerRef.current);
+      }
+    };
+  }, [isPlaying, bibliometricVideos.length, nextVideo]);
 
   useEffect(() => {
     fetchVideos();
-
-    // Set a 2-minute refresh interval (120,000 ms) for videos as requested
     const videosInterval = setInterval(fetchVideos, 120000);
-
     return () => {
       clearInterval(videosInterval);
     };
   }, [fetchVideos]);
 
+  // Background color change effect
+  useEffect(() => {
+    const colors = ['#c394f8', '#428aa6', '#94f8c3', '#f8c394'];
+    document.body.style.backgroundColor = colors[currentVideoIndex % colors.length];
+    document.body.style.transition = 'background-color .4s ease-in';
+    
+    return () => {
+      document.body.style.backgroundColor = '';
+      document.body.style.transition = '';
+    };
+  }, [currentVideoIndex]);
+
+  const goToVideo = (index) => {
+    setCurrentVideoIndex(index);
+  };
+
   return (
     <div className="left-column">
-      <div className="carousel collaboration-carousel-slide temp-grid-8 item collaboration-carousel-slide--addPadding"
-        data-autoplay="true" data-autoplay-interval="5000" data-autoplay-hover-pause="true">
-        <div className="carousel-inner">
-          {loadingVideos ? (
-            <div className="carousel-item">
-              <div className="container">
-                <div className="left-section">
-                  <h1>Bibliometric Data Visualization</h1>
-                  <div className="video-container">Loading videos...</div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="carousel-item">
-              <div className="container">
-                <div className="left-section">
-                  <h2>Bibliometric Data Visualization</h2>
-                  {/* Updated video carousel with reduced size and smarter look */}
-                  <div className="video-carousel" style={{ maxWidth: '85%', margin: '0 auto' }}>
-                    <div className="video-carousel-item">
-                      <div className="video-container" style={{ position: 'relative', width: '100%', paddingBottom: '50%', height: '0', overflow: 'hidden', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-                        <iframe 
-                          style={{ position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', border: '0' }}
-                          src={`https://www.youtube.com/embed/${bibliometricVideos[currentVideoIndex]?.id}?rel=0`} 
-                          title={bibliometricVideos[currentVideoIndex]?.title}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                          allowFullScreen>
-                        </iframe>
-                      </div>
-                      <div className="video-info" style={{ padding: '15px 5px', background: 'rgba(245,245,245,0.05)', borderRadius: '0 0 8px 8px', marginTop: '-5px' }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 8px 0' }}>{bibliometricVideos[currentVideoIndex]?.title}</h3>
-                        <div className="author-info" style={{ fontSize: '14px', color: '#ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span>{bibliometricVideos[currentVideoIndex]?.author}</span>
-                          <span style={{ fontStyle: 'italic', fontSize: '13px' }}>{bibliometricVideos[currentVideoIndex]?.affiliation}</span>
-                        </div>
-                        <a 
-                          href={bibliometricVideos[currentVideoIndex]?.source} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="read-more"
-                          style={{ display: 'inline-block', marginTop: '10px', fontSize: '14px', textDecoration: 'none', color: '#26d0ce' }}
-                        >
-                          Watch on YouTube <i className="fas fa-external-link-alt" style={{ fontSize: '12px', marginLeft: '3px' }}></i>
-                        </a>
-                      </div>
+      <div className="video-section">
+        <h2 className="video-section-title">Check out these <span style={{ color: 'purple', fontWeight: 'bold' }}>Videos</span></h2>
+        
+        {loadingVideos ? (
+          <div className="loading-videos">
+            <p>Loading videos...</p>
+          </div>
+        ) : (
+          <div className="left-aligned-container">
+            {/* Carousel Container */}
+            <div className="carousel-container">
+              {/* Radio buttons for carousel navigation */}
+              {bibliometricVideos.map((video, index) => (
+                <input 
+                  key={`radio-${index}`}
+                  type="radio" 
+                  name="slider" 
+                  id={`item-${index + 1}`} 
+                  checked={index === currentVideoIndex}
+                  onChange={() => goToVideo(index)}
+                />
+              ))}
+              
+              <div className="cards">
+                {bibliometricVideos.map((video, index) => (
+                  <label 
+                    className={`card ${index === currentVideoIndex ? 'active' : ''}`} 
+                    htmlFor={`item-${index + 1}`}
+                    id={`video-${index + 1}`}
+                    key={video.id}
+                  >
+                    <div className="video-wrapper">
+                      <iframe 
+                        src={`https://www.youtube.com/embed/${video.id}?rel=0&autoplay=${index === currentVideoIndex ? '1' : '0'}&mute=1`} 
+                        title={video.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen>
+                      </iframe>
                     </div>
-                  </div>
-                  <div className="video-carousel-nav" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '15px' }}>
-                    <button onClick={prevVideo} style={{ background: 'rgba(38, 208, 206, 0.2)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s ease' }}>
-                      <i className="fas fa-chevron-left"></i>
-                    </button>
-                    <span style={{ margin: '0 15px', fontSize: '14px', fontWeight: 'bold' }}>
-                      {currentVideoIndex + 1} / {bibliometricVideos.length}
-                    </span>
-                    <button onClick={nextVideo} style={{ background: 'rgba(38, 208, 206, 0.2)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s ease' }}>
-                      <i className="fas fa-chevron-right"></i>
-                    </button>
-                  </div>
-                </div>
+                  </label>
+                ))}
               </div>
             </div>
-          )}
-        </div>
+            
+            {/* Video Description Container */}
+            <div className="video-description-container">
+              <h3 className="video-title">{bibliometricVideos[currentVideoIndex]?.title}</h3>
+              <p className="video-author">{bibliometricVideos[currentVideoIndex]?.author}</p>
+              <p className="video-description">{bibliometricVideos[currentVideoIndex]?.description}</p>
+            </div>
+            
+            {/* Only ellipses for navigation */}
+            <div className="ellipses-navigation">
+              {bibliometricVideos.map((_, index) => (
+                <button
+                  key={index}
+                  className={`nav-dot ${index === currentVideoIndex ? 'active' : ''}`}
+                  onClick={() => goToVideo(index)}
+                  aria-label={`Go to video ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

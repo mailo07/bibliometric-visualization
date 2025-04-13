@@ -267,42 +267,52 @@
 .register-page-wrapper .home-button-container {
     position: absolute;
     top: 20px;
-    left: 20px;
     z-index: 10;
 }
 
+/* Login form home button - position on right */
+.register-page-wrapper .form-box.login .home-button-container {
+    right: 20px;
+    left: auto;
+}
+
+/* Register form home button - position on left */
+.register-page-wrapper .form-box.register .home-button-container {
+    left: 20px;
+    right: auto;
+}
 .register-page-wrapper .home-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #ad6aeb;
+    width: 60px; /* Made slightly smaller to match image */
+    height: 60px;
+    border-radius: 8px; /* Changed from 50% (circle) to 8px (rounded square) */
+    background: transparent; /* Changed to transparent */
     border: none;
-    color: white;
-    font-size: 20px;
+    color: #ad6aeb; /* Changed to purple to match image */
+    font-size: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(173, 106, 235, 0.4);
+    box-shadow: none; /* Removed shadow */
 }
 
 .register-page-wrapper .home-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 5px 20px rgba(173, 106, 235, 0.6);
-    background: #9656d1;
+    color: #9656d1; /* Darker shade on hover */
+    background: transparent; /* Keep transparent on hover */
 }
 
 .register-page-wrapper .home-btn:active {
     transform: translateY(1px);
 }
 
-/* Mobile responsiveness for home button */
-@media screen and (max-width: 650px) {
+ /* Mobile responsiveness for home button */
+ @media screen and (max-width: 650px) {
     /* Ensure home button stays visible on mobile */
     .register-page-wrapper .home-button-container {
-        top: 10px;
-        left: 10px;
+        top: 20px;
+        right: 20px; /* Changed from left to right */
     }
 }
 

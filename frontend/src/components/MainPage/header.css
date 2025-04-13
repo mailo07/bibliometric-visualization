@@ -251,3 +251,22 @@
         opacity: 1;
     }
 }
+
+.MainPage .header-buttons .admin-button {
+    color: white;
+    text-decoration: none;
+    font-weight: 400;
+    border: 2px solid white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    background: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.3s ease, border 0.3s ease;
+    cursor: pointer;
+}
+
+.MainPage .header-buttons .admin-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}

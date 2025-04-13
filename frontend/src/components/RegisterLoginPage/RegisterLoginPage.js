@@ -4,6 +4,9 @@ import { FaUser, FaLock, FaEnvelope, FaHome } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// API base URL - change this to match your Flask server
+const API_BASE_URL = 'http://localhost:5000';
+
 const RegisterLoginPage = () => {
     const [isActive, setIsActive] = useState(false);
     const location = useLocation();
@@ -20,7 +23,7 @@ const RegisterLoginPage = () => {
         email: '',
         password: '',
         bio: '',
-        profile_image: '' // Default empty, could add file upload later
+        profile_image: ''
     });
     
     // Error state management
@@ -43,13 +46,11 @@ const RegisterLoginPage = () => {
 
     const handleRegisterClick = () => {
         setIsActive(true);
-        // Update URL without reloading
         window.history.pushState({}, '', '/registerlogin?show=register');
     };
 
     const handleLoginClick = () => {
         setIsActive(false);
-        // Update URL without reloading
         window.history.pushState({}, '', '/registerlogin?show=login');
     };
     
@@ -57,7 +58,6 @@ const RegisterLoginPage = () => {
         navigate('/');
     };
     
-    // Login form handlers
     const handleLoginChange = (e) => {
         const { name, value } = e.target;
         setLoginData({
@@ -70,36 +70,40 @@ const RegisterLoginPage = () => {
         e.preventDefault();
         setLoginError('');
         setIsLoading(true);
-        
+
         try {
-            const response = await axios.post('/api/auth/login', loginData);
+            const response = await axios.post(`${API_BASE_URL}/api/auth/login`, loginData);
             
-            // Log successful login attempt (on server-side)
-            console.log('User logged in:', loginData.username);
-            
-            // Store JWT token in localStorage
-            localStorage.setItem('token', response.data.token);
-            
-            // Also store basic user info (non-sensitive)
-            localStorage.setItem('user', JSON.stringify({
-                id: response.data.user.id,
-                username: response.data.user.username,
-                email: response.data.user.email
-            }));
-            
-            // Redirect to dashboard or home page
-            navigate('/dashboard');
+            if (response.data.user && response.data.user.token) {
+                // Store user data including token
+                const userData = {
+                    id: response.data.user.id,
+                    username: response.data.user.username,
+                    email: response.data.user.email,
+                    bio: response.data.user.bio || '',
+                    profile_image: response.data.user.profile_image || '',
+                    token: response.data.user.token
+                };
+
+                localStorage.setItem('token', response.data.user.token);
+                localStorage.setItem('user', JSON.stringify(userData));
+                
+                navigate('/profile');
+            } else {
+                throw new Error('Invalid response structure');
+            }
         } catch (error) {
-            // Log failed login attempt (securely on server, but basic logging here)
-            console.error('Login failed:', error.response?.data?.message || error.message);
-            
-            setLoginError(error.response?.data?.message || 'Login failed. Please check your credentials.');
+            console.error('Login error:', error);
+            setLoginError(
+                error.response?.data?.message || 
+                error.message || 
+                'Login failed. Please check your credentials and try again.'
+            );
         } finally {
             setIsLoading(false);
         }
     };
     
-    // Register form handlers
     const handleRegisterChange = (e) => {
         const { name, value } = e.target;
         setRegisterData({
@@ -128,16 +132,21 @@ const RegisterLoginPage = () => {
                 return;
             }
             
-            // Make API call to backend registration endpoint
-            const response = await axios.post('/api/auth/register', {
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(registerData.email)) {
+                setRegisterError('Please enter a valid email address');
+                setIsLoading(false);
+                return;
+            }
+            
+            const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
                 username: registerData.username,
                 email: registerData.email,
                 password: registerData.password,
                 bio: registerData.bio || '',
                 profile_image: registerData.profile_image || ''
             });
-            
-            console.log('Registration successful:', response.data);
             
             setRegisterSuccess('Registration successful! You can now log in.');
             
@@ -150,14 +159,25 @@ const RegisterLoginPage = () => {
                 profile_image: ''
             });
             
-            // Automatically switch to login form after successful registration
+            // Switch to login form after successful registration
             setTimeout(() => {
                 handleLoginClick();
             }, 2000);
             
         } catch (error) {
-            console.error('Registration error:', error.response?.data?.message || error.message);
-            setRegisterError(error.response?.data?.message || 'Registration failed. Please try again.');
+            console.error('Registration error:', error);
+            
+            if (error.response) {
+                setRegisterError(error.response.data?.message || 'Registration failed. Please try again.');
+                
+                if (error.response.status === 409) {
+                    setRegisterError('Username or email already exists. Please try another one.');
+                }
+            } else if (error.request) {
+                setRegisterError('No response from server. Please check your connection.');
+            } else {
+                setRegisterError('Registration failed. Please try again later.');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -167,7 +187,7 @@ const RegisterLoginPage = () => {
         <div className="register-page-wrapper">
             <div className={`container ${isActive ? 'active' : ''}`}>
                 <div className="form-box login">
-                    <form action="#" onSubmit={handleLoginSubmit}>
+                    <form onSubmit={handleLoginSubmit}>
                         <h1>Login to Biblioknow</h1>
                         {loginError && <div className="error-message">{loginError}</div>}
                         <div className="input-box">
@@ -207,7 +227,7 @@ const RegisterLoginPage = () => {
                 </div>
 
                 <div className="form-box register">
-                    <form action="#" onSubmit={handleRegisterSubmit}>
+                    <form onSubmit={handleRegisterSubmit}>
                         <h1>Register with Biblioknow</h1>
                         {registerError && <div className="error-message">{registerError}</div>}
                         {registerSuccess && <div className="success-message">{registerSuccess}</div>}

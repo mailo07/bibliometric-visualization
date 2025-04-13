@@ -96,8 +96,6 @@ function AdminReports() {
     fetchData();
   }, []);
 
-  const isLoading = loading.logs || loading.events || loading.metrics;
-
   return (
     <div className="admin-reports">
       <h1>Reports Dashboard</h1>

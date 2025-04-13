@@ -1,12 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import ScrollReveal from 'scrollreveal';
 import './AboutPage.css';
 
 const AboutPage = () => {
 const [openIndex, setOpenIndex] = useState(null);
+
+
 const handleAccordionClick = (index) => {
     setOpenIndex(openIndex === index ? null : index);
 };
+
+const handleSignUpClick = (e) => {
+    e.preventDefault();
+    window.location.href = '/registerlogin?show=register';
+  };
+
+useEffect(() => {
+    // Initialize ScrollReveal
+    const sr = ScrollReveal({
+        origin: 'bottom',
+        distance: '50px',
+        duration: 1000,
+        delay: 200,
+        easing: 'ease-in-out',
+        reset: false
+    });
+
+    // Apply animations to different elements
+    sr.reveal('.header-content', { delay: 200 });
+    sr.reveal('.main-content', { delay: 400 });
+   
+    sr.reveal('.accordion-item', { interval: 200 });
+    sr.reveal('img', { delay: 500 });
+    
+    sr.reveal('video', { delay: 400 });
+   
+
+    return () => sr.destroy();
+}, []);
 
 return (
 <div className="AboutPage">
@@ -27,7 +59,7 @@ return (
             open and secure digital public good, with user privacy a paramount
             focus
         </p>
-        <button className="cta">< a href="/register"><i className="fas fa-user"></i> Sign - Up </a></button>
+        <button className="cta" onClick={handleSignUpClick}><i className="fas fa-user"></i> Sign - Up</button>
         </div>
     </header>
 
@@ -50,16 +82,28 @@ return (
         </div>
 
         <AccordionItem
-            title="Steadfast - Always Reliable" content="Biblioknow allows accessible resources for studying scholarly communication and technical innovations."
-            isOpen={openIndex === 0}onClick={() => handleAccordionClick(0)}/>
+            title="Steadfast - Always Reliable" 
+            content="Biblioknow allows accessible resources for studying scholarly communication and technical innovations."
+            isOpen={openIndex === 0}
+            onClick={() => handleAccordionClick(0)}
+            className="accordion-item"
+        />
 
         <AccordionItem
-            title="Open - No Constraints" content="Open access to a wide range of resources without any constraints."
-            isOpen={openIndex === 1} onClick={() => handleAccordionClick(1)}/>
+            title="Open - No Constraints" 
+            content="Open access to a wide range of resources without any constraints."
+            isOpen={openIndex === 1} 
+            onClick={() => handleAccordionClick(1)}
+            className="accordion-item"
+        />
 
         <AccordionItem
-            title="Advanced Service" content="Advanced services for in-depth research and study."
-            isOpen={openIndex === 2} onClick={() => handleAccordionClick(2)}/>
+            title="Advanced Service" 
+            content="Advanced services for in-depth research and study."
+            isOpen={openIndex === 2} 
+            onClick={() => handleAccordionClick(2)}
+            className="accordion-item"
+        />
         </div>
 
         {/* Image Section on the right */}
@@ -120,9 +164,9 @@ return (
 };
 
 // AccordionItem Component
-function AccordionItem({ title, content, isOpen, onClick }) {
+function AccordionItem({ title, content, isOpen, onClick, className }) {
 return (
-    <div className="border-t border-gray-400 py-4">
+    <div className={`border-t border-gray-400 py-4 ${className || ''}`}>
     <div className="flex justify-between items-center cursor-pointer" onClick={onClick}>
         <h2 className="text-2xl font-semibold accordion-title">{title}</h2>
         <i className={`fas ${isOpen ? 'fa-minus' : 'fa-plus'} accordion-icon`} />

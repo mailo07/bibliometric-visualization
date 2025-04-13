@@ -1,13 +1,80 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './Pagination.css';
 
 const Pagination = ({ 
-  currentPage, 
-  totalPages, 
-  handlePageClick, 
-  handlePrevPage, 
-  handleNextPage 
+  initialPage = 1,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+  transitionEnabled = true
 }) => {
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [resultsTransition, setResultsTransition] = useState(false);
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  useEffect(() => {
+    // Reset to page 1 when total items change significantly
+    if (initialPage !== currentPage) {
+      setCurrentPage(initialPage);
+    }
+  }, [initialPage, totalItems]);
+
+  const handlePageClick = (pageNumber) => {
+    if (transitionEnabled) {
+      setResultsTransition(true);
+      setTimeout(() => {
+        setCurrentPage(pageNumber);
+        onPageChange(pageNumber);
+        setTimeout(() => {
+          setResultsTransition(false);
+        }, 300);
+      }, 300);
+    } else {
+      setCurrentPage(pageNumber);
+      onPageChange(pageNumber);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      if (transitionEnabled) {
+        setResultsTransition(true);
+        setTimeout(() => {
+          const newPage = currentPage - 1;
+          setCurrentPage(newPage);
+          onPageChange(newPage);
+          setTimeout(() => {
+            setResultsTransition(false);
+          }, 300);
+        }, 300);
+      } else {
+        const newPage = currentPage - 1;
+        setCurrentPage(newPage);
+        onPageChange(newPage);
+      }
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      if (transitionEnabled) {
+        setResultsTransition(true);
+        setTimeout(() => {
+          const newPage = currentPage + 1;
+          setCurrentPage(newPage);
+          onPageChange(newPage);
+          setTimeout(() => {
+            setResultsTransition(false);
+          }, 300);
+        }, 300);
+      } else {
+        const newPage = currentPage + 1;
+        setCurrentPage(newPage);
+        onPageChange(newPage);
+      }
+    }
+  };
+
   if (totalPages === 0) return null;
   
   return (

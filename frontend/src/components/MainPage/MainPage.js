@@ -18,14 +18,14 @@ const MainPage = () => {
     }, 10);
   };
 
-  const handleLoginClick = (e) => {
-    e.preventDefault();
-    window.location.href = '/registerlogin?show=login';
-  };
-
   const handleRegisterClick = (e) => {
     e.preventDefault();
     window.location.href = '/registerlogin?show=register';
+  };
+
+  const handleAdminClick = (e) => {
+    e.preventDefault();
+    window.location.href = '/admin';
   };
 
   const handleSearchTypeChange = (type) => {
@@ -50,7 +50,6 @@ const MainPage = () => {
 
     setSearchLoading(true);
     try {
-      // Removed the unused endpoint variable
       window.location.href = `/search?query=${encodeURIComponent(searchQuery)}&type=${searchType}`;
     } catch (error) {
       console.error('Search error:', error);
@@ -110,8 +109,8 @@ const MainPage = () => {
             <a href="/register-login?show=register" className="register-button" onClick={handleRegisterClick}>
               <i className="fas fa-user"></i> Register
             </a>
-            <button className="login-button" onClick={handleLoginClick}>
-              <i className="fas fa-sign-in-alt"></i> Login
+              <button className="admin-button" onClick={handleAdminClick}>
+              <i className="fas fa-lock"></i> Admin
             </button>
             <button className="contact-button" onClick={toggleContactBox}>
               <i className="fas fa-envelope"></i> Contact
@@ -156,18 +155,32 @@ const MainPage = () => {
 
       {contactBoxVisible && (
         <div className={`dialog-overlay ${contactBoxVisible ? 'active' : ''}`} onClick={toggleContactBox}>
-          <div className="signup-dialog" onClick={(e) => e.stopPropagation()}>
-            <button onClick={toggleContactBox} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', color: '#f5f5f5', cursor: 'pointer' }}>
+          <div className="signup-dialog contact-dialog" onClick={(e) => e.stopPropagation()}>
+            <button onClick={toggleContactBox} style={{ position: 'absolute', top: '10px', right: '10px', background: 'none', border: 'none', cursor: 'pointer' }}>
               <i className="fas fa-times"></i>
             </button>
-            <h2>Contact Information</h2>
-            <p>
-              For inquiries and support, please contact the admin at:{' '}
-              <a href="mailto:Biblioknow00@outlook.com" style={{ color: '#26d0ce' }}>BiblioKnow00@outlook.com</a>
-              <br />
-              You can also reach us at (+91) 123467890.
-            </p>
-            <p>For more information, visit our educational project page.</p>
+            
+            <div className="contact-dialog-content">
+              <div className="contact-dialog-image">
+                <img src="https://ciso.isea.app/static/media/contactus.16d9eebc78d17de556b3.png" alt="Contact support" />
+              </div>
+              <div className="contact-dialog-info">
+                <h2>Contact us</h2>
+                <h3>FOR INQUIRIES AND SUPPORT</h3>
+                <p>
+                  Please contact the admin at:<br />
+                  <span className="contact-email">BiblioKnow00@outlook.com</span>
+                </p>
+                <p>
+                  You can also reach us at<br />
+                  (+91) 123467890.
+                </p>
+                <p className="contact-note">
+                  For more information, visit our<br />
+                  educational project page.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
