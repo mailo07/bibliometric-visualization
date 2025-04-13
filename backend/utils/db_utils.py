@@ -1,94 +1,74 @@
-# db_utils.py
-import psycopg2
-
-# Database credentials
-DB_NAME = "bibliometric_data"
-DB_USER = "postgres"
-DB_PASS = "vivo18#"
-DB_HOST = "localhost"  # Change if your database is hosted elsewhere
-DB_PORT = "8080"
-
-def connect_to_db():
-    """Connects to the PostgreSQL database."""
-    try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASS,
-            host=DB_HOST,
-            port=DB_PORT
-        )
-        return conn
-    except psycopg2.Error as e:
-        print(f"Error connecting to database: {e}")
-        return None
+from psycopg2 import sql
+from services.database import DatabaseService
 
 def fetch_all(table_name):
     """Fetches all rows from a given table."""
-    conn = connect_to_db()
-    if conn is None:
-        return None
-    try:
-        cur = conn.cursor()
-        query = f"SELECT * FROM {table_name};"
-        cur.execute(query)
-        rows = cur.fetchall()
-        cur.close()
-        conn.close()
-        return rows
-    except psycopg2.Error as e:
-        print(f"Error fetching data from {table_name}: {e}")
-        return None
+    db = DatabaseService()
+    query = sql.SQL("SELECT * FROM {}").format(sql.Identifier(table_name))
+    return db.execute_query(query)
+
+def fetch_filtered(table_name, filters=None):
+    """Fetches filtered data from a table based on provided filters."""
+    if filters is None:
+        return fetch_all(table_name)
+    
+    db = DatabaseService()
+    where_clauses = []
+    params = {}
+    
+    for field, value in filters.items():
+        if value is not None:
+            where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(field)))
+            params[field] = value
+    
+    if not where_clauses:
+        return fetch_all(table_name)
+    
+    query = sql.SQL("SELECT * FROM {} WHERE {}").format(
+        sql.Identifier(table_name),
+        sql.SQL(" AND ").join(where_clauses)
+    )
+    
+    return db.execute_query(query, list(params.values()))
 
 def insert_data(table_name, data):
     """Inserts data into a given table."""
-    conn = connect_to_db()
-    if conn is None:
-        return None
+    db = DatabaseService()
     try:
-        cur = conn.cursor()
-        columns = ', '.join(data.keys())
-        values = ', '.join(['%s'] * len(data))
-        query = f"INSERT INTO {table_name} ({columns}) VALUES ({values});"
-        cur.execute(query, list(data.values()))
-        conn.commit()
-        cur.close()
-        conn.close()
+        columns = data.keys()
+        values = list(data.values())
+        
+        query = sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
+            sql.Identifier(table_name),
+            sql.SQL(', ').join(map(sql.Identifier, columns)),
+            sql.SQL(', ').join(sql.Placeholder() * len(values))
+        )
+        
+        db.execute_query(query, values, fetch=False)
         return True
-    except psycopg2.Error as e:
+    except Exception as e:
         print(f"Error inserting data into {table_name}: {e}")
         return False
 
-def fetch_by_id(table_name, id_value):
+def fetch_by_id(table_name, id_value, id_column="id"):
     """Fetches a row from a table based on its ID."""
-    conn = connect_to_db()
-    if conn is None:
-        return None
+    db = DatabaseService()
     try:
-        cur = conn.cursor()
-        id_column = "id"  # Assuming 'id' is the primary key column name
-        query = f"SELECT * FROM {table_name} WHERE {id_column} = %s;"
-        cur.execute(query, (id_value,))
-        row = cur.fetchone()
-        cur.close()
-        conn.close()
-        return row
-    except psycopg2.Error as e:
+        query = sql.SQL("SELECT * FROM {} WHERE {} = %s").format(
+            sql.Identifier(table_name),
+            sql.Identifier(id_column)
+        )
+        result = db.execute_query(query, (id_value,))
+        return result[0] if result else None
+    except Exception as e:
         print(f"Error fetching data from {table_name}: {e}")
         return None
 
-def fetch_filtered(query, params):
+def execute_custom_query(query, params=None):
     """Executes a custom SQL query with parameters and returns the results."""
-    conn = connect_to_db()
-    if conn is None:
-        return []
+    db = DatabaseService()
     try:
-        cur = conn.cursor()
-        cur.execute(query, params)  # DO NOT use % here
-        rows = cur.fetchall()
-        cur.close()
-        conn.close()
-        return rows
-    except psycopg2.Error as e:
-        print(f"Error executing filtered query: {e}")
+        return db.execute_query(query, params or [])
+    except Exception as e:
+        print(f"Error executing custom query: {e}")
         return []
