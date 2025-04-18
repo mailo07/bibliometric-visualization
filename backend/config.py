@@ -1,31 +1,41 @@
 import os
+from datetime import timedelta
 
 class Config:
-    # Database configuration
-    DB_HOST = os.getenv('DB_HOST', 'localhost')
-    DB_PORT = os.getenv('DB_PORT', '8080')
-    DB_NAME = os.getenv('DB_NAME', 'bibliometric_data')
-    DB_USER = os.getenv('DB_USER', 'postgres')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', 'vivo18#')
+    # Flask settings
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
+    DEBUG = os.environ.get('FLASK_DEBUG', 'True') == 'True'
     
-    # External API keys (empty = disabled)
-    SEMANTIC_SCHOLAR_API_KEY = os.getenv('SEMANTIC_SCHOLAR_API_KEY', '')
-    CROSSREF_API_KEY = os.getenv('CROSSREF_API_KEY', '')
-    OPENALEX_API_KEY = os.getenv('OPENALEX_API_KEY', '')  # OpenAlex doesn't require key
-    EUROPE_PMC_API_KEY = os.getenv('EUROPE_PMC_API_KEY', '')
+    # Database settings
+    DB_HOST = os.environ.get('DB_HOST', 'localhost')
+    DB_PORT = int(os.environ.get('DB_PORT', 8080))
+    DB_NAME = os.environ.get('DB_NAME', 'bibliometric_data')
+    DB_USER = os.environ.get('DB_USER', 'postgres')
+    DB_PASSWORD = os.environ.get('DB_PASSWORD', 'vivo18#')
     
-    # Rate limiting
+    # Cache settings
+    CACHE_TYPE = 'simple'
+    CACHE_DEFAULT_TIMEOUT = 300
+    CACHE_TIMEOUT = 300
+    
+    # API Configuration
+    CROSSREF_API_KEY = os.environ.get('CROSSREF_API_KEY', '')
+    SEMANTIC_SCHOLAR_API_KEY = os.environ.get('SEMANTIC_SCHOLAR_API_KEY', '')
+    OPENALEX_API_KEY = os.environ.get('OPENALEX_API_KEY', 'demo_key')
+    PUBMED_API_KEY = os.environ.get('PUBMED_API_KEY', '')
+    
+    # Application identification
+    ADMIN_EMAIL = '404brain.dead@gmail.com'
+    APP_NAME = 'BiblioKnow'
+    APP_VERSION = '1.0'
     EXTERNAL_API_RATE_LIMIT = 5  # requests per second
-    CACHE_TIMEOUT = 300  # 5 minutes
-    
-    # Flask configuration
-    SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
-    
+
     @classmethod
     def has_any_api_keys(cls):
-        """Check if any external API is configured"""
+        """Check if at least one API key is configured"""
         return any([
-            cls.SEMANTIC_SCHOLAR_API_KEY,
             cls.CROSSREF_API_KEY,
-            cls.EUROPE_PMC_API_KEY
+            cls.SEMANTIC_SCHOLAR_API_KEY,
+            cls.OPENALEX_API_KEY,
+            cls.PUBMED_API_KEY
         ])

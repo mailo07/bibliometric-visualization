@@ -1,12 +1,15 @@
 import psycopg2
-from psycopg2 import sql
+from psycopg2 import sql, OperationalError
 from psycopg2.extras import DictCursor
 from config import Config
-
+import logging
 import time
+from typing import Optional, List, Dict, Any
 
 class DatabaseService:
     _instance = None
+    MAX_RETRIES = 3
+    RETRY_DELAY = 1
     
     def __new__(cls):
         if cls._instance is None:
@@ -15,85 +18,129 @@ class DatabaseService:
         return cls._instance
     
     def _init_db_connection(self):
-        try:
-            self.conn = psycopg2.connect(
-                host=Config.DB_HOST,
-                port=Config.DB_PORT,
-                dbname=Config.DB_NAME,
-                user=Config.DB_USER,
-                password=Config.DB_PASSWORD
-            )
-            self.conn.autocommit = True
-        except psycopg2.Error as e:
-            print(f"Error connecting to database: {e}")
-            self.conn = None
-    
-    def reconnect(self):
-        try:
-            if hasattr(self, 'conn') and self.conn:
-                self.conn.close()
-        except:
-            pass
-        self._init_db_connection()
-    
-    def execute_query(self, query, params=None, fetch=True):
-        max_retries = 3
-        for attempt in range(max_retries):
+        """Initialize database connection with retries"""
+        for attempt in range(self.MAX_RETRIES):
             try:
-                if not hasattr(self, 'conn') or not self.conn:
-                    self.reconnect()
-                    if not self.conn:
-                        raise Exception("Database connection failed")
+                self.conn = psycopg2.connect(
+                    host=Config.DB_HOST,
+                    port=Config.DB_PORT,
+                    dbname="bibliometric_data",
+                    user="postgres",
+                    password="vivo18#",
+                    connect_timeout=5
+                )
+                self.conn.autocommit = True
+                
+                # Verify connection
+                with self.conn.cursor() as cursor:
+                    cursor.execute("SELECT 1")
+                
+                logging.info("✅ Database connection established")
+                return
+                
+            except OperationalError as e:
+                logging.error(f"⚠️ Connection attempt {attempt + 1} failed: {str(e)}")
+                if attempt < self.MAX_RETRIES - 1:
+                    time.sleep(self.RETRY_DELAY * (attempt + 1))
+                    continue
+                raise RuntimeError(f"Failed to connect to database after {self.MAX_RETRIES} attempts")
+    
+    def execute_query(self, query, params=None, fetch=True) -> Optional[List[Dict[str, Any]]]:
+        """Execute a query with automatic reconnection and error handling"""
+        for attempt in range(self.MAX_RETRIES):
+            try:
+                if not self.conn or self.conn.closed:
+                    self._init_db_connection()
                 
                 with self.conn.cursor(cursor_factory=DictCursor) as cursor:
+                    logging.debug(f"Executing: {cursor.mogrify(query, params)}")
                     cursor.execute(query, params or ())
+                    
                     if fetch:
-                        return cursor.fetchall()
+                        results = cursor.fetchall()
+                        logging.debug(f"Found {len(results)} rows")
+                        return [dict(row) for row in results]
                     return None
+                    
             except psycopg2.InterfaceError as e:
-                if attempt == max_retries - 1:
-                    raise e
-                self.reconnect()
-                time.sleep(1)
+                logging.error(f"Connection error (attempt {attempt + 1}): {str(e)}")
+                if attempt == self.MAX_RETRIES - 1:
+                    raise
+                self._init_db_connection()
+                time.sleep(self.RETRY_DELAY)
             except psycopg2.Error as e:
-                print(f"Database error: {e}")
-                raise e
+                logging.error(f"Query failed: {str(e)}")
+                raise
     
-    def search_across_sources(self, query, page=1, per_page=10, filters=None):
-        if filters is None:
-            filters = {}
+    def search_across_sources(self, query: str, page: int = 1, per_page: int = 10, 
+                            filters: Optional[Dict] = None) -> Dict[str, Any]:
+        """Search across all bibliometric sources with proper pagination"""
+        if not query or not query.strip():
+            return {'results': [], 'total': 0}
         
+        filters = filters or {}
         offset = (page - 1) * per_page
         
-        # Base query with proper column names for your schema
+        # Base query matching your actual schema
         base_query = """
-            (SELECT id, author, title, doi, year, NULL AS citations, 'bibliometric' AS source
-            FROM cleaned_bibliometric_data
-            WHERE to_tsvector('english', title) @@ plainto_tsquery('english', %(query)s))
+            (SELECT 
+                id, 
+                COALESCE(author_name, 'Unknown') AS author, 
+                COALESCE(title, 'Untitled') AS title, 
+                doi, 
+                year, 
+                cited_by AS citations,
+                'bibliometric' AS source
+            FROM bibliometric_data
+            WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(author_name, '')) 
+                  @@ plainto_tsquery('english', %(query)s)
+            {filter_clause}
+            ORDER BY year DESC NULLS LAST
+            LIMIT %(limit)s OFFSET %(offset)s)
             
             UNION ALL
             
-            (SELECT id, authors AS author, title, doi, year, citation_count AS citations, 'crossref' AS source
+            (SELECT 
+                id, 
+                COALESCE(authors, 'Unknown') AS author, 
+                COALESCE(title, 'Untitled') AS title, 
+                doi, 
+                year, 
+                citation_count AS citations,
+                'crossref' AS source
             FROM crossref_data_multiple_subjects
-            WHERE to_tsvector('english', title) @@ plainto_tsquery('english', %(query)s))
+            WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(authors, '')) 
+                  @@ plainto_tsquery('english', %(query)s)
+            {filter_clause}
+            ORDER BY citation_count DESC NULLS LAST
+            LIMIT %(limit)s OFFSET %(offset)s)
             
             UNION ALL
             
-            (SELECT id, author_name AS author, title, NULL AS doi, year, cited_by AS citations, 'google_scholar' AS source
+            (SELECT 
+                id, 
+                COALESCE(author_name, 'Unknown') AS author, 
+                COALESCE(title, 'Untitled') AS title, 
+                NULL AS doi, 
+                year, 
+                cited_by AS citations,
+                'google_scholar' AS source
             FROM google_scholar_data
-            WHERE to_tsvector('english', title) @@ plainto_tsquery('english', %(query)s))
-            
-            UNION ALL
-            
-            (SELECT id, NULL AS author, title, doi, year, citations, 'openalex' AS source
-            FROM openalex_data
-            WHERE to_tsvector('english', title) @@ plainto_tsquery('english', %(query)s))
+            WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(author_name, '')) 
+                  @@ plainto_tsquery('english', %(query)s)
+            {filter_clause}
+            ORDER BY cited_by DESC NULLS LAST
+            LIMIT %(limit)s OFFSET %(offset)s)
         """
+        
+        params = {
+            'query': query,
+            'limit': per_page,
+            'offset': offset
+        }
         
         # Apply filters
         where_clauses = []
-        params = {'query': query}
-        
         if filters.get('year_from'):
             where_clauses.append("year >= %(year_from)s")
             params['year_from'] = filters['year_from']
@@ -104,90 +151,69 @@ class DatabaseService:
             where_clauses.append("source = %(source)s")
             params['source'] = filters['source']
         if filters.get('min_citations'):
-            where_clauses.append("citations >= %(min_citations)s")
+            where_clauses.append("(citations >= %(min_citations)s OR citation_count >= %(min_citations)s OR cited_by >= %(min_citations)s)")
             params['min_citations'] = filters['min_citations']
         
+        filter_clause = ' AND '.join(where_clauses)
+        filter_clause = f"AND {filter_clause}" if filter_clause else ""
+        
         try:
-            # Build final query with proper grouping
-            final_query = f"""
-                SELECT * FROM (
-                    {base_query}
-                ) AS combined_results
-                {'WHERE ' + ' AND '.join(where_clauses) if where_clauses else ''}
-                ORDER BY citations DESC NULLS LAST
-                LIMIT %(limit)s OFFSET %(offset)s
-            """
-            
-            params['limit'] = per_page
-            params['offset'] = offset
-            
-            # Get count
-            count_query = f"""
-                SELECT COUNT(*) FROM (
-                    {base_query}
-                ) AS combined_results
-                {'WHERE ' + ' AND '.join(where_clauses) if where_clauses else ''}
-            """
-            
-            # Get total count
-            total = self.execute_query(count_query, params)[0][0]
-            
             # Get paginated results
-            results = self.execute_query(final_query, params)
+            results = self.execute_query(
+                base_query.format(filter_clause=filter_clause),
+                params
+            ) or []
             
-            # Format results
-            formatted_results = []
-            for row in results:
-                formatted_results.append({
-                    'id': row['id'],
-                    'title': row['title'],
-                    'author': row['author'] if row['author'] else 'Unknown',
-                    'year': row['year'],
-                    'citation_count': row['citations'] if row['citations'] else 0,
-                    'source': row['source'],
-                    'doi': row['doi'],
-                    'published': str(row['year']) if row['year'] else None,
-                    'identifiers': row['doi'] if row['doi'] else row['id']
-                })
+            # Get total count (separate query for accurate pagination)
+            count_query = """
+                SELECT COUNT(*) FROM (
+                    SELECT 1 FROM bibliometric_data
+                    WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(author_name, '')) 
+                          @@ plainto_tsquery('english', %(query)s)
+                    {filter_clause}
+                    
+                    UNION ALL
+                    
+                    SELECT 1 FROM crossref_data_multiple_subjects
+                    WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(authors, '')) 
+                          @@ plainto_tsquery('english', %(query)s)
+                    {filter_clause}
+                    
+                    UNION ALL
+                    
+                    SELECT 1 FROM google_scholar_data
+                    WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(author_name, '')) 
+                          @@ plainto_tsquery('english', %(query)s)
+                    {filter_clause}
+                ) AS combined_results
+            """
+            
+            total = self.execute_query(
+                count_query.format(filter_clause=filter_clause),
+                {'query': query, **{k: v for k, v in params.items() 
+                                  if k in ['year_from', 'year_to', 'source', 'min_citations']}}
+            )[0]['count']
             
             return {
-                'results': formatted_results,
-                'total': total
+                'results': results,
+                'total': total,
+                'page': page,
+                'per_page': per_page
             }
+            
         except Exception as e:
-            print(f"Error in search_across_sources: {e}")
-            return {
-                'results': [],
-                'total': 0
-            }
-
-# Keep all existing utility functions unchanged
-def fetch_all(table_name):
-    """Fetches all rows from a given table."""
-    db = DatabaseService()
-    query = sql.SQL("SELECT * FROM {}").format(sql.Identifier(table_name))
-    return db.execute_query(query)
-
-def fetch_filtered(table_name, filters=None):
-    """Fetches filtered data from a table based on provided filters."""
-    if filters is None:
-        return fetch_all(table_name)
+            logging.error(f"Search failed: {str(e)}")
+            return {'results': [], 'total': 0}
     
-    db = DatabaseService()
-    where_clauses = []
-    params = {}
-    
-    for field, value in filters.items():
-        if value is not None:
-            where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(field)))
-            params[field] = value
-    
-    if not where_clauses:
-        return fetch_all(table_name)
-    
-    query = sql.SQL("SELECT * FROM {} WHERE {}").format(
-        sql.Identifier(table_name),
-        sql.SQL(" AND ").join(where_clauses)
-    )
-    
-    return db.execute_query(query, list(params.values()))
+    def fetch_by_id(self, table_name: str, id_value: Any, id_column: str = "id") -> Optional[Dict[str, Any]]:
+        """Fetch a single record by ID"""
+        try:
+            query = sql.SQL("SELECT * FROM {} WHERE {} = %s").format(
+                sql.Identifier(table_name),
+                sql.Identifier(id_column)
+            )
+            result = self.execute_query(query, (id_value,))
+            return result[0] if result else None
+        except Exception as e:
+            logging.error(f"Error fetching by ID: {str(e)}")
+            return None

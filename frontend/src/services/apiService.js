@@ -1,21 +1,17 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-// Client-side cache implementation
 const searchCache = new Map();
 const paperDetailsCache = new Map();
 const metricsCache = new Map();
 
 const processMetricsData = (data) => {
-  // Make sure data is an array
   const dataArray = Array.isArray(data) ? data : [];
   
-  // Process citation trends with more robust property access
   const citationTrends = dataArray.reduce((acc, item) => {
     const year = item.year || item.publication_year || item.published || '';
     if (year) {
-      // Extract first 4 digits for year (handles both date strings and numbers)
       const yearStr = String(year).match(/\d{4}/)?.[0] || String(year).substring(0, 4);
       if (yearStr && /^\d{4}$/.test(yearStr)) {
         const citations = Number(item.cited_by || item.citations || item.citation_count || 0);
@@ -23,22 +19,17 @@ const processMetricsData = (data) => {
         if (existing) {
           existing.citations += citations;
         } else {
-          acc.push({
-            year: yearStr,
-            citations: citations
-          });
+          acc.push({ year: yearStr, citations });
         }
       }
     }
     return acc;
   }, []).sort((a, b) => a.year.localeCompare(b.year));
 
-  // Process author data with more robust handling
   const authorMap = dataArray.reduce((map, item) => {
     let authors = item.author || item.authors || item.author_name || '';
     let authorList = [];
     
-    // Handle different author formats (string, array, comma-separated)
     if (typeof authors === 'string') {
       authorList = authors.split(',').map(a => a.trim());
     } else if (Array.isArray(authors)) {
@@ -49,125 +40,111 @@ const processMetricsData = (data) => {
     const citations = Number(item.cited_by || item.citations || item.citation_count || 0);
 
     authorList.forEach(author => {
-      if (author && author !== 'N/A') {
-        if (!map[author]) {
-          map[author] = 0;
-        }
-        map[author] += citations;
-      }
+      if (author && author !== 'N/A') map[author] = (map[author] || 0) + citations;
     });
     
     return map;
   }, {});
 
-  // Create top authors array with meaningful default if empty
   let topAuthors = Object.entries(authorMap)
     .map(([name, citations]) => ({ name, citations }))
     .sort((a, b) => b.citations - a.citations)
     .slice(0, 5);
     
-  // Add placeholder data if no authors found
   if (topAuthors.length === 0) {
     topAuthors = [{ name: "No author data", citations: 0 }];
   }
 
-  // Process publication sources with more robust handling
   const sourceMap = dataArray.reduce((map, item) => {
     const source = item.journal || item.publisher || item.source || 'Unknown';
-    if (!map[source]) {
-      map[source] = 0;
-    }
-    map[source]++;
+    map[source] = (map[source] || 0) + 1;
     return map;
   }, {});
 
-  // Create publication distribution with meaningful default if empty
   let publicationDistribution = Object.entries(sourceMap)
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5);
     
-  // Add placeholder data if no publications found
   if (publicationDistribution.length === 0) {
     publicationDistribution = [{ name: "No publication data", count: 0 }];
   }
 
-  // If citation trends is empty, add some placeholder data to show the chart structure
   if (citationTrends.length === 0) {
     const currentYear = new Date().getFullYear();
     for (let i = 0; i < 5; i++) {
-      citationTrends.push({
-        year: (currentYear - 4 + i).toString(),
-        citations: 0
-      });
+      citationTrends.push({ year: (currentYear - 4 + i).toString(), citations: 0 });
     }
   }
 
-  return {
-    citationTrends,
-    topAuthors,
-    publicationDistribution
-  };
+  return { citationTrends, topAuthors, publicationDistribution };
 };
 
-// Helper function to generate placeholder time series data
 const generatePlaceholderTimeSeries = () => {
   const currentYear = new Date().getFullYear();
-  const years = [];
-  for (let i = 0; i < 5; i++) {
-    years.push({
-      year: (currentYear - 4 + i).toString(),
-      citations: 0
-    });
-  }
-  return years;
+  return Array.from({ length: 5 }, (_, i) => ({
+    year: (currentYear - 4 + i).toString(),
+    citations: 0
+  }));
 };
 
-// Enhanced search with caching and pagination
 export const search = async (query, type = 'all', page = 1, perPage = 10, includeExternal = true) => {
   const cacheKey = `${query}-${type}-${page}-${perPage}-${includeExternal}`;
   
-  // Check cache first
   if (searchCache.has(cacheKey)) {
     return searchCache.get(cacheKey);
   }
 
   try {
-    let endpoint = '/search';
-    if (type === 'authors') endpoint = '/search/authors';
-    else if (type === 'fields') endpoint = '/search/fields';
-    else if (type === 'works') endpoint = '/search/works';
-
-    const response = await axios.get(`${API_URL}${endpoint}`, {
+    const response = await axios.get(`${API_URL}/search`, {
       params: { 
-        query,
+        query: query.trim(),
         page,
         per_page: perPage,
         include_external: includeExternal
       },
+      timeout: 15000
     });
 
-    // Cache the response
-    const responseData = response.data || [];
-    searchCache.set(cacheKey, responseData);
-    
-    // Set cache expiration (5 minutes)
-    setTimeout(() => {
-      searchCache.delete(cacheKey);
-    }, 300000);
+    if (response.status >= 500) {
+      throw new Error(`Server error: ${response.status}`);
+    }
 
-    return responseData;
+    if (!response.data?.results) {
+      throw new Error('Invalid response structure');
+    }
+
+    searchCache.set(cacheKey, response.data);
+    setTimeout(() => searchCache.delete(cacheKey), 300000);
+
+    return response.data;
   } catch (error) {
-    console.error('Error fetching search data:', error);
-    throw error;
+    console.error('Search failed:', error);
+    if (error.response?.data) {
+      return {
+        ...error.response.data,
+        results: [],
+        total: 0,
+        page: 1,
+        per_page: perPage,
+        external_apis_used: false
+      };
+    }
+    return {
+      error: 'Network error',
+      message: error.message,
+      results: [],
+      total: 0,
+      page: 1,
+      per_page: perPage,
+      external_apis_used: false
+    };
   }
 };
 
-// Get detailed paper information with caching
 export const getPaperDetails = async (id, source) => {
   const cacheKey = `${id}-${source}`;
   
-  // Check cache first
   if (paperDetailsCache.has(cacheKey)) {
     return paperDetailsCache.get(cacheKey);
   }
@@ -177,14 +154,8 @@ export const getPaperDetails = async (id, source) => {
       params: { id, source }
     });
     
-    // Cache the response
     paperDetailsCache.set(cacheKey, response.data);
-    
-    // Set cache expiration (5 minutes)
-    setTimeout(() => {
-      paperDetailsCache.delete(cacheKey);
-    }, 300000);
-
+    setTimeout(() => paperDetailsCache.delete(cacheKey), 300000);
     return response.data;
   } catch (error) {
     console.error('Error fetching paper details:', error);
@@ -192,6 +163,45 @@ export const getPaperDetails = async (id, source) => {
   }
 };
 
+export const getBibliometricMetrics = async (query, type = 'all') => {
+  const cacheKey = `${query}-${type}`;
+  
+  if (metricsCache.has(cacheKey)) {
+    return metricsCache.get(cacheKey);
+  }
+
+  try {
+    const searchResults = await search(query, type);
+    if (searchResults.error) {
+      throw new Error(searchResults.message);
+    }
+
+    const metrics = processMetricsData(searchResults.results);
+    
+    const result = {
+      ...metrics,
+      scholarlyWorks: searchResults.results.length,
+      worksCited: searchResults.results.reduce((sum, item) => sum + (item.citation_count || 0), 0),
+      frequentlyCited: searchResults.results.filter(item => (item.citation_count || 0) > 10).length
+    };
+    
+    metricsCache.set(cacheKey, result);
+    setTimeout(() => metricsCache.delete(cacheKey), 300000);
+    return result;
+  } catch (error) {
+    console.error('Error fetching metrics:', error);
+    return {
+      citationTrends: generatePlaceholderTimeSeries(),
+      topAuthors: [{ name: "Error loading data", citations: 0 }],
+      publicationDistribution: [{ name: "Error loading data", count: 1 }],
+      scholarlyWorks: 0,
+      worksCited: 0,
+      frequentlyCited: 0
+    };
+  }
+};
+
+// All other existing API functions remain exactly the same
 export const getSummaryById = async (id) => {
   try {
     const response = await axios.get(`${API_URL}/work_summary/${id}`);
@@ -272,86 +282,10 @@ export const getBibliometricVideos = async () => {
   }
 };
 
-export const getBibliometricMetrics = async (query, type = 'all') => {
-  const cacheKey = `${query}-${type}`;
-  
-  // Check cache first
-  if (metricsCache.has(cacheKey)) {
-    return metricsCache.get(cacheKey);
-  }
-
-  try {
-    const searchResults = await search(query, type);
-    
-    // Ensure search results is an array
-    const resultsArray = Array.isArray(searchResults) ? searchResults : [];
-
-    if (resultsArray.length > 0) {
-      const metrics = processMetricsData(resultsArray);
-      
-      const scholarlyWorks = resultsArray.length;
-      const worksCited = resultsArray.reduce((sum, item) => {
-        return sum + Number(item.cited_by || item.citations || item.citation_count || 0);
-      }, 0);
-      const frequentlyCited = resultsArray.filter(item => {
-        return Number(item.cited_by || item.citations || item.citation_count || 0) > 10;
-      }).length;
-      
-      // Cache the results
-      const result = {
-        ...metrics,
-        scholarlyWorks,
-        worksCited,
-        frequentlyCited
-      };
-      
-      metricsCache.set(cacheKey, result);
-      setTimeout(() => {
-        metricsCache.delete(cacheKey);
-      }, 300000);
-
-      return result;
-    }
-
-    // Return default data structure with empty arrays and placeholders
-    const defaultResult = {
-      citationTrends: generatePlaceholderTimeSeries(),
-      topAuthors: [{ name: "No data available", citations: 0 }],
-      publicationDistribution: [{ name: "No data available", count: 1 }],
-      scholarlyWorks: 0,
-      worksCited: 0,
-      frequentlyCited: 0
-    };
-    
-    metricsCache.set(cacheKey, defaultResult);
-    setTimeout(() => {
-      metricsCache.delete(cacheKey);
-    }, 300000);
-
-    return defaultResult;
-  } catch (error) {
-    console.error('Error fetching bibliometric metrics:', error);
-    // Return default data structure even on error
-    return {
-      citationTrends: generatePlaceholderTimeSeries(),
-      topAuthors: [{ name: "Error loading data", citations: 0 }],
-      publicationDistribution: [{ name: "Error loading data", count: 1 }],
-      scholarlyWorks: 0,
-      worksCited: 0,
-      frequentlyCited: 0
-    };
-  }
-};
-
 export const getUsers = async (page = 1, limit = 10, status = '', search = '') => {
   try {
     const response = await axios.get(`${API_URL}/users`, {
-      params: {
-        page,
-        limit,
-        status,
-        search
-      }
+      params: { page, limit, status, search }
     });
     return response.data;
   } catch (error) {

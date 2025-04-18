@@ -4,7 +4,7 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #3498db, #2c3e50);
+    background: linear-gradient(150deg, #e1d1f0a3 0%, #5d0ca9 100%);
   }
   
   .admin-login-box {
@@ -45,13 +45,13 @@
   
   .admin-form-group input:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: #bc87ed;
   }
   
   .admin-login-button {
     width: 100%;
     padding: 0.8rem;
-    background-color: #3498db;
+    background-color: #a048e3;
     color: white;
     border: none;
     border-radius: 5px;
@@ -61,7 +61,7 @@
   }
   
   .admin-login-button:hover {
-    background-color: #2980b9;
+    background-color: #bc87ed;
   }
   
   .admin-login-error {
