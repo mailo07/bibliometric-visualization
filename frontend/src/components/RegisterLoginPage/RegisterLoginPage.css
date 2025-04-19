@@ -5,7 +5,12 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(150deg, #ba93f0, #9d57de );
+    background: linear-gradient(
+      150deg,
+      #7e22ce72 0%,     /* Soft Magenta-Purple */
+      #4438ca77 50%,    /* Indigo */
+      #1d4fd869 100%    /* Deep Navy Blue */
+  );
     font-family: "Poppins", sans-serif;
 }
 
@@ -195,7 +200,7 @@
     left: -250%;
     width: 300%;
     height: 100%;
-    background: linear-gradient(#ad6aeb 0%, #561784 100%);
+    background: linear-gradient( #9c60d8 0%, #5006c6 100%) ;
     border-radius: 150px;
     z-index: 2;
     transition: 1.8s ease-in-out;

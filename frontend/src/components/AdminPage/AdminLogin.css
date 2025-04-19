@@ -4,7 +4,12 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(150deg, #e1d1f0a3 0%, #5d0ca9 100%);
+    background: linear-gradient(
+      150deg,
+      #7e22ce 0%,     /* Soft Magenta-Purple */
+      #4338ca 50%,    /* Indigo */
+      #1d4ed8 100%    /* Deep Navy Blue */
+  );
   }
   
   .admin-login-box {
