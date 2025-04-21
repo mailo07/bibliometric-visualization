@@ -103,35 +103,3 @@
     background-color: #f9fafb;
   }
   
-  .edit-profile-button {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: #4c1d95;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .edit-profile-button:hover {
-    background-color: #6d28d9;
-    transform: translateY(-2px);
-  }
-  
-  .edit-profile-icon {
-    width: 18px;
-    height: 18px;
-  }
-  
-  .flex {
-    display: flex;
-  }
-  
-  .gap-4 {
-    gap: 1rem;
-  }

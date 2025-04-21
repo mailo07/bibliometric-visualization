@@ -4,7 +4,7 @@
 
 .AboutPage {
     margin: 0;
-    font-family: 'Monsteratt';
+    font-family: "Roboto", sans-serif;
     background-color: #f0f0f0;
     color: #333;
 }
@@ -19,8 +19,13 @@
     color: white;
     border-radius: 0 0 50px 50px;
     overflow: hidden;
+    
 }
-
+.AboutPage .header-content h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 5em;
+    margin: 0;
+}
 .AboutPage .header::before {
     content: '';
     position: absolute;
@@ -30,7 +35,6 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.2);
 
-   
 }
 
 .AboutPage .header-content {
@@ -70,6 +74,7 @@
     padding: 10px;
     border-radius: 5px;
     color: white;
+    position: left;
 }
 
 .AboutPage .header-buttons .home:hover {
@@ -78,7 +83,7 @@
 }
 
 /* Main content section */
-.AboutPage .main-content {
+.AboutPage .header-content {
     position: absolute;
     bottom: 20%;
     left: 20px;
@@ -86,7 +91,7 @@
     max-width: 80%;
 }
 
-.AboutPage .main-content .tag {
+.AboutPage .header-content .tag {
     background: transparent;
     border: 2px solid white;
     padding: 5px 10px;
@@ -184,6 +189,7 @@
     border-right: .15em solid #3b1f1f;
     white-space: nowrap;
     margin: 0 auto;
+    font-family: 'Playfair Display', serif;
     letter-spacing: .15em;
     animation: typing 4s steps(40, end), blink-caret .75s step-end infinite;
 }
@@ -211,4 +217,14 @@
 .AboutPage #root-index-2 {
     display: block;
     width: 100%;
+}
+
+.AboutPage footer{
+    background-color: #1a1a1a;
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Playfair Display', serif;
 }

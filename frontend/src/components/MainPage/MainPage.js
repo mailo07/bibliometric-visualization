@@ -18,6 +18,7 @@ const MainPage = () => {
     }, 10);
   };
 
+  
   const handleRegisterClick = (e) => {
     e.preventDefault();
     window.location.href = '/registerlogin?show=register';

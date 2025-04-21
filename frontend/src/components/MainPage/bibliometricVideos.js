@@ -5,7 +5,7 @@ const LeftColumn = () => {
   const [bibliometricVideos, setBibliometricVideos] = useState([]);
   const [loadingVideos, setLoadingVideos] = useState(true);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true); // Now used for autoplay toggle
   const autoplayTimerRef = useRef(null);
 
   // Updated videoLibrary with real academic videos
@@ -74,6 +74,10 @@ const LeftColumn = () => {
       prevIndex === bibliometricVideos.length - 1 ? 0 : prevIndex + 1
     );
   }, [bibliometricVideos.length]);
+
+  const toggleAutoplay = useCallback(() => {
+    setIsPlaying(prev => !prev);
+  }, []);
 
   // Set up autoplay functionality with 20 seconds interval
   useEffect(() => {
@@ -171,6 +175,12 @@ const LeftColumn = () => {
               <h3 className="video-title">{bibliometricVideos[currentVideoIndex]?.title}</h3>
               <p className="video-author">{bibliometricVideos[currentVideoIndex]?.author}</p>
               <p className="video-description">{bibliometricVideos[currentVideoIndex]?.description}</p>
+              <button 
+                className="autoplay-toggle"
+                onClick={toggleAutoplay}
+              >
+                {isPlaying ? 'Pause Autoplay' : 'Resume Autoplay'}
+              </button>
             </div>
             
             {/* Only ellipses for navigation */}

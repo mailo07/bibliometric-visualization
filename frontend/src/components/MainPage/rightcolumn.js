@@ -8,7 +8,7 @@ const RightColumn = () => {
   const [activeSource, setActiveSource] = useState('tech'); // Default to technology section
 
   // Function to parse RSS feeds
-  const parseRSS = async (url) => {
+  const parseRSS = useCallback(async (url) => {
     try {
       // Using RSS to JSON API
       const response = await axios.get(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`);
@@ -23,13 +23,13 @@ const RightColumn = () => {
       console.error('Error parsing RSS feed:', error);
       return [];
     }
-  };
+  }, []);
 
   // Function to fetch from GDELT Project
-  const fetchGDELT = async () => {
+  const fetchGDELT = useCallback(async () => {
     try {
       // GDELT provides news in various formats - using their GKG API
-      const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      // const today = new Date().toISOString().split('T')[0].replace(/-/g, ''); // Available for future use
       const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=sourcecountry:USA&format=html&maxrecords=10&timespan=1d`;
       
       // Need to parse HTML response as GDELT doesn't have a direct JSON API
@@ -68,10 +68,10 @@ const RightColumn = () => {
         }
       ];
     }
-  };
+  }, []);
 
   // Function to fetch technology news
-  const fetchTechNews = async () => {
+  const fetchTechNews = useCallback(async () => {
     try {
       // Technology news from various sources
       const techNewsData = [
@@ -106,10 +106,10 @@ const RightColumn = () => {
       console.error('Error fetching tech news:', error);
       return [];
     }
-  };
+  }, [parseRSS]);
 
   // Function to fetch from ArXiv API
-  const fetchArXiv = async () => {
+  const fetchArXiv = useCallback(async () => {
     try {
       // ArXiv API using their query interface
       const query = encodeURIComponent('cat:cs.AI OR cat:cs.LG');
@@ -154,10 +154,10 @@ const RightColumn = () => {
         }
       ];
     }
-  };
+  }, []);
 
   // Function to fetch from PubMed
-  const fetchPubMed = async () => {
+  const fetchPubMed = useCallback(async () => {
     try {
       // First get IDs
       const searchResponse = await axios.get(
@@ -201,10 +201,10 @@ const RightColumn = () => {
         }
       ];
     }
-  };
+  }, []);
 
   // Function to fetch global news
-  const fetchGlobalNews = async () => {
+  const fetchGlobalNews = useCallback(async () => {
     // First try the GDELT API
     try {
       const gdeltNews = await fetchGDELT();
@@ -232,7 +232,7 @@ const RightColumn = () => {
         pubDate: new Date()
       }
     ];
-  };
+  }, [fetchGDELT]);
 
   // Function to fetch from multiple sources
   const fetchLatestNews = useCallback(async () => {
@@ -332,7 +332,7 @@ const RightColumn = () => {
       }
     }
     setLoadingNews(false);
-  }, [activeSource]);
+  }, [activeSource, fetchGlobalNews, fetchTechNews, parseRSS, fetchArXiv, fetchPubMed]);
 
   useEffect(() => {
     fetchLatestNews();

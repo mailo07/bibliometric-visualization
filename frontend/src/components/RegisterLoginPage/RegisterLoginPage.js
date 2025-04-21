@@ -72,20 +72,20 @@ const RegisterLoginPage = () => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/auth/login`, loginData);
+            const { data } = await axios.post(`${API_BASE_URL}/api/auth/login`, loginData);
             
-            if (response.data.user && response.data.user.token) {
+            if (data.user && data.user.token) {
                 // Store user data including token
                 const userData = {
-                    id: response.data.user.id,
-                    username: response.data.user.username,
-                    email: response.data.user.email,
-                    bio: response.data.user.bio || '',
-                    profile_image: response.data.user.profile_image || '',
-                    token: response.data.user.token
+                    id: data.user.id,
+                    username: data.user.username,
+                    email: data.user.email,
+                    bio: data.user.bio || '',
+                    profile_image: data.user.profile_image || '',
+                    token: data.user.token
                 };
 
-                localStorage.setItem('token', response.data.user.token);
+                localStorage.setItem('token', data.user.token);
                 localStorage.setItem('user', JSON.stringify(userData));
                 
                 navigate('/profile');
@@ -140,7 +140,7 @@ const RegisterLoginPage = () => {
                 return;
             }
             
-            const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
+            await axios.post(`${API_BASE_URL}/api/auth/register`, {
                 username: registerData.username,
                 email: registerData.email,
                 password: registerData.password,

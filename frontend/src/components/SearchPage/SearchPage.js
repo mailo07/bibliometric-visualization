@@ -7,6 +7,7 @@ import Sidebar from './Sidebar';
 import LeftMenu from './LeftMenu';
 import Pagination from './Pagination';
 import SummaryTab from './SummaryTab';
+import CitationMetrics from './CitationMetrics';
 import './SearchPage.css';
 
 const SearchPage = () => {
@@ -20,7 +21,11 @@ const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [tabTransition, setTabTransition] = useState(false);
   const [resultsTransition, setResultsTransition] = useState(false);
-  const [bibliometricCharts, setBibliometricCharts] = useState({ citationTrends: [], topAuthors: [], publicationDistribution: [] });
+  const [bibliometricCharts, setBibliometricCharts] = useState({ 
+    citationTrends: [], 
+    topAuthors: [], 
+    publicationDistribution: [] 
+  });
   const [selectedWork, setSelectedWork] = useState(null);
   const [currentFilters, setCurrentFilters] = useState({
     authorFilter: '',
@@ -40,6 +45,7 @@ const SearchPage = () => {
 
   const queryParams = new URLSearchParams(window.location.search);
   const query = queryParams.get('query') || '';
+  
   useEffect(() => { 
     setSearchQuery(query); 
   }, [query]);
@@ -51,7 +57,6 @@ const SearchPage = () => {
       const response = await search(searchTerm, 'all', page, resultsPerPage, true);
       console.log('API Response:', response);
       
-      // Extract results in a consistent way
       let processedResults = [];
       if (response) {
         if (response.results && Array.isArray(response.results)) {
@@ -61,16 +66,13 @@ const SearchPage = () => {
         } else if (Array.isArray(response)) {
           processedResults = response;
         } else if (typeof response === 'object') {
-          // If no results array found but response is an object, wrap it
           processedResults = [response];
         }
       }
       
-      // Ensure each item has an ID
       const resultsWithIds = processedResults.map((item, index) => ({
         ...item, 
         id: item.id || item.doi || `result-${index}`,
-        // Ensure other required fields have default values
         title: item.title || 'Unknown Title',
         author: item.author || item.authors || 'Unknown Author',
         published: item.published || item.year || 'Unknown Date',
@@ -82,7 +84,6 @@ const SearchPage = () => {
       setData(resultsWithIds);
       setCurrentPage(page);
       
-      // Get metrics from response or calculate from results
       const responseMetrics = response?.metrics || {};
       setMetrics({
         scholarlyWorks: responseMetrics.totalWorks || resultsWithIds.length || 0,
@@ -100,7 +101,6 @@ const SearchPage = () => {
       setLoading(false);
     }
   }, [resultsPerPage]);
-  
   
   const fetchBibliometricMetrics = useCallback(async (searchTerm) => {
     try { 
@@ -229,17 +229,6 @@ const SearchPage = () => {
     });
   };
   
-  const generateBibliometricCharts = useCallback((searchResults) => { 
-    return bibliometricCharts;
-  }, [bibliometricCharts]);
-  
-  useEffect(() => {
-    if (data.length > 0) {
-      const finalCharts = generateBibliometricCharts(data);
-      setBibliometricCharts(finalCharts);
-    }
-  }, [data, generateBibliometricCharts]);
-  
   return (
     <div className="flex flex-col min-h-screen font-sans gradient-bg">
       <header className="bg-gradient-to-r from-indigo-700 to-purple-800 px-4 py-3 text-white flex items-center sticky top-0 z-50">
@@ -265,29 +254,7 @@ const SearchPage = () => {
       <div className="flex flex-grow relative">
         <LeftMenu bibliometricCharts={bibliometricCharts} />
         <main className="main-column p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-white/90 shadow-md p-4 rounded divide-x-2 divide-gray-200">
-            <div className="text-center">
-              <h3 className="font-semibold text-purple-800">Scholarly Works</h3>
-              <p className="text-2xl font-bold">{metrics.scholarlyWorks}</p>
-            </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-purple-800">Works Cited</h3>
-              <p className="text-2xl font-bold">{metrics.worksCited}</p>
-            </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-purple-800">Frequently Cited Works</h3>
-              <p className="text-2xl font-bold">{metrics.frequentlyCited}</p>
-            </div>
-          </div>
-          <div className="mb-6 bg-white/90 shadow-md p-4 rounded">
-            <h3 className="font-semibold text-purple-800">Query Information</h3>
-            <p className="text-gray-700">
-              Query Name: <span className="font-medium">{query}</span>
-            </p>
-            <p className="text-gray-700">
-              Total Results: <span className="font-medium">{filteredData.length}</span>
-            </p>
-          </div>
+          <CitationMetrics metrics={metrics} query={query} filteredData={filteredData} />
           <div className="flex space-x-4 mb-4 border-b-2 border-gray-200">
             <button 
               className={`px-4 py-2 transition-all duration-800 ease-in-out ${activeTab === 'scholarlyWorks' ? 'border-b-2 border-purple-600 font-semibold text-purple-600' : 'text-gray-600 hover:text-purple-400'}`}

@@ -76,34 +76,16 @@ const ProfileHomePage = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-700">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-white text-center mb-8">Your Profile</h1>
+      <div className="container mx-auto px-4 py-8"> <h1 className="text-4xl font-bold text-white text-center mb-8">Your Profile</h1>
         
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex justify-center"
-        >
-          <ProfileCard 
-            userData={userData} 
-            onEditProfile={handleEditProfile} 
-            onChangePassword={handleChangePassword}
-          />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="flex justify-center" >
+          <ProfileCard userData={userData} onEditProfile={handleEditProfile} onChangePassword={handleChangePassword}/>
         </motion.div>
         
-        <div className="text-center mt-8 text-white text-sm">
-          © 2025 Biblioknow. This is just an educational project.
-        </div>
+        <div className="text-center mt-8 text-white text-sm"> © 2025 Biblioknow. This is just an educational project. </div>
       </div>
 
-      {isModalOpen && (
-        <EditProfileModal 
-          userData={userData} 
-          onClose={handleCloseModal} 
-          onSave={handleSaveChanges} 
-        />
-      )}
+      {isModalOpen && ( <EditProfileModal  userData={userData}  onClose={handleCloseModal} onSave={handleSaveChanges} />)}
     </div>
   );
 };

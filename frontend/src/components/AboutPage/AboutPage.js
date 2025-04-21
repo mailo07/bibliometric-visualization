@@ -138,7 +138,7 @@ return (
 
         <footer className="bg-[#000000] text-[#FFFFFF] p-16">
         <div className="flex justify-around">
-            <div className="text-center">
+            <div className="text-center" >
             <h2 className="text-3xl font-bold"style={{ fontSize: '1.5em' }}>&copy; 2025 Biblioknow</h2>
             <div className="footer-subtitle">
                 <p className="text-sm" style={{ fontSize: '0.9em' }}>Free and Open Source Scholarly Search</p>

@@ -1,7 +1,7 @@
 // frontend/src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
+import { AuthProvider } from './contexts/auth_context';
 import MainPage from './components/MainPage/MainPage';
 import AboutPage from './components/AboutPage/AboutPage';
 import ErrorPage from './components/ErrorPage/ErrorPage';
@@ -12,6 +12,7 @@ import AdminHomePage from './components/AdminPage/AdminHomePage';
 
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <Routes>
         <Route path="/" element={<MainPage />} />
@@ -23,6 +24,8 @@ function App() {
         <Route path="/admin/*" element={<AdminHomePage />} />
       </Routes>
     </Router>
+    </AuthProvider>
+    
   );
 }
 

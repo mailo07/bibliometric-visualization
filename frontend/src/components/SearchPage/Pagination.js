@@ -9,7 +9,6 @@ const Pagination = ({
   transitionEnabled = true
 }) => {
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const [resultsTransition, setResultsTransition] = useState(false);
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   useEffect(() => {
@@ -17,17 +16,13 @@ const Pagination = ({
     if (initialPage !== currentPage) {
       setCurrentPage(initialPage);
     }
-  }, [initialPage, totalItems]);
+  }, [initialPage, totalItems, currentPage]); // Added currentPage to dependencies
 
   const handlePageClick = (pageNumber) => {
     if (transitionEnabled) {
-      setResultsTransition(true);
       setTimeout(() => {
         setCurrentPage(pageNumber);
         onPageChange(pageNumber);
-        setTimeout(() => {
-          setResultsTransition(false);
-        }, 300);
       }, 300);
     } else {
       setCurrentPage(pageNumber);
@@ -38,14 +33,10 @@ const Pagination = ({
   const handlePrevPage = () => {
     if (currentPage > 1) {
       if (transitionEnabled) {
-        setResultsTransition(true);
         setTimeout(() => {
           const newPage = currentPage - 1;
           setCurrentPage(newPage);
           onPageChange(newPage);
-          setTimeout(() => {
-            setResultsTransition(false);
-          }, 300);
         }, 300);
       } else {
         const newPage = currentPage - 1;
@@ -58,14 +49,10 @@ const Pagination = ({
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       if (transitionEnabled) {
-        setResultsTransition(true);
         setTimeout(() => {
           const newPage = currentPage + 1;
           setCurrentPage(newPage);
           onPageChange(newPage);
-          setTimeout(() => {
-            setResultsTransition(false);
-          }, 300);
         }, 300);
       } else {
         const newPage = currentPage + 1;
