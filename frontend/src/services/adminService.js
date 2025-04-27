@@ -1,42 +1,9 @@
+// src/services/adminService.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/admin'; // Note the /admin prefix
+const API_URL = 'http://localhost:5000/api';
 
-// Activity Logs Endpoints
-export const getActivityLogs = async (page = 1, limit = 10, filters = {}) => {
-  try {
-    const response = await axios.get(`${API_URL}/activity-logs`, {
-      params: {
-        page,
-        limit,
-        ...filters
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching activity logs:', error);
-    throw error;
-  }
-};
-
-// System Events Endpoints
-export const getSystemEvents = async (page = 1, limit = 10, severity = '') => {
-  try {
-    const response = await axios.get(`${API_URL}/system-events`, {
-      params: {
-        page,
-        limit,
-        severity
-      }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching system events:', error);
-    throw error;
-  }
-};
-
-// System Health Endpoint
+// System Health Functions
 export const getSystemHealth = async () => {
   try {
     const response = await axios.get(`${API_URL}/system-health`);
@@ -47,35 +14,130 @@ export const getSystemHealth = async () => {
   }
 };
 
-// Additional admin reporting endpoints can be added here
-export const getUserActivityMetrics = async (timeRange = 'week') => {
+export const pollSystemHealth = (callback, interval = 30000) => {
+  let isActive = true;
+  
+  const fetchHealth = async () => {
+    if (!isActive) return;
+    
+    try {
+      const healthData = await getSystemHealth();
+      callback(healthData);
+    } catch (error) {
+      console.error('Error polling system health:', error);
+    }
+    
+    if (isActive) {
+      setTimeout(fetchHealth, interval);
+    }
+  };
+  
+  // Initial fetch
+  fetchHealth();
+  
+  // Return cleanup function
+  return () => {
+    isActive = false;
+  };
+};
+
+// Existing User Management Functions
+export const getUsers = async (params = {}) => {
   try {
-    const response = await axios.get(`${API_URL}/user-metrics`, {
-      params: { timeRange }
-    });
+    const response = await axios.get(`${API_URL}/users`, { params });
     return response.data;
   } catch (error) {
-    console.error('Error fetching user metrics:', error);
+    console.error('Error fetching users:', error);
     throw error;
   }
 };
 
-// Polling function for system health
-export const pollSystemHealth = (callback, interval = 30000) => {
-  const fetchData = async () => {
-    try {
-      const data = await getSystemHealth();
-      callback(data);
-    } catch (error) {
-      console.error('Error in system health polling:', error);
-    }
-  };
+export const getUser = async (userId) => {
+  try {
+    const response = await axios.get(`${API_URL}/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    throw error;
+  }
+};
 
-  // Fetch immediately on start
-  fetchData();
-  
-  // Then set up interval
-  const timerId = setInterval(fetchData, interval);
-  
-  return () => clearInterval(timerId);
+export const deleteUser = async (userId) => {
+  try {
+    const response = await axios.delete(`${API_URL}/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw error;
+  }
+};
+
+export const suspendUser = async (userId) => {
+  try {
+    const response = await axios.post(`${API_URL}/users/${userId}/suspend`);
+    return response.data;
+  } catch (error) {
+    console.error('Error suspending user:', error);
+    throw error;
+  }
+};
+
+export const unsuspendUser = async (userId) => {
+  try {
+    const response = await axios.post(`${API_URL}/users/${userId}/unsuspend`);
+    return response.data;
+  } catch (error) {
+    console.error('Error unsuspending user:', error);
+    throw error;
+  }
+};
+
+export const updateUserRole = async (userId, role) => {
+  try {
+    const response = await axios.put(`${API_URL}/users/${userId}/update-role`, { role });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    throw error;
+  }
+};
+
+export const getUserStats = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/users/stats`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    throw error;
+  }
+};
+
+export const getActivityLogs = async (params = {}) => {
+  try {
+    const response = await axios.get(`${API_URL}/activity-logs`, { params });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching activity logs:', error);
+    throw error;
+  }
+};
+
+export const getSystemEvents = async (params = {}) => {
+  try {
+    const response = await axios.get(`${API_URL}/system-events`, { params });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching system events:', error);
+    throw error;
+  }
+};
+
+export const getUserActivityMetrics = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/user-activity-metrics`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user activity metrics:', error);
+    throw error;
+  }
 };

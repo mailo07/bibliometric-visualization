@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from routes.auth_routes import auth_bp
 from routes.admin_routes import admin_bp
@@ -28,6 +28,9 @@ app.config["JWT_HEADER_TYPE"] = "Bearer"  # Default header type
 # Initialize extensions
 jwt = JWTManager(app)
 db.init_app(app)
+jwt.init_app(app)
+
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,7 +48,7 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
 app.register_blueprint(data_bp, url_prefix='/api')
 app.register_blueprint(search_bp, url_prefix='/api')
-app.register_blueprint(profile_bp, url_prefix='/api/user')  # Register with proper prefix
+app.register_blueprint(profile_bp, url_prefix='/api')  # Register with proper prefix
 
 # Create uploads directory if it doesn't exist
 os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)

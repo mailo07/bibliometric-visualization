@@ -1,7 +1,7 @@
 // src/components/Admin/AdminUserManagement.js
 import React, { useState, useEffect, useCallback } from 'react';
 import './AdminUserManagement.css';
-import axios from 'axios';
+import * as adminService from '../../services/adminService';
 
 function AdminUserManagement() {
   const [users, setUsers] = useState([]);
@@ -13,11 +13,15 @@ function AdminUserManagement() {
   const [totalPages, setTotalPages] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    inactiveUsers: 0,
+    suspendedUsers: 0
+  });
   
-  const API_URL = 'http://localhost:5000/api';
   const itemsPerPage = 5;
 
-  // Function to fetch users from API - wrapped in useCallback
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
@@ -25,37 +29,38 @@ function AdminUserManagement() {
       
       const statusFilter = activeTab === 'All Users' ? '' : activeTab;
       
-      const response = await axios.get(`${API_URL}/users`, {
-        params: {
-          page: currentPage,
-          limit: itemsPerPage,
-          status: statusFilter,
-          search: searchTerm
-        }
+      const response = await adminService.getUsers({
+        page: currentPage,
+        limit: itemsPerPage,
+        status: statusFilter,
+        search: searchTerm
       });
       
-      // Extract data from response
-      const { data } = response;
-      setUsers(data.users || []);
-      setTotalPages(data.totalPages || 1);
+      setUsers(response.users || []);
+      setTotalPages(response.pages || 1);
+      
+      // Fetch stats if on first page and all users
+      if (currentPage === 1 && activeTab === 'All Users') {
+        const statsResponse = await adminService.getUserStats();
+        setStats({
+          totalUsers: statsResponse.total_users || 0,
+          activeUsers: statsResponse.active_users || 0,
+          inactiveUsers: statsResponse.inactive_users || 0,
+          suspendedUsers: statsResponse.suspended_users || 0
+        });
+      }
+      
       setLoading(false);
     } catch (err) {
       console.error('Error fetching users:', err);
       setError('Failed to load users. Please try again.');
       setLoading(false);
     }
-  }, [activeTab, currentPage, searchTerm, API_URL, itemsPerPage]);
+  }, [activeTab, currentPage, searchTerm, itemsPerPage]);
 
-  // Fetch users on component mount and when dependencies change
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
-
-  // Stats calculation
-  const totalUsers = users.length;
-  const activeUsers = users.filter(user => user.status === 'Active').length;
-  const inactiveUsers = users.filter(user => user.status === 'Inactive').length;
-  const suspendedUsers = users.filter(user => user.status === 'Suspended').length;
 
   // Handle tab change
   const handleTabChange = (tab) => {
@@ -96,12 +101,8 @@ function AdminUserManagement() {
     if (!userToDelete) return;
     
     try {
-      await axios.delete(`${API_URL}/users/${userToDelete.id}`);
-      
-      // Refresh user list after deletion
+      await adminService.deleteUser(userToDelete.id);
       fetchUsers();
-      
-      // Close modal
       handleCloseDeleteModal();
     } catch (err) {
       console.error('Error deleting user:', err);
@@ -109,10 +110,42 @@ function AdminUserManagement() {
     }
   };
 
+  // Suspend user
+  const handleSuspendUser = async (userId) => {
+    try {
+      await adminService.suspendUser(userId);
+      fetchUsers();
+    } catch (err) {
+      console.error('Error suspending user:', err);
+      setError('Failed to suspend user. Please try again.');
+    }
+  };
+
+  // Unsuspend user
+  const handleUnsuspendUser = async (userId) => {
+    try {
+      await adminService.unsuspendUser(userId);
+      fetchUsers();
+    } catch (err) {
+      console.error('Error unsuspending user:', err);
+      setError('Failed to unsuspend user. Please try again.');
+    }
+  };
+
+  // Update user role
+  const handleUpdateRole = async (userId, newRole) => {
+    try {
+      await adminService.updateUserRole(userId, newRole);
+      fetchUsers();
+    } catch (err) {
+      console.error('Error updating user role:', err);
+      setError('Failed to update user role. Please try again.');
+    }
+  };
+
   // Render status badge
   const renderStatusBadge = (status) => {
     let className = '';
-    
     switch(status) {
       case 'Active':
         className = 'status-active';
@@ -127,10 +160,44 @@ function AdminUserManagement() {
         className = '';
     }
     
+    return <span className={`status-badge ${className}`}>{status}</span>;
+  };
+
+  // Render action buttons based on user status
+  const renderActionButtons = (user) => {
     return (
-      <span className={`status-badge ${className}`}>
-        {status}
-      </span>
+      <div className="action-buttons">
+        {user.status === 'Suspended' ? (
+          <button 
+            className="admin-btn admin-btn-sm admin-btn-success"
+            onClick={() => handleUnsuspendUser(user.id)}
+          >
+            Unsuspend
+          </button>
+        ) : (
+          <button 
+            className="admin-btn admin-btn-sm admin-btn-warning"
+            onClick={() => handleSuspendUser(user.id)}
+          >
+            Suspend
+          </button>
+        )}
+        <button 
+          className="admin-btn admin-btn-sm admin-btn-danger"
+          onClick={() => handleOpenDeleteModal(user)}
+        >
+          Delete
+        </button>
+        <select
+          className="admin-btn admin-btn-sm"
+          value={user.role}
+          onChange={(e) => handleUpdateRole(user.id, e.target.value)}
+        >
+          <option value="user">User</option>
+          <option value="editor">Editor</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
     );
   };
 
@@ -152,8 +219,8 @@ function AdminUserManagement() {
     
     // First page
     buttons.push(
-      <button 
-        key="1" 
+      <button
+        key="1"
         className={`pagination-btn ${currentPage === 1 ? 'active' : ''}`}
         onClick={() => handlePageChange(1)}
       >
@@ -169,10 +236,9 @@ function AdminUserManagement() {
     // Pages around current page
     for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
       if (i <= 1 || i >= totalPages) continue;
-      
       buttons.push(
-        <button 
-          key={i} 
+        <button
+          key={i}
           className={`pagination-btn ${currentPage === i ? 'active' : ''}`}
           onClick={() => handlePageChange(i)}
         >
@@ -189,8 +255,8 @@ function AdminUserManagement() {
     // Last page if not the first page
     if (totalPages > 1) {
       buttons.push(
-        <button 
-          key={totalPages} 
+        <button
+          key={totalPages}
           className={`pagination-btn ${currentPage === totalPages ? 'active' : ''}`}
           onClick={() => handlePageChange(totalPages)}
         >
@@ -201,9 +267,9 @@ function AdminUserManagement() {
     
     // Next button
     buttons.push(
-      <button 
-        key="next" 
-        className="pagination-btn" 
+      <button
+        key="next"
+        className="pagination-btn"
         disabled={currentPage === totalPages}
         onClick={() => handlePageChange(currentPage + 1)}
       >
@@ -223,19 +289,19 @@ function AdminUserManagement() {
       <div className="user-stats">
         <div className="stat-card">
           <h3>Total Users</h3>
-          <span className="stat-value">{totalUsers}</span>
+          <span className="stat-value">{stats.totalUsers}</span>
         </div>
         <div className="stat-card">
           <h3>Active Users</h3>
-          <span className="stat-value active">{activeUsers}</span>
+          <span className="stat-value active">{stats.activeUsers}</span>
         </div>
         <div className="stat-card">
           <h3>Inactive Users</h3>
-          <span className="stat-value inactive">{inactiveUsers}</span>
+          <span className="stat-value inactive">{stats.inactiveUsers}</span>
         </div>
         <div className="stat-card">
           <h3>Suspended Users</h3>
-          <span className="stat-value suspended">{suspendedUsers}</span>
+          <span className="stat-value suspended">{stats.suspendedUsers}</span>
         </div>
       </div>
       
@@ -279,9 +345,9 @@ function AdminUserManagement() {
           <input 
             type="text" 
             placeholder="Search users..." 
-            value={searchTerm}
-            onChange={handleSearch}
-            className="search-input"
+            value={searchTerm} 
+            onChange={handleSearch} 
+            className="search-input" 
           />
         </div>
       </div>
@@ -298,14 +364,12 @@ function AdminUserManagement() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>
-                <input type="checkbox" />
-              </th>
+              <th><input type="checkbox" /></th>
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
               <th>Status</th>
-              <th>Last Login</th>
+              <th>Last Activity</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -325,23 +389,18 @@ function AdminUserManagement() {
             ) : (
               users.map(user => (
                 <tr key={user.id}>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>{user.name}</td>
+                  <td><input type="checkbox" /></td>
+                  <td>{user.full_name || user.username}</td>
                   <td>{user.email}</td>
                   <td>{user.role}</td>
                   <td>{renderStatusBadge(user.status)}</td>
-                  <td>{user.lastLogin}</td>
                   <td>
-                    <div className="action-buttons">
-                      <button 
-                        className="admin-btn admin-btn-sm"
-                        onClick={() => handleOpenDeleteModal(user)}
-                      >
-                        <i className="ellipsis-icon">...</i>
-                      </button>
-                    </div>
+                    {user.last_activity ? 
+                      new Date(user.last_activity).toLocaleString() : 
+                      'Never'}
+                  </td>
+                  <td>
+                    {renderActionButtons(user)}
                   </td>
                 </tr>
               ))
@@ -351,9 +410,9 @@ function AdminUserManagement() {
         
         <div className="table-footer">
           <div className="results-info">
-            {users.length > 0 
-              ? `Showing ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, users.length)} of ${users.length} results` 
-              : 'No results to display'}
+            {users.length > 0 ? 
+              `Showing ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, users.length)} of ${users.length} results` : 
+              'No results to display'}
           </div>
           <div className="pagination">
             {renderPaginationButtons()}
@@ -363,43 +422,17 @@ function AdminUserManagement() {
       
       {/* Delete User Modal */}
       {showDeleteModal && (
-        <div className="modal-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div className="modal-content" style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '8px',
-            width: '400px',
-            maxWidth: '90%'
-          }}>
+        <div className="modal-overlay">
+          <div className="modal-content">
             <h2>Delete User</h2>
-            <p>Are you sure you want to delete user: <strong>{userToDelete?.name}</strong>?</p>
+            <p>Are you sure you want to delete user: <strong>{userToDelete?.full_name || userToDelete?.username}</strong>?</p>
             <p>This action cannot be undone.</p>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '1rem',
-              marginTop: '2rem'
-            }}>
-              <button 
-                className="admin-btn" 
-                onClick={handleCloseDeleteModal}
-              >
+            <div className="modal-actions">
+              <button className="admin-btn" onClick={handleCloseDeleteModal}>
                 Cancel
               </button>
               <button 
-                className="admin-btn" 
-                style={{ backgroundColor: '#e74c3c', color: 'white' }}
+                className="admin-btn admin-btn-danger" 
                 onClick={handleDeleteUser}
               >
                 Delete

@@ -1,5 +1,6 @@
+# models/user.py
 from extensions import db
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(db.Model):
@@ -15,27 +16,49 @@ class User(db.Model):
     profile_picture = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    def __init__(self, username, email, password, full_name=None, bio=None, location=None):
+    last_login = db.Column(db.DateTime, nullable=True)
+    last_activity = db.Column(db.DateTime, nullable=True)
+    last_activity_type = db.Column(db.String(50), nullable=True)
+    last_ip_address = db.Column(db.String(45), nullable=True)
+    is_suspended = db.Column(db.Boolean, default=False)
+    role = db.Column(db.String(50), default='user')
+    occupation = db.Column(db.String(120), nullable=True)
+    member_since = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __init__(self, username, email, password, **kwargs):
         self.username = username
         self.email = email
         self.password = generate_password_hash(password)
-        self.full_name = full_name
-        self.bio = bio
-        self.location = location
-    
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
     def check_password(self, password):
         return check_password_hash(self.password, password)
-    
+
     def to_dict(self):
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
             'full_name': self.full_name,
-            'bio': self.bio,
-            'location': self.location,
             'profile_picture': self.profile_picture,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'last_login': self.last_login.isoformat() if self.last_login else None,
+            'last_activity': self.last_activity.isoformat() if self.last_activity else None,
+            'last_activity_type': self.last_activity_type,
+            'last_ip_address': self.last_ip_address,
+            'is_suspended': self.is_suspended,
+            'role': self.role,
+            'occupation': self.occupation,
+            'member_since': self.member_since.isoformat() if self.member_since else None,
+            'status': self.get_status()
         }
+
+    def get_status(self):
+        if self.is_suspended:
+            return 'Suspended'
+        elif not self.last_activity or self.last_activity < datetime.utcnow() - timedelta(days=30):
+            return 'Inactive'
+        else:
+            return 'Active'

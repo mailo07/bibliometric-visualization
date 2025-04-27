@@ -13,28 +13,13 @@ import {
 import * as adminService from '../../services/adminService';
 import './AdminReports.css';
 
-const generatePlaceholderData = (type) => {
-  if (type === 'week') {
-    return Array(7).fill(0).map((_, i) => ({
-      name: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i],
-      users: 0,
-      sessions: 0
-    }));
-  }
-  return Array(4).fill(0).map((_, i) => ({
-    name: `Week ${i+1}`,
-    users: 0,
-    sessions: 0
-  }));
-};
-
 function AdminReports() {
   const [timeRange, setTimeRange] = useState('week');
   const [activityLogs, setActivityLogs] = useState([]);
   const [systemEvents, setSystemEvents] = useState([]);
   const [chartData, setChartData] = useState({
-    week: generatePlaceholderData('week'),
-    month: generatePlaceholderData('month')
+    week: [],
+    month: []
   });
   const [loading, setLoading] = useState({
     logs: true,
@@ -50,8 +35,8 @@ function AdminReports() {
         
         // Fetch activity logs
         try {
-          const logs = await adminService.getActivityLogs();
-          setActivityLogs(logs.data || []);
+          const logs = await adminService.getActivityLogs({ limit: 10 });
+          setActivityLogs(logs.logs || []);
         } catch (err) {
           console.error('Error loading activity logs:', err);
           setActivityLogs([]);
@@ -61,8 +46,8 @@ function AdminReports() {
 
         // Fetch system events
         try {
-          const events = await adminService.getSystemEvents();
-          setSystemEvents(events.data || []);
+          const events = await adminService.getSystemEvents({ limit: 10 });
+          setSystemEvents(events.events || []);
         } catch (err) {
           console.error('Error loading system events:', err);
           setSystemEvents([]);
@@ -74,14 +59,14 @@ function AdminReports() {
         try {
           const metrics = await adminService.getUserActivityMetrics();
           setChartData({
-            week: metrics.weeklyData || generatePlaceholderData('week'),
-            month: metrics.monthlyData || generatePlaceholderData('month')
+            week: metrics.weeklyData || [],
+            month: metrics.monthlyData || []
           });
         } catch (err) {
           console.error('Error loading metrics:', err);
           setChartData({
-            week: generatePlaceholderData('week'),
-            month: generatePlaceholderData('month')
+            week: [],
+            month: []
           });
         } finally {
           setLoading(prev => ({ ...prev, metrics: false }));
@@ -95,6 +80,18 @@ function AdminReports() {
 
     fetchData();
   }, []);
+
+  const formatDate = (timestamp) => {
+    try {
+      return new Date(timestamp).toLocaleString();
+    } catch {
+      return timestamp;
+    }
+  };
+
+  const getSeverityClass = (severity) => {
+    return `severity-${severity.toLowerCase()}`;
+  };
 
   return (
     <div className="admin-reports">
@@ -154,11 +151,11 @@ function AdminReports() {
                 </thead>
                 <tbody>
                   {activityLogs.map((log, index) => (
-                    <tr key={log._id || log.id || index}>
-                      <td>{new Date(log.timestamp).toLocaleString()}</td>
-                      <td>{log.user?.email || log.userEmail || 'N/A'}</td>
+                    <tr key={index}>
+                      <td>{formatDate(log.timestamp)}</td>
+                      <td>{log.user?.email || log.user?.username || 'System'}</td>
                       <td>{log.action || 'Unknown action'}</td>
-                      <td>{log.ipAddress || 'N/A'}</td>
+                      <td>{log.ip_address || 'N/A'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -185,10 +182,10 @@ function AdminReports() {
                 </thead>
                 <tbody>
                   {systemEvents.map((event, index) => (
-                    <tr key={event._id || event.id || index}>
-                      <td>{new Date(event.timestamp).toLocaleString()}</td>
-                      <td>{event.message || event.description || 'Unknown event'}</td>
-                      <td className={`severity-${event.severity?.toLowerCase() || 'info'}`}>
+                    <tr key={index}>
+                      <td>{formatDate(event.timestamp)}</td>
+                      <td>{event.message || event.event_type || 'Unknown event'}</td>
+                      <td className={getSeverityClass(event.severity)}>
                         {event.severity || 'INFO'}
                       </td>
                     </tr>

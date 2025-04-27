@@ -1,5 +1,6 @@
 from psycopg2 import sql
 from services.database import DatabaseService
+from typing import Dict, Any, List, Optional
 
 def fetch_all(table_name):
     """Fetches all rows from a given table."""
@@ -14,12 +15,12 @@ def fetch_filtered(table_name, filters=None):
     
     db = DatabaseService()
     where_clauses = []
-    params = {}
+    params = []
     
     for field, value in filters.items():
         if value is not None:
             where_clauses.append(sql.SQL("{} = %s").format(sql.Identifier(field)))
-            params[field] = value
+            params.append(value)
     
     if not where_clauses:
         return fetch_all(table_name)
@@ -29,7 +30,7 @@ def fetch_filtered(table_name, filters=None):
         sql.SQL(" AND ").join(where_clauses)
     )
     
-    return db.execute_query(query, list(params.values()))
+    return db.execute_query(query, params)
 
 def insert_data(table_name, data):
     """Inserts data into a given table."""
@@ -47,7 +48,8 @@ def insert_data(table_name, data):
         db.execute_query(query, values, fetch=False)
         return True
     except Exception as e:
-        print(f"Error inserting data into {table_name}: {e}")
+        import logging
+        logging.error(f"Error inserting data into {table_name}: {e}")
         return False
 
 def fetch_by_id(table_name, id_value, id_column="id"):
@@ -61,8 +63,54 @@ def fetch_by_id(table_name, id_value, id_column="id"):
         result = db.execute_query(query, (id_value,))
         return result[0] if result else None
     except Exception as e:
-        print(f"Error fetching data from {table_name}: {e}")
+        import logging
+        logging.error(f"Error fetching data from {table_name}: {e}")
         return None
+
+def update_data(table_name, id_value, data, id_column="id"):
+    """Updates data in a given table for a specific record."""
+    if not data:
+        return False
+    
+    db = DatabaseService()
+    try:
+        set_items = []
+        params = []
+        
+        for field, value in data.items():
+            set_items.append(sql.SQL("{} = %s").format(sql.Identifier(field)))
+            params.append(value)
+        
+        # Add id as the last parameter
+        params.append(id_value)
+        
+        query = sql.SQL("UPDATE {} SET {} WHERE {} = %s").format(
+            sql.Identifier(table_name),
+            sql.SQL(", ").join(set_items),
+            sql.Identifier(id_column)
+        )
+        
+        db.execute_query(query, params, fetch=False)
+        return True
+    except Exception as e:
+        import logging
+        logging.error(f"Error updating data in {table_name}: {e}")
+        return False
+
+def delete_data(table_name, id_value, id_column="id"):
+    """Deletes a record from a table based on its ID."""
+    db = DatabaseService()
+    try:
+        query = sql.SQL("DELETE FROM {} WHERE {} = %s").format(
+            sql.Identifier(table_name),
+            sql.Identifier(id_column)
+        )
+        db.execute_query(query, (id_value,), fetch=False)
+        return True
+    except Exception as e:
+        import logging
+        logging.error(f"Error deleting data from {table_name}: {e}")
+        return False
 
 def execute_custom_query(query, params=None):
     """Executes a custom SQL query with parameters and returns the results."""
@@ -70,5 +118,6 @@ def execute_custom_query(query, params=None):
     try:
         return db.execute_query(query, params or [])
     except Exception as e:
-        print(f"Error executing custom query: {e}")
+        import logging
+        logging.error(f"Error executing custom query: {e}")
         return []

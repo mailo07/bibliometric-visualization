@@ -1,5 +1,5 @@
 import psycopg2
-from psycopg2 import sql, OperationalError
+from psycopg2 import OperationalError
 from psycopg2.extras import DictCursor
 from config import Config
 import logging
@@ -7,6 +7,10 @@ import time
 from typing import Optional, List, Dict, Any
 
 class DatabaseService:
+    """
+    Core database service that handles connection management and query execution.
+    Implemented as a singleton to maintain a single connection pool.
+    """
     _instance = None
     MAX_RETRIES = 3
     RETRY_DELAY = 1
@@ -46,7 +50,17 @@ class DatabaseService:
                 raise RuntimeError(f"Failed to connect to database after {self.MAX_RETRIES} attempts")
     
     def execute_query(self, query, params=None, fetch=True) -> Optional[List[Dict[str, Any]]]:
-        """Execute a query with automatic reconnection and error handling"""
+        """
+        Execute a query with automatic reconnection and error handling
+        
+        Args:
+            query: SQL query to execute (can be string or psycopg2.sql.Composed)
+            params: Parameters for the query
+            fetch: Whether to fetch and return results
+            
+        Returns:
+            List of dictionaries containing query results, or None if fetch=False
+        """
         for attempt in range(self.MAX_RETRIES):
             try:
                 if not self.conn or self.conn.closed:
@@ -72,148 +86,52 @@ class DatabaseService:
                 logging.error(f"Query failed: {str(e)}")
                 raise
     
-    def search_across_sources(self, query: str, page: int = 1, per_page: int = 10, 
-                            filters: Optional[Dict] = None) -> Dict[str, Any]:
-        """Search across all bibliometric sources with proper pagination"""
-        if not query or not query.strip():
-            return {'results': [], 'total': 0}
+    def begin_transaction(self):
+        """Begin a database transaction"""
+        if not self.conn or self.conn.closed:
+            self._init_db_connection()
         
-        filters = filters or {}
-        offset = (page - 1) * per_page
-        
-        # Base query matching your actual schema
-        base_query = """
-            (SELECT 
-                id, 
-                COALESCE(author_name, 'Unknown') AS author, 
-                COALESCE(title, 'Untitled') AS title, 
-                doi, 
-                year, 
-                cited_by AS citations,
-                'bibliometric' AS source
-            FROM bibliometric_data
-            WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(author_name, '')) 
-                  @@ plainto_tsquery('english', %(query)s)
-            {filter_clause}
-            ORDER BY year DESC NULLS LAST
-            LIMIT %(limit)s OFFSET %(offset)s)
-            
-            UNION ALL
-            
-            (SELECT 
-                id, 
-                COALESCE(authors, 'Unknown') AS author, 
-                COALESCE(title, 'Untitled') AS title, 
-                doi, 
-                year, 
-                citation_count AS citations,
-                'crossref' AS source
-            FROM crossref_data_multiple_subjects
-            WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(authors, '')) 
-                  @@ plainto_tsquery('english', %(query)s)
-            {filter_clause}
-            ORDER BY citation_count DESC NULLS LAST
-            LIMIT %(limit)s OFFSET %(offset)s)
-            
-            UNION ALL
-            
-            (SELECT 
-                id, 
-                COALESCE(author_name, 'Unknown') AS author, 
-                COALESCE(title, 'Untitled') AS title, 
-                NULL AS doi, 
-                year, 
-                cited_by AS citations,
-                'google_scholar' AS source
-            FROM google_scholar_data
-            WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(author_name, '')) 
-                  @@ plainto_tsquery('english', %(query)s)
-            {filter_clause}
-            ORDER BY cited_by DESC NULLS LAST
-            LIMIT %(limit)s OFFSET %(offset)s)
-        """
-        
-        params = {
-            'query': query,
-            'limit': per_page,
-            'offset': offset
-        }
-        
-        # Apply filters
-        where_clauses = []
-        if filters.get('year_from'):
-            where_clauses.append("year >= %(year_from)s")
-            params['year_from'] = filters['year_from']
-        if filters.get('year_to'):
-            where_clauses.append("year <= %(year_to)s")
-            params['year_to'] = filters['year_to']
-        if filters.get('source'):
-            where_clauses.append("source = %(source)s")
-            params['source'] = filters['source']
-        if filters.get('min_citations'):
-            where_clauses.append("(citations >= %(min_citations)s OR citation_count >= %(min_citations)s OR cited_by >= %(min_citations)s)")
-            params['min_citations'] = filters['min_citations']
-        
-        filter_clause = ' AND '.join(where_clauses)
-        filter_clause = f"AND {filter_clause}" if filter_clause else ""
-        
-        try:
-            # Get paginated results
-            results = self.execute_query(
-                base_query.format(filter_clause=filter_clause),
-                params
-            ) or []
-            
-            # Get total count (separate query for accurate pagination)
-            count_query = """
-                SELECT COUNT(*) FROM (
-                    SELECT 1 FROM bibliometric_data
-                    WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(author_name, '')) 
-                          @@ plainto_tsquery('english', %(query)s)
-                    {filter_clause}
-                    
-                    UNION ALL
-                    
-                    SELECT 1 FROM crossref_data_multiple_subjects
-                    WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(authors, '')) 
-                          @@ plainto_tsquery('english', %(query)s)
-                    {filter_clause}
-                    
-                    UNION ALL
-                    
-                    SELECT 1 FROM google_scholar_data
-                    WHERE to_tsvector('english', COALESCE(title, '') || ' ' || COALESCE(author_name, '')) 
-                          @@ plainto_tsquery('english', %(query)s)
-                    {filter_clause}
-                ) AS combined_results
-            """
-            
-            total = self.execute_query(
-                count_query.format(filter_clause=filter_clause),
-                {'query': query, **{k: v for k, v in params.items() 
-                                  if k in ['year_from', 'year_to', 'source', 'min_citations']}}
-            )[0]['count']
-            
-            return {
-                'results': results,
-                'total': total,
-                'page': page,
-                'per_page': per_page
-            }
-            
-        except Exception as e:
-            logging.error(f"Search failed: {str(e)}")
-            return {'results': [], 'total': 0}
+        # Temporarily disable autocommit to start a transaction
+        old_autocommit = self.conn.autocommit
+        self.conn.autocommit = False
+        return old_autocommit
     
-    def fetch_by_id(self, table_name: str, id_value: Any, id_column: str = "id") -> Optional[Dict[str, Any]]:
-        """Fetch a single record by ID"""
+    def commit_transaction(self):
+        """Commit the current transaction"""
+        if self.conn and not self.conn.closed:
+            self.conn.commit()
+            self.conn.autocommit = True
+    
+    def rollback_transaction(self):
+        """Rollback the current transaction"""
+        if self.conn and not self.conn.closed:
+            self.conn.rollback()
+            self.conn.autocommit = True
+    
+    def execute_transaction(self, queries):
+        """
+        Execute multiple queries in a single transaction
+        
+        Args:
+            queries: List of (query, params) tuples
+            
+        Returns:
+            True if successful, False otherwise
+        """
         try:
-            query = sql.SQL("SELECT * FROM {} WHERE {} = %s").format(
-                sql.Identifier(table_name),
-                sql.Identifier(id_column)
-            )
-            result = self.execute_query(query, (id_value,))
-            return result[0] if result else None
+            old_autocommit = self.begin_transaction()
+            
+            for query, params in queries:
+                self.execute_query(query, params, fetch=False)
+                
+            self.commit_transaction()
+            return True
+            
         except Exception as e:
-            logging.error(f"Error fetching by ID: {str(e)}")
-            return None
+            self.rollback_transaction()
+            logging.error(f"Transaction failed: {str(e)}")
+            return False
+        finally:
+            # Restore previous autocommit setting
+            if self.conn and not self.conn.closed:
+                self.conn.autocommit = old_autocommit
