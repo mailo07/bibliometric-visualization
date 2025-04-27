@@ -2,10 +2,17 @@
 import os
 from datetime import timedelta
 from flask import Flask
+from dotenv import load_dotenv
 class Config:
     # Flask settings
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
     DEBUG = os.environ.get('FLASK_DEBUG', 'True') == 'True'
+    
+    # Application settings
+    DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev_key')
+    TESTING = os.getenv('TESTING', 'False').lower() == 'true'
+    ENV = os.getenv('ENV', 'development')
     
     # JWT settings
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-key-for-development')
@@ -36,6 +43,7 @@ class Config:
     SEMANTIC_SCHOLAR_API_KEY = os.environ.get('SEMANTIC_SCHOLAR_API_KEY', '')
     OPENALEX_API_KEY = os.environ.get('OPENALEX_API_KEY', 'demo_key')
     PUBMED_API_KEY = os.environ.get('PUBMED_API_KEY', '')
+    ZOTERO_API_KEY = os.getenv('ZOTERO_API_KEY', '')
     
     # Application identification (unchanged)
     ADMIN_EMAIL = '404brain.dead@gmail.com'
@@ -55,7 +63,15 @@ class Config:
             cls.OPENALEX_API_KEY,
             cls.PUBMED_API_KEY
         ])
-        
+    # Logging configuration
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+    
+    # External API rate limits (requests per minute)
+    OPENLIBRARY_RATE_LIMIT = int(os.getenv('OPENLIBRARY_RATE_LIMIT', 60))
+    DBLP_RATE_LIMIT = int(os.getenv('DBLP_RATE_LIMIT', 30))
+    ARXIV_RATE_LIMIT = int(os.getenv('ARXIV_RATE_LIMIT', 20))
+    ZOTERO_RATE_LIMIT = int(os.getenv('ZOTERO_RATE_LIMIT', 30))
+    
     # File upload settings (unchanged)
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads'))
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max upload size

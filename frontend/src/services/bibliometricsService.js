@@ -100,7 +100,8 @@ export const search = async (query, type = 'all', page = 1, perPage = 10, includ
         query: query.trim(),
         page,
         per_page: perPage,
-        include_external: includeExternal
+        include_external: includeExternal,
+        source: type !== 'all' ? type : undefined
       }
     });
 
@@ -112,8 +113,9 @@ export const search = async (query, type = 'all', page = 1, perPage = 10, includ
       throw new Error('Invalid response structure');
     }
 
+    // Store result in cache
     searchCache.set(cacheKey, response.data);
-    setTimeout(() => searchCache.delete(cacheKey), 300000);
+    setTimeout(() => searchCache.delete(cacheKey), 300000); // 5 minute cache
 
     return response.data;
   } catch (error) {
@@ -169,7 +171,26 @@ export const getBibliometricMetrics = async (query, type = 'all') => {
   }
 
   try {
+    // Get search results first
     const searchResults = await search(query, type);
+    
+    // If the search response already includes metrics, use those
+    if (searchResults.metrics) {
+      const result = {
+        citationTrends: searchResults.metrics.citation_trends || generatePlaceholderTimeSeries(),
+        topAuthors: searchResults.metrics.top_authors || [{ name: "No author data", citations: 0 }],
+        publicationDistribution: searchResults.metrics.publication_distribution || [{ name: "No publication data", count: 0 }],
+        scholarlyWorks: searchResults.metrics.scholarlyWorks || searchResults.results.length,
+        worksCited: searchResults.metrics.worksCited || 0,
+        frequentlyCited: searchResults.metrics.frequentlyCited || 0
+      };
+      
+      metricsCache.set(cacheKey, result);
+      setTimeout(() => metricsCache.delete(cacheKey), 300000);
+      return result;
+    }
+    
+    // Otherwise, process the search results to generate metrics
     if (searchResults.error) {
       throw new Error(searchResults.message);
     }
@@ -179,8 +200,10 @@ export const getBibliometricMetrics = async (query, type = 'all') => {
     const result = {
       ...metrics,
       scholarlyWorks: searchResults.results.length,
-      worksCited: searchResults.results.reduce((sum, item) => sum + (item.citation_count || 0), 0),
-      frequentlyCited: searchResults.results.filter(item => (item.citation_count || 0) > 10).length
+      worksCited: searchResults.results.reduce((sum, item) => sum + Number(item.cited_by || item.citations || 0), 0),
+      frequentlyCited: searchResults.results.filter(item => 
+        Number(item.cited_by || item.citations || 0) > 10
+      ).length
     };
     
     metricsCache.set(cacheKey, result);
@@ -199,6 +222,7 @@ export const getBibliometricMetrics = async (query, type = 'all') => {
   }
 };
 
+// Keep these unchanged as they appear to be working
 export const getSummaryById = async (id) => {
   try {
     const response = await axiosInstance.get(`/work_summary/${id}`);

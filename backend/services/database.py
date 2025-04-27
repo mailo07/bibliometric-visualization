@@ -1,137 +1,114 @@
+# services/database.py
 import psycopg2
-from psycopg2 import OperationalError
-from psycopg2.extras import DictCursor
-from config import Config
+import psycopg2.extras
+import os
 import logging
-import time
-from typing import Optional, List, Dict, Any
+from config import Config
 
 class DatabaseService:
-    """
-    Core database service that handles connection management and query execution.
-    Implemented as a singleton to maintain a single connection pool.
-    """
-    _instance = None
-    MAX_RETRIES = 3
-    RETRY_DELAY = 1
+    """Service for handling database operations"""
     
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(DatabaseService, cls).__new__(cls)
-            cls._instance._init_db_connection()
-        return cls._instance
+    def __init__(self):
+        self.conn = None
+        self.connect()
     
-    def _init_db_connection(self):
-        """Initialize database connection with retries"""
-        for attempt in range(self.MAX_RETRIES):
-            try:
-                self.conn = psycopg2.connect(
-                    host=Config.DB_HOST,
-                    port=Config.DB_PORT,
-                    dbname="bibliometric_data",
-                    user="postgres",
-                    password="vivo18#",
-                    connect_timeout=5
-                )
-                self.conn.autocommit = True
-                
-                # Verify connection
-                with self.conn.cursor() as cursor:
-                    cursor.execute("SELECT 1")
-                
-                logging.info("✅ Database connection established")
-                return
-                
-            except OperationalError as e:
-                logging.error(f"⚠️ Connection attempt {attempt + 1} failed: {str(e)}")
-                if attempt < self.MAX_RETRIES - 1:
-                    time.sleep(self.RETRY_DELAY * (attempt + 1))
-                    continue
-                raise RuntimeError(f"Failed to connect to database after {self.MAX_RETRIES} attempts")
-    
-    def execute_query(self, query, params=None, fetch=True) -> Optional[List[Dict[str, Any]]]:
-        """
-        Execute a query with automatic reconnection and error handling
-        
-        Args:
-            query: SQL query to execute (can be string or psycopg2.sql.Composed)
-            params: Parameters for the query
-            fetch: Whether to fetch and return results
-            
-        Returns:
-            List of dictionaries containing query results, or None if fetch=False
-        """
-        for attempt in range(self.MAX_RETRIES):
-            try:
-                if not self.conn or self.conn.closed:
-                    self._init_db_connection()
-                
-                with self.conn.cursor(cursor_factory=DictCursor) as cursor:
-                    logging.debug(f"Executing: {cursor.mogrify(query, params)}")
-                    cursor.execute(query, params or ())
-                    
-                    if fetch:
-                        results = cursor.fetchall()
-                        logging.debug(f"Found {len(results)} rows")
-                        return [dict(row) for row in results]
-                    return None
-                    
-            except psycopg2.InterfaceError as e:
-                logging.error(f"Connection error (attempt {attempt + 1}): {str(e)}")
-                if attempt == self.MAX_RETRIES - 1:
-                    raise
-                self._init_db_connection()
-                time.sleep(self.RETRY_DELAY)
-            except psycopg2.Error as e:
-                logging.error(f"Query failed: {str(e)}")
-                raise
-    
-    def begin_transaction(self):
-        """Begin a database transaction"""
-        if not self.conn or self.conn.closed:
-            self._init_db_connection()
-        
-        # Temporarily disable autocommit to start a transaction
-        old_autocommit = self.conn.autocommit
-        self.conn.autocommit = False
-        return old_autocommit
-    
-    def commit_transaction(self):
-        """Commit the current transaction"""
-        if self.conn and not self.conn.closed:
-            self.conn.commit()
-            self.conn.autocommit = True
-    
-    def rollback_transaction(self):
-        """Rollback the current transaction"""
-        if self.conn and not self.conn.closed:
-            self.conn.rollback()
-            self.conn.autocommit = True
-    
-    def execute_transaction(self, queries):
-        """
-        Execute multiple queries in a single transaction
-        
-        Args:
-            queries: List of (query, params) tuples
-            
-        Returns:
-            True if successful, False otherwise
-        """
+    def connect(self):
+        """Establishes connection to database"""
         try:
-            old_autocommit = self.begin_transaction()
-            
-            for query, params in queries:
-                self.execute_query(query, params, fetch=False)
-                
-            self.commit_transaction()
-            return True
-            
+            # Use configuration from Config object, not hardcoded ports
+            self.conn = psycopg2.connect(
+                host=Config.DB_HOST,
+                database=Config.DB_NAME,
+                user=Config.DB_USER,
+                password=Config.DB_PASSWORD,
+                port=Config.DB_PORT  # Using the configured port, not hardcoded value
+            )
+            logging.info("✅ Database connection established successfully")
         except Exception as e:
-            self.rollback_transaction()
-            logging.error(f"Transaction failed: {str(e)}")
-            return False
-        finally:
-            # Restore previous autocommit setting
-            if self.conn and not self.conn.closed:
-                self.conn.autocommit = old_autocommit
+            logging.error(f"❌ Database connection failed: {e}")
+            self.conn = None
+    
+    def ensure_connection(self):
+        """Ensures database connection is active"""
+        if self.conn is None or self.conn.closed:
+            self.connect()
+        
+        if self.conn is None:
+            raise Exception("Could not establish database connection")
+    
+    def execute_query(self, query, params=None):
+        """Execute a query and return results as dictionary"""
+        self.ensure_connection()
+        
+        try:
+            with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                cursor.execute(query, params)
+                
+                # For SELECT queries
+                if query.strip().upper().startswith(('SELECT', 'WITH')):
+                    return cursor.fetchall()
+                
+                # For INSERT/UPDATE/DELETE
+                self.conn.commit()
+                return cursor.rowcount
+        except Exception as e:
+            self.conn.rollback()
+            logging.error(f"Query execution error: {e}")
+            logging.error(f"Query: {query}")
+            logging.error(f"Params: {params}")
+            raise
+    
+    def insert_record(self, table, data):
+        """Insert a record into a table"""
+        columns = list(data.keys())
+        values = list(data.values())
+        
+        placeholders = [f"%({col})s" for col in columns]
+        
+        query = f"""
+            INSERT INTO {table} ({', '.join(columns)})
+            VALUES ({', '.join(placeholders)})
+            RETURNING id
+        """
+        
+        result = self.execute_query(query, data)
+        return result[0]['id'] if result else None
+    
+    def update_record(self, table, id_column, record_id, data):
+        """Update a record in a table"""
+        set_clause = ', '.join([f"{col} = %({col})s" for col in data.keys()])
+        
+        query = f"""
+            UPDATE {table}
+            SET {set_clause}
+            WHERE {id_column} = %(record_id)s
+        """
+        
+        params = {**data, 'record_id': record_id}
+        return self.execute_query(query, params)
+    
+    def delete_record(self, table, id_column, record_id):
+        """Delete a record from a table"""
+        query = f"""
+            DELETE FROM {table}
+            WHERE {id_column} = %s
+        """
+        
+        return self.execute_query(query, (record_id,))
+    
+    def get_record_by_id(self, table, id_column, record_id):
+        """Get a record by its ID"""
+        query = f"""
+            SELECT *
+            FROM {table}
+            WHERE {id_column} = %s
+        """
+        
+        result = self.execute_query(query, (record_id,))
+        return result[0] if result else None
+    
+    def close(self):
+        """Close the database connection"""
+        if self.conn is not None:
+            self.conn.close()
+            self.conn = None

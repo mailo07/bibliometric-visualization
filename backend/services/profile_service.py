@@ -42,8 +42,6 @@ class ProfileService:
         offset = (page - 1) * per_page
         
         try:
-            # Query to fetch publications from all sources by author ID
-            # This assumes you have a user_publications mapping table
             query = """
                 SELECT p.*, 'user_publication' AS source
                 FROM user_publications up
@@ -55,7 +53,6 @@ class ProfileService:
             
             results = self.db.execute_query(query, (user_id, per_page, offset)) or []
             
-            # Get total count
             count_query = """
                 SELECT COUNT(*) 
                 FROM user_publications
@@ -86,7 +83,6 @@ class ProfileService:
             Dictionary with user statistics
         """
         try:
-            # Query to get aggregated statistics
             query = """
                 SELECT 
                     COUNT(DISTINCT p.id) AS total_publications,
@@ -127,19 +123,14 @@ class ProfileService:
             True if update was successful, False otherwise
         """
         try:
-            # Build the SET clause dynamically
-            set_items = []
-            params = []
+            params = list(profile_data.values()) + [user_id]
             
-            for field, value in profile_data.items():
-                set_items.append(sql.SQL("{} = %s").format(sql.Identifier(field)))
-                params.append(value)
-            
-            # Add user_id as the last parameter
-            params.append(user_id)
-            
-            query = sql.SQL("UPDATE users SET {} WHERE id = %s").format(
-                sql.SQL(", ").join(set_items)
+            query = sql.SQL(
+                "UPDATE users SET {fields} WHERE id = %s"
+            ).format(
+                fields=sql.SQL(", ").join(
+                    sql.Composed([sql.Identifier(field), sql.SQL(" = %s")]) for field in profile_data.keys()
+                )
             )
             
             self.db.execute_query(query, params, fetch=False)

@@ -1,7 +1,7 @@
+# search_routes.py (updated)
 from flask import Blueprint, jsonify, request
 from flask_caching import Cache
-from services.database import DatabaseService
-from services.external_apis import ExternalAPIService
+from services.search_service import SearchService
 from config import Config
 import logging
 from functools import wraps
@@ -43,7 +43,6 @@ def handle_errors(f):
             }), 500
     return wrapper
 
-# search_routes.py (updated search function)
 @search_bp.route('/search', methods=['GET'])
 @handle_errors
 def api_search():
@@ -70,6 +69,7 @@ def api_search():
             "total": 0
         }), 400
     
+    # Build cache key using all relevant parameters
     cache_key = f"search:{query}:{page}:{per_page}"
     include_external = request.args.get('include_external', 'false').lower() == 'true'
     if include_external:
@@ -79,106 +79,44 @@ def api_search():
         if request.args.get(param):
             cache_key += f":{param}:{request.args.get(param)}"
     
+    # Check cache first
     cached_result = cache.get(cache_key)
     if cached_result:
         logging.info(f"Returning cached results for {cache_key}")
         return jsonify(cached_result)
     
     try:
-        db_service = DatabaseService()
-        db_results = db_service.search_across_sources(
+        # Use SearchService to handle the search
+        search_service = SearchService()
+        
+        # Pass all query parameters as filters
+        search_results = search_service.search_publications(
             query=query,
             page=page,
             per_page=per_page,
             filters=request.args.to_dict()
         )
-        logging.info(f"Database results count: {len(db_results.get('results', []))}")
         
-        external_results = []
-        external_apis_used = False
+        # Process metrics if we have results
+        all_results = search_results.get('results', [])
+        external_apis_used = search_results.get('external_apis_used', False)
         
-        if include_external:
-            external_apis_used = True
-            external_api = ExternalAPIService()
-            
-            # Search all available APIs
-            ol_results, _ = external_api.search_openlibrary(query, page, per_page)
-            external_results.extend(ol_results)
-            
-            dblp_results, _ = external_api.search_dblp(query, page, per_page)
-            external_results.extend(dblp_results)
-            
-            arxiv_results, _ = external_api.search_arxiv(query, page, per_page)
-            external_results.extend(arxiv_results)
-            
-            zotero_results, _ = external_api.search_zotero(query, page, per_page)
-            external_results.extend(zotero_results)
-            
-            logging.info(f"External API results count: {len(external_results)}")
+        logging.info(f"Results count: {len(all_results)}, External APIs used: {external_apis_used}")
         
-        all_results = db_results.get('results', []) + external_results
+        # Calculate metrics from results
+        metrics = calculate_metrics(all_results)
         
-        # Calculate metrics
-        metrics = {
-            'scholarlyWorks': len(all_results),
-            'worksCited': 0,
-            'frequentlyCited': 0,
-            'citation_trends': [],
-            'top_authors': [],
-            'publication_distribution': []
-        }
-        
-        if all_results:
-            citation_years = {}
-            author_stats = {}
-            source_stats = {}
-            
-            for item in all_results:
-                citations = int(item.get('citations', 0))
-                metrics['worksCited'] += citations
-                if citations > 10:
-                    metrics['frequentlyCited'] += 1
-                
-                year = None
-                if item.get('year'):
-                    year = str(item['year'])[:4]
-                elif item.get('published'):
-                    year = str(item['published'])[:4]
-                
-                if year and len(year) == 4:
-                    citation_years[year] = citation_years.get(year, 0) + citations
-                
-                authors = []
-                if item.get('authors'):
-                    if isinstance(item['authors'], str):
-                        authors = [a.strip() for a in item['authors'].split(',')]
-                    elif isinstance(item['authors'], list):
-                        authors = [a if isinstance(a, str) else a.get('name', str(a)) for a in item['authors']]
-                elif item.get('author'):
-                    authors = [item['author']]
-                
-                for author in authors:
-                    if author and author != 'Unknown':
-                        author_stats[author] = author_stats.get(author, 0) + citations
-                
-                source = item.get('journal') or item.get('source') or 'Unknown'
-                source_stats[source] = source_stats.get(source, 0) + 1
-            
-            metrics['citation_trends'] = [{'year': k, 'citations': v} for k, v in sorted(citation_years.items())]
-            metrics['top_authors'] = [{'name': k, 'citations': v} for k, v in 
-                                    sorted(author_stats.items(), key=lambda x: x[1], reverse=True)[:5]]
-            metrics['publication_distribution'] = [{'name': k, 'count': v} for k, v in 
-                                                 sorted(source_stats.items(), key=lambda x: x[1], reverse=True)[:5]]
-        
+        # Prepare the response
         response = {
             "results": all_results,
-            "total": db_results.get('total', 0) + len(external_results),
+            "total": search_results.get('total', 0),
             "page": page,
             "per_page": per_page,
             "external_apis_used": external_apis_used,
             "metrics": metrics
         }
         
+        # Cache the response
         cache.set(cache_key, response, timeout=Config.CACHE_TIMEOUT)
         return jsonify(response)
         
@@ -193,3 +131,123 @@ def api_search():
             "per_page": per_page,
             "external_apis_used": False
         }), 500
+
+def calculate_metrics(results):
+    """Calculate metrics from search results"""
+    metrics = {
+        'scholarlyWorks': len(results),
+        'worksCited': 0,
+        'frequentlyCited': 0,
+        'citation_trends': [],
+        'top_authors': [],
+        'publication_distribution': []
+    }
+    
+    if not results:
+        # Return placeholder data
+        current_year = datetime.now().year
+        metrics['citation_trends'] = [
+            {'year': str(y), 'citations': 0} for y in range(current_year-4, current_year+1)
+        ]
+        metrics['top_authors'] = [{'name': "No author data", 'citations': 0}]
+        metrics['publication_distribution'] = [{'name': "No publication data", 'count': 0}]
+        return metrics
+    
+    citation_years = {}
+    author_stats = {}
+    source_stats = {}
+    
+    for item in results:
+        citations = int(item.get('citations', 0) or 0)
+        metrics['worksCited'] += citations
+        if citations > 10:
+            metrics['frequentlyCited'] += 1
+        
+        # Extract year data
+        year = None
+        if item.get('year'):
+            year = str(item['year'])[:4]
+        elif item.get('published'):
+            year = str(item['published'])[:4]
+        
+        if year and len(year) == 4 and year.isdigit():
+            citation_years[year] = citation_years.get(year, 0) + citations
+        
+        # Extract author data
+        authors = []
+        if item.get('authors'):
+            if isinstance(item['authors'], str):
+                authors = [a.strip() for a in item['authors'].split(',')]
+            elif isinstance(item['authors'], list):
+                authors = [a if isinstance(a, str) else a.get('name', str(a)) for a in item['authors']]
+        elif item.get('author'):
+            if isinstance(item['author'], str):
+                authors = [item['author']]
+            elif isinstance(item['author'], list):
+                authors = item['author']
+        
+        for author in authors:
+            if author and author != 'Unknown':
+                author_stats[author] = author_stats.get(author, 0) + citations
+        
+        # Extract source/publication data
+        source = item.get('journal') or item.get('publisher') or item.get('source') or 'Unknown'
+        source_stats[source] = source_stats.get(source, 0) + 1
+    
+    # Format the metrics data
+    metrics['citation_trends'] = [
+        {'year': k, 'citations': v} for k, v in sorted(citation_years.items())
+    ]
+    
+    metrics['top_authors'] = [
+        {'name': k, 'citations': v} for k, v in 
+        sorted(author_stats.items(), key=lambda x: x[1], reverse=True)[:5]
+    ]
+    
+    metrics['publication_distribution'] = [
+        {'name': k, 'count': v} for k, v in 
+        sorted(source_stats.items(), key=lambda x: x[1], reverse=True)[:5]
+    ]
+    
+    # Add placeholder data if any category is empty
+    if not metrics['citation_trends']:
+        current_year = datetime.now().year
+        metrics['citation_trends'] = [
+            {'year': str(y), 'citations': 0} for y in range(current_year-4, current_year+1)
+        ]
+    
+    if not metrics['top_authors']:
+        metrics['top_authors'] = [{'name': "No author data", 'citations': 0}]
+    
+    if not metrics['publication_distribution']:
+        metrics['publication_distribution'] = [{'name': "No publication data", 'count': 0}]
+    
+    return metrics
+
+@search_bp.route('/paper_details', methods=['GET'])
+@handle_errors
+def get_paper_details():
+    paper_id = request.args.get('id')
+    source = request.args.get('source')
+    
+    if not paper_id or not source:
+        return jsonify({
+            "error": "Paper ID and source are required"
+        }), 400
+    
+    cache_key = f"paper:{paper_id}:{source}"
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return jsonify(cached_result)
+    
+    search_service = SearchService()
+    paper_details = search_service.get_publication_details(paper_id, source)
+    
+    if not paper_details:
+        return jsonify({
+            "error": "Paper not found"
+        }), 404
+    
+    # Cache the result
+    cache.set(cache_key, paper_details, timeout=Config.CACHE_TIMEOUT)
+    return jsonify(paper_details)
