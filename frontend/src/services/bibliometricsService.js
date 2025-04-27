@@ -1,7 +1,6 @@
-import axios from 'axios';
+import axiosInstance from './axiosInstance';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
+// Cache setup
 const searchCache = new Map();
 const paperDetailsCache = new Map();
 const metricsCache = new Map();
@@ -96,14 +95,13 @@ export const search = async (query, type = 'all', page = 1, perPage = 10, includ
   }
 
   try {
-    const response = await axios.get(`${API_URL}/search`, {
+    const response = await axiosInstance.get('/search', {
       params: { 
         query: query.trim(),
         page,
         per_page: perPage,
         include_external: includeExternal
-      },
-      timeout: 15000
+      }
     });
 
     if (response.status >= 500) {
@@ -150,7 +148,7 @@ export const getPaperDetails = async (id, source) => {
   }
 
   try {
-    const response = await axios.get(`${API_URL}/paper_details`, {
+    const response = await axiosInstance.get('/paper_details', {
       params: { id, source }
     });
     
@@ -201,10 +199,9 @@ export const getBibliometricMetrics = async (query, type = 'all') => {
   }
 };
 
-// All other existing API functions remain exactly the same
 export const getSummaryById = async (id) => {
   try {
-    const response = await axios.get(`${API_URL}/work_summary/${id}`);
+    const response = await axiosInstance.get(`/work_summary/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching work summary:', error);
@@ -214,7 +211,7 @@ export const getSummaryById = async (id) => {
 
 export const getCleanedBibliometricData = async () => {
   try {
-    const response = await axios.get(`${API_URL}/cleaned_bibliometric_data`);
+    const response = await axiosInstance.get('/cleaned_bibliometric_data');
     return response.data;
   } catch (error) {
     console.error('Error fetching cleaned bibliometric data:', error);
@@ -224,7 +221,7 @@ export const getCleanedBibliometricData = async () => {
 
 export const getCrossrefDataMultipleSubjects = async () => {
   try {
-    const response = await axios.get(`${API_URL}/crossref_data_multiple_subjects`);
+    const response = await axiosInstance.get('/crossref_data_multiple_subjects');
     return response.data;
   } catch (error) {
     console.error('Error fetching crossref data:', error);
@@ -234,7 +231,7 @@ export const getCrossrefDataMultipleSubjects = async () => {
 
 export const getGoogleScholarData = async () => {
   try {
-    const response = await axios.get(`${API_URL}/google_scholar_data`);
+    const response = await axiosInstance.get('/google_scholar_data');
     return response.data;
   } catch (error) {
     console.error('Error fetching google scholar data:', error);
@@ -244,7 +241,7 @@ export const getGoogleScholarData = async () => {
 
 export const getOpenalexData = async () => {
   try {
-    const response = await axios.get(`${API_URL}/openalex_data`);
+    const response = await axiosInstance.get('/openalex_data');
     return response.data;
   } catch (error) {
     console.error('Error fetching openalex data:', error);
@@ -254,7 +251,7 @@ export const getOpenalexData = async () => {
 
 export const getScopusData = async () => {
   try {
-    const response = await axios.get(`${API_URL}/scopus_data`);
+    const response = await axiosInstance.get('/scopus_data');
     return response.data;
   } catch (error) {
     console.error('Error fetching scopus data:', error);
@@ -264,7 +261,7 @@ export const getScopusData = async () => {
 
 export const getScopusDataSept = async () => {
   try {
-    const response = await axios.get(`${API_URL}/scopus_data_sept`);
+    const response = await axiosInstance.get('/scopus_data_sept');
     return response.data;
   } catch (error) {
     console.error('Error fetching scopus data sept:', error);
@@ -274,52 +271,10 @@ export const getScopusDataSept = async () => {
 
 export const getBibliometricVideos = async () => {
   try {
-    const response = await axios.get(`${API_URL}/youtube_bibliometrics`);
+    const response = await axiosInstance.get('/youtube_bibliometrics');
     return response.data;
   } catch (error) {
     console.error('Error fetching YouTube videos:', error);
-    throw error;
-  }
-};
-
-export const getUsers = async (page = 1, limit = 10, status = '', search = '') => {
-  try {
-    const response = await axios.get(`${API_URL}/users`, {
-      params: { page, limit, status, search }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    throw error;
-  }
-};
-
-export const deleteUser = async (userId) => {
-  try {
-    const response = await axios.delete(`${API_URL}/users/${userId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error deleting user:', error);
-    throw error;
-  }
-};
-
-export const updateUserStatus = async (userId, status) => {
-  try {
-    const response = await axios.patch(`${API_URL}/users/${userId}/status`, { status });
-    return response.data;
-  } catch (error) {
-    console.error('Error updating user status:', error);
-    throw error;
-  }
-};
-
-export const updateUserRole = async (userId, role) => {
-  try {
-    const response = await axios.patch(`${API_URL}/users/${userId}/role`, { role });
-    return response.data;
-  } catch (error) {
-    console.error('Error updating user role:', error);
     throw error;
   }
 };

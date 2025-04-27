@@ -1,6 +1,6 @@
 // SearchPage.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { search, getBibliometricMetrics, getPaperDetails } from '../../services/apiService';
+import { search, getBibliometricMetrics, getPaperDetails } from '../../services/bibliometricsService';
 import NetworkGraph from './NetworkGraph';
 import Preloader from './Preloader';
 import Sidebar from './Sidebar';

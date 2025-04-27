@@ -1,6 +1,6 @@
 // src/components/SearchPage/SummaryTab.js
 import React, { useState, useEffect } from 'react';
-import { getSummaryById } from '../../services/apiService';
+import { getSummaryById } from '../../services/bibliometricsService';
 import Preloader from './Preloader';
 
 const SummaryTab = ({ selectedWork, resetSelectedWork }) => {
