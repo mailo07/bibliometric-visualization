@@ -1,4 +1,3 @@
-// CitationMetrics.js
 import React from 'react';
 
 const CitationMetrics = ({ metrics, query, filteredData }) => {
@@ -26,6 +25,11 @@ const CitationMetrics = ({ metrics, query, filteredData }) => {
         <p className="text-gray-700">
           Total Results: <span className="font-medium">{filteredData.length}</span>
         </p>
+        {filteredData.length > 0 && (
+          <p className="text-gray-700">
+            Showing results from {new Set(filteredData.map(item => item.source)).size} different sources
+          </p>
+        )}
       </div>
     </>
   );

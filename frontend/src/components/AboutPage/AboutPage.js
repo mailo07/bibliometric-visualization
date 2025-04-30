@@ -6,7 +6,6 @@ import './AboutPage.css';
 const AboutPage = () => {
 const [openIndex, setOpenIndex] = useState(null);
 
-
 const handleAccordionClick = (index) => {
     setOpenIndex(openIndex === index ? null : index);
 };
@@ -51,20 +50,14 @@ return (
         </div>
         </div>
 
-        <div className="main-content">
-        <h1>BIBLIOKNOW</h1>
+      <div className="main-content">
         <div className="tag">FREE AND OPEN SOURCE</div>
-        <p>
-            Serves all the patents and scholarly work in the world as a free,
-            open and secure digital public good, with user privacy a paramount
-            focus
-        </p>
-        <button className="cta" onClick={handleSignUpClick}><i className="fas fa-user"></i> Sign - Up</button>
-        </div>
-    </header>
-
+            <h1>BIBLIOKNOW</h1>
+            <p>Serves all the patents and scholarly work in the world as a free, open and secure digital public good, with user privacy a paramount focus</p>
+        <button className="cta" onClick={handleSignUpClick}>SIGNUP</button>
+                </div>
+            </header>
     
-
     <div id="root-index"></div>
     <div id="root-index-2"></div>
 

@@ -6,6 +6,10 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 from config import Config
 import time
+import re
+import pandas as pd
+from collections import defaultdict
+import uuid
 
 class ExternalAPIService:
     """Service for interacting with external bibliographic APIs"""
@@ -70,10 +74,10 @@ class ExternalAPIService:
                 'q': query,
                 'page': page,
                 'limit': per_page,
-                'fields': 'key,title,author_name,publish_date,publisher'
+                'fields': 'key,title,author_name,publish_date,publisher,subjects,first_sentence'
             }
             
-            response = requests.get(self.base_urls['openlibrary'], params=params)
+            response = requests.get(self.base_urls['openlibrary'], params=params, timeout=10)
             
             if response.status_code != 200:
                 logging.error(f"OpenLibrary API error: {response.status_code}")
@@ -83,14 +87,15 @@ class ExternalAPIService:
             
             results = []
             for doc in data.get('docs', []):
-                # Format the result to match our unified format
                 results.append({
                     'id': doc.get('key', '').replace('/works/', ''),
                     'title': doc.get('title', 'Untitled'),
                     'authors': doc.get('author_name', []),
                     'year': doc.get('publish_date', [''])[0][:4] if doc.get('publish_date') else None,
                     'publisher': ', '.join(doc.get('publisher', [])) if doc.get('publisher') else 'Unknown',
-                    'citations': 0,  # Open Library doesn't provide citation data
+                    'abstract': doc.get('first_sentence', {}).get('value', ''),
+                    'subjects': doc.get('subjects', []),
+                    'citations': 0,
                     'source': 'external_openlibrary'
                 })
             
@@ -112,7 +117,7 @@ class ExternalAPIService:
                 'f': offset
             }
             
-            response = requests.get(self.base_urls['dblp'], params=params)
+            response = requests.get(self.base_urls['dblp'], params=params, timeout=10)
             
             if response.status_code != 200:
                 logging.error(f"DBLP API error: {response.status_code}")
@@ -137,7 +142,7 @@ class ExternalAPIService:
                     'authors': authors,
                     'year': info.get('year', ''),
                     'journal': info.get('venue', ''),
-                    'citations': 0,  # DBLP doesn't provide citation data
+                    'citations': info.get('citations', 0),
                     'doi': info.get('doi', ''),
                     'source': 'external_dblp'
                 })
@@ -151,7 +156,6 @@ class ExternalAPIService:
         """Search arXiv API"""
         self._rate_limit('arxiv')
         try:
-            # arXiv uses start, not page
             start = (page - 1) * per_page
             
             params = {
@@ -162,47 +166,39 @@ class ExternalAPIService:
                 'sortOrder': 'descending'
             }
             
-            response = requests.get(self.base_urls['arxiv'], params=params)
+            response = requests.get(self.base_urls['arxiv'], params=params, timeout=10)
             
             if response.status_code != 200:
                 logging.error(f"arXiv API error: {response.status_code}")
                 return [], 0
             
-            # Parse XML response
             root = ET.fromstring(response.content)
-            
-            # Define namespace for arXiv API
             ns = {'atom': 'http://www.w3.org/2005/Atom',
-                  'arxiv': 'http://arxiv.org/schemas/atom'}
+                 'arxiv': 'http://arxiv.org/schemas/atom'}
             
-            # Get total results
             total_results = root.find('./atom:totalResults', ns)
             total = int(total_results.text) if total_results is not None else 0
             
             results = []
             for entry in root.findall('./atom:entry', ns):
                 title = entry.find('./atom:title', ns)
-                published = entry.find('./atom:published', ns)
                 summary = entry.find('./atom:summary', ns)
+                published = entry.find('./atom:published', ns)
                 
-                # Get author names
                 authors = []
                 for author in entry.findall('./atom:author', ns):
                     name = author.find('./atom:name', ns)
                     if name is not None:
                         authors.append(name.text)
                 
-                # Get DOI if available
                 doi = None
                 for link in entry.findall('./atom:link', ns):
                     if link.get('title') == 'doi':
                         doi = link.get('href').replace('http://dx.doi.org/', '')
                 
-                # Get arXiv ID
                 id_text = entry.find('./atom:id', ns).text
                 arxiv_id = id_text.split('/')[-1]
                 
-                # Get published year
                 year = None
                 if published is not None:
                     try:
@@ -217,7 +213,7 @@ class ExternalAPIService:
                     'year': year,
                     'abstract': summary.text if summary is not None else '',
                     'doi': doi,
-                    'citations': 0,  # arXiv doesn't provide citation data
+                    'citations': 0,
                     'source': 'external_arxiv'
                 })
             
@@ -227,78 +223,83 @@ class ExternalAPIService:
             return [], 0
     
     def search_zotero(self, query, page=1, per_page=10):
-        """Search Zotero API"""
+        """Search Zotero API with improved error handling"""
         self._rate_limit('zotero')
         try:
-            start = (page - 1) * per_page
-            
-            # Zotero API requires pagination parameters in headers
+            if not self.api_keys.get('zotero'):
+                logging.warning("Zotero API key not configured")
+                return [], 0
+
             headers = {
-                'Zotero-API-Version': '3'
+                'Zotero-API-Version': '3',
+                'Zotero-API-Key': self.api_keys['zotero']
             }
-            
-            if self.api_keys.get('zotero'):
-                headers['Zotero-API-Key'] = self.api_keys['zotero']
             
             params = {
                 'q': query,
-                'limit': per_page,
-                'start': start,
+                'limit': min(per_page, 100),
+                'start': (page - 1) * per_page,
                 'sort': 'date',
-                'direction': 'desc',
-                'format': 'json'
+                'direction': 'desc'
             }
             
-            response = requests.get(self.base_urls['zotero'], params=params, headers=headers)
+            response = requests.get(
+                self.base_urls['zotero'],
+                params=params,
+                headers=headers,
+                timeout=10
+            )
             
             if response.status_code != 200:
-                logging.error(f"Zotero API error: {response.status_code}")
+                logging.error(f"Zotero API error {response.status_code}: {response.text}")
                 return [], 0
-            
+                
             data = response.json()
-            
-            # Get total from headers
             total = int(response.headers.get('Total-Results', 0))
             
             results = []
             for item in data:
-                data = item.get('data', {})
-                
-                # Get authors
-                authors = []
-                for creator in data.get('creators', []):
-                    if creator.get('creatorType') == 'author':
-                        name_parts = [creator.get('lastName', ''), creator.get('firstName', '')]
-                        authors.append(' '.join(filter(None, name_parts)))
-                
-                # Get year
-                year = None
-                date = data.get('date', '')
-                if date:
-                    year_match = date.split('-')[0] if '-' in date else date.split('/')[0] if '/' in date else date
-                    if year_match and year_match.isdigit() and len(year_match) == 4:
-                        year = year_match
-                
-                results.append({
-                    'id': item.get('key', ''),
-                    'title': data.get('title', 'Untitled'),
-                    'authors': authors,
-                    'year': year,
-                    'journal': data.get('publicationTitle', ''),
-                    'doi': data.get('DOI', ''),
-                    'citations': 0,  # Zotero doesn't provide citation data
-                    'source': 'external_zotero'
-                })
+                try:
+                    item_data = item.get('data', {})
+                    authors = []
+                    for creator in item_data.get('creators', []):
+                        if creator.get('creatorType') == 'author':
+                            name = f"{creator.get('lastName', '')}, {creator.get('firstName', '')}".strip(', ')
+                            if name: authors.append(name)
+                    
+                    abstract = item_data.get('abstractNote', '')
+                    year = None
+                    if item_data.get('date'):
+                        try:
+                            year = str(pd.to_datetime(item_data['date']).year)
+                        except:
+                            year_match = re.search(r'\d{4}', item_data['date'])
+                            if year_match: year = year_match.group(0)
+                    
+                    results.append({
+                        'id': item.get('key', ''),
+                        'title': item_data.get('title', 'Untitled'),
+                        'authors': authors,
+                        'year': year,
+                        'journal': item_data.get('publicationTitle', ''),
+                        'doi': item_data.get('DOI', ''),
+                        'abstract': abstract,
+                        'citations': item_data.get('numCitations', 0),
+                        'source': 'external_zotero'
+                    })
+                except Exception as e:
+                    logging.error(f"Error processing Zotero item: {str(e)}")
+                    continue
             
             return results, total
+            
         except Exception as e:
-            logging.error(f"Zotero search error: {str(e)}")
+            logging.error(f"Zotero search failed: {str(e)}")
             return [], 0
     
     def get_paper_details(self, source, paper_id):
         """Get detailed information about a paper from a specific external source"""
         try:
-            # Implement source-specific paper detail retrieval
             if source == 'openlibrary':
                 return self._get_openlibrary_details(paper_id)
             elif source == 'dblp':
@@ -319,14 +320,13 @@ class ExternalAPIService:
         self._rate_limit('openlibrary')
         try:
             url = f"https://openlibrary.org/works/{paper_id}.json"
-            response = requests.get(url)
+            response = requests.get(url, timeout=10)
             
             if response.status_code != 200:
                 return None
             
             data = response.json()
             
-            # Get author names
             author_names = []
             if 'authors' in data and isinstance(data['authors'], list):
                 for author_ref in data['authors']:
@@ -343,6 +343,7 @@ class ExternalAPIService:
                 'title': data.get('title', 'Untitled'),
                 'authors': author_names,
                 'description': data.get('description', ''),
+                'abstract': data.get('first_sentence', {}).get('value', ''),
                 'subjects': data.get('subjects', []),
                 'created': data.get('created', {}).get('value', ''),
                 'source': 'external_openlibrary'
@@ -356,7 +357,7 @@ class ExternalAPIService:
         self._rate_limit('dblp')
         try:
             url = f"https://dblp.org/rec/{paper_id}.json"
-            response = requests.get(url)
+            response = requests.get(url, timeout=10)
             
             if response.status_code != 200:
                 return None
@@ -383,15 +384,12 @@ class ExternalAPIService:
         self._rate_limit('arxiv')
         try:
             url = f"http://export.arxiv.org/api/query?id_list={paper_id}"
-            response = requests.get(url)
+            response = requests.get(url, timeout=10)
             
             if response.status_code != 200:
                 return None
             
-            # Parse XML response
             root = ET.fromstring(response.content)
-            
-            # Define namespace for arXiv API
             ns = {'atom': 'http://www.w3.org/2005/Atom',
                  'arxiv': 'http://arxiv.org/schemas/atom'}
             
@@ -403,19 +401,16 @@ class ExternalAPIService:
             summary = entry.find('./atom:summary', ns)
             published = entry.find('./atom:published', ns)
             
-            # Get categories
             categories = []
             for category in entry.findall('./arxiv:category', ns):
                 categories.append(category.get('term'))
             
-            # Get authors
             authors = []
             for author in entry.findall('./atom:author', ns):
                 name = author.find('./atom:name', ns)
                 if name is not None:
                     authors.append(name.text)
             
-            # Get links
             links = {}
             for link in entry.findall('./atom:link', ns):
                 link_type = link.get('title', '')
@@ -440,40 +435,46 @@ class ExternalAPIService:
         """Get paper details from Zotero"""
         self._rate_limit('zotero')
         try:
-            url = f"{self.base_urls['zotero']}/{paper_id}"
-            
+            if not self.api_keys.get('zotero'):
+                return None
+
             headers = {
-                'Zotero-API-Version': '3'
+                'Zotero-API-Version': '3',
+                'Zotero-API-Key': self.api_keys['zotero']
             }
             
-            if self.api_keys.get('zotero'):
-                headers['Zotero-API-Key'] = self.api_keys['zotero']
-            
-            response = requests.get(url, headers=headers)
+            url = f"{self.base_urls['zotero']}/{paper_id}"
+            response = requests.get(url, headers=headers, timeout=10)
             
             if response.status_code != 200:
                 return None
             
-            data = response.json()
-            item_data = data.get('data', {})
+            item = response.json()
+            item_data = item.get('data', {})
             
-            # Get authors
             authors = []
             for creator in item_data.get('creators', []):
                 if creator.get('creatorType') == 'author':
-                    name_parts = [creator.get('lastName', ''), creator.get('firstName', '')]
-                    authors.append(' '.join(filter(None, name_parts)))
+                    name = f"{creator.get('lastName', '')}, {creator.get('firstName', '')}".strip(', ')
+                    if name: authors.append(name)
+            
+            year = None
+            if item_data.get('date'):
+                try:
+                    year = str(pd.to_datetime(item_data['date']).year)
+                except:
+                    year_match = re.search(r'\d{4}', item_data['date'])
+                    if year_match: year = year_match.group(0)
             
             return {
                 'id': paper_id,
                 'title': item_data.get('title', 'Untitled'),
                 'authors': authors,
-                'abstract': item_data.get('abstractNote', ''),
-                'publication': item_data.get('publicationTitle', ''),
-                'date': item_data.get('date', ''),
+                'year': year,
+                'journal': item_data.get('publicationTitle', ''),
                 'doi': item_data.get('DOI', ''),
-                'url': item_data.get('url', ''),
-                'tags': [tag.get('tag', '') for tag in item_data.get('tags', [])],
+                'abstract': item_data.get('abstractNote', ''),
+                'citations': item_data.get('numCitations', 0),
                 'source': 'external_zotero'
             }
         except Exception as e:

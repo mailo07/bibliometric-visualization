@@ -1,4 +1,3 @@
-// src/components/SearchPage/SummaryTab.js
 import React, { useState, useEffect } from 'react';
 import { getSummaryById } from '../../services/bibliometricsService';
 import Preloader from './Preloader';
@@ -9,25 +8,55 @@ const SummaryTab = ({ selectedWork, resetSelectedWork }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchSummary = async () => {
+    const fetchDetails = async () => {
       if (!selectedWork) return;
       
       setLoading(true);
-      setError(null);
-      
       try {
-        const data = await getSummaryById(selectedWork.id);
-        setSummaryData(data);
+        // Use existing data if available
+        if (selectedWork.abstract || selectedWork.doi) {
+          setSummaryData({
+            abstract: selectedWork.abstract,
+            doi: selectedWork.doi,
+            citations: selectedWork.citation_count,
+            keywords: selectedWork.keywords || [],
+            references: selectedWork.references || []
+          });
+        } else {
+          // Fallback to API call
+          const data = await getSummaryById(selectedWork.id);
+          setSummaryData(data || {
+            abstract: selectedWork.abstract || 'No abstract available',
+            citations: selectedWork.citation_count || 0,
+            doi: selectedWork.doi || '',
+            keywords: [],
+            references: []
+          });
+        }
       } catch (err) {
-        console.error('Error fetching summary data:', err);
-        setError('Failed to load summary. Please try again.');
+        setError('Failed to load details');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSummary();
+    fetchDetails();
   }, [selectedWork]);
+
+  const renderDoiLink = (doi) => {
+    if (!doi) return 'N/A';
+    const cleanDoi = doi.replace('https://doi.org/', '');
+    return (
+      <a 
+        href={`https://doi.org/${cleanDoi}`} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-blue-600 hover:underline"
+      >
+        {cleanDoi}
+      </a>
+    );
+  };
 
   if (!selectedWork) {
     return (
@@ -93,7 +122,7 @@ const SummaryTab = ({ selectedWork, resetSelectedWork }) => {
             <p className="text-gray-700">{summaryData.abstract || 'No abstract available'}</p>
           </div>
 
-          {summaryData.keywords && (
+          {summaryData.keywords && summaryData.keywords.length > 0 && (
             <div>
               <h4 className="font-medium text-purple-700">Keywords</h4>
               <div className="flex flex-wrap gap-2 mt-1">
@@ -112,24 +141,10 @@ const SummaryTab = ({ selectedWork, resetSelectedWork }) => {
               <p>{summaryData.citations || 0}</p>
             </div>
             <div>
-              <h4 className="font-medium text-purple-700">Impact Factor</h4>
-              <p>{summaryData.impact_factor || 'N/A'}</p>
+              <h4 className="font-medium text-purple-700">DOI</h4>
+              <p>{renderDoiLink(summaryData.doi)}</p>
             </div>
           </div>
-
-          {summaryData.doi && (
-            <div>
-              <h4 className="font-medium text-purple-700">DOI</h4>
-              <a 
-                href={`https://doi.org/${summaryData.doi}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                {summaryData.doi}
-              </a>
-            </div>
-          )}
 
           {summaryData.references && summaryData.references.length > 0 && (
             <div>
@@ -143,7 +158,23 @@ const SummaryTab = ({ selectedWork, resetSelectedWork }) => {
           )}
         </div>
       ) : (
-        <p className="text-gray-600">No summary data available for this work.</p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <h4 className="font-medium text-purple-700">Authors</h4>
+              <p>{selectedWork.author || 'N/A'}</p>
+            </div>
+            <div>
+              <h4 className="font-medium text-purple-700">Published</h4>
+              <p>{selectedWork.published || 'N/A'}</p>
+            </div>
+          </div>
+          <div>
+            <h4 className="font-medium text-purple-700">Journal/Source</h4>
+            <p>{selectedWork.journal || 'N/A'}</p>
+          </div>
+          <p className="text-gray-600">No additional summary data available for this work.</p>
+        </div>
       )}
     </div>
   );

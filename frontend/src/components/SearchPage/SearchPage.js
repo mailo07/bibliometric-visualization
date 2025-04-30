@@ -1,4 +1,3 @@
-// SearchPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { search, getBibliometricMetrics, getPaperDetails } from '../../services/bibliometricsService';
 import NetworkGraph from './NetworkGraph';
@@ -55,48 +54,52 @@ const SearchPage = () => {
     setError(null);
     try { 
       const response = await search(searchTerm, 'all', page, resultsPerPage, true);
-      console.log('API Response:', response);
       
-      let processedResults = [];
-      if (response) {
-        if (response.results && Array.isArray(response.results)) {
-          processedResults = response.results;
-        } else if (response.data && Array.isArray(response.data)) {
-          processedResults = response.data;
-        } else if (Array.isArray(response)) {
-          processedResults = response;
-        } else if (typeof response === 'object') {
-          processedResults = [response];
-        }
-      }
-      
-      const resultsWithIds = processedResults.map((item, index) => ({
-        ...item, 
-        id: item.id || item.doi || `result-${index}`,
-        title: item.title || 'Unknown Title',
-        author: item.author || item.authors || 'Unknown Author',
-        published: item.published || item.year || 'Unknown Date',
-        journal: item.journal || item.source || 'Unknown Source',
-        citation_count: item.citation_count || item.citations || 0
+      // Process results with proper fallbacks
+      const processedResults = (response?.results || []).map(item => ({
+        ...item,
+        id: item.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+        title: item.title || 'Untitled',
+        author: typeof item.author === 'string' ? item.author : 
+               (Array.isArray(item.authors) ? item.authors.join(', ') : 'Unknown Author'),
+        published: item.year || item.published || '',
+        journal: item.journal || item.source || '',
+        citation_count: item.citations || 0,
+        abstract: item.abstract || '',
+        doi: item.doi || '',
+        source: item.source || 'unknown'
       }));
-      
-      console.log('Processed Results:', resultsWithIds);
-      setData(resultsWithIds);
+
+      setData(processedResults);
       setCurrentPage(page);
       
+      // Use metrics from response or calculate fallback
       const responseMetrics = response?.metrics || {};
       setMetrics({
-        scholarlyWorks: responseMetrics.totalWorks || resultsWithIds.length || 0,
+        scholarlyWorks: responseMetrics.scholarlyWorks || processedResults.length,
         worksCited: responseMetrics.worksCited || 
-                    resultsWithIds.reduce((sum, item) => sum + parseInt(item.citation_count || 0), 0) || 0,
+                   processedResults.reduce((sum, item) => sum + (item.citation_count || 0), 0),
         frequentlyCited: responseMetrics.frequentlyCited || 
-                         resultsWithIds.filter(item => parseInt(item.citation_count || 0) > 10).length || 0
+                        processedResults.filter(item => (item.citation_count || 0) > 10).length
       });
-    } catch (err) { 
-      console.error('API Error:', err);
-      setError(err.message || 'An error occurred during the search.');
+
+      // Update charts with actual data
+      setBibliometricCharts({
+        citationTrends: responseMetrics.citation_trends || [],
+        topAuthors: responseMetrics.top_authors || [],
+        publicationDistribution: responseMetrics.publication_distribution || []
+      });
+      
+    } catch (err) {
+      console.error('Search error:', err);
+      setError(err.message || 'Search failed');
       setData([]);
       setMetrics({ scholarlyWorks: 0, worksCited: 0, frequentlyCited: 0 });
+      setBibliometricCharts({ 
+        citationTrends: [], 
+        topAuthors: [], 
+        publicationDistribution: [] 
+      });
     } finally {
       setLoading(false);
     }
@@ -105,7 +108,6 @@ const SearchPage = () => {
   const fetchBibliometricMetrics = useCallback(async (searchTerm) => {
     try { 
       const chartsData = await getBibliometricMetrics(searchTerm);
-      console.log('Bibliometric metrics:', chartsData);
       setBibliometricCharts(chartsData);
     } catch (error) {
       console.error('Failed to fetch bibliometric metrics:', error);

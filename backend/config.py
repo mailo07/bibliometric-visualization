@@ -15,15 +15,12 @@ class Config:
     ENV = os.getenv('ENV', 'development')
     
     # JWT settings
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-key-for-development')
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)  # Added token expiration
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-key')
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
     
     # Database settings (updated with connection timeout)
     DB_HOST = os.environ.get('DB_HOST', 'localhost')
-    
-    # Changed to standard PostgreSQL port
-    DB_PORT = int(os.environ.get('DB_PORT', 8080))  # Standard PostgreSQL port
-    
+    DB_PORT = int(os.environ.get('DB_PORT', 8080))      
     DB_NAME = os.environ.get('DB_NAME', 'bibliometric_data')
     DB_USER = os.environ.get('DB_USER', 'postgres')
     DB_PASSWORD = os.environ.get('DB_PASSWORD', 'vivo18#')
@@ -82,4 +79,6 @@ from config import Config
 
 app = Flask(__name__)
 # Configure CORS
+CORS_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
+
 CORS(app, resources={r"/api/*": {"origins": Config.CORS_ORIGINS}})
