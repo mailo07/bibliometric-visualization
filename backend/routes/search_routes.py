@@ -62,7 +62,7 @@ def api_search():
     
     try:
         page = max(1, int(request.args.get('page', 1)))
-        per_page = min(100, max(1, int(request.args.get('per_page', 20))))  # Increased max per_page to 100
+        per_page = min(50, max(1, int(request.args.get('per_page', 20))))  # Default increased to 20
         logging.info(f"Search parameters: page={page}, per_page={per_page}")
     except ValueError:
         return jsonify({
@@ -91,10 +91,8 @@ def api_search():
     
     debug_sources = request.args.get('debug_sources', 'false').lower() == 'true'
     
-    # Skip cache if debug_sources is true or if explicitly requested to skip cache
-    skip_cache = debug_sources or request.args.get('skip_cache', 'false').lower() == 'true'
-    
-    if not skip_cache:
+    # Skip cache if debug_sources is true 
+    if not debug_sources:
         # Check cache first
         cached_result = cache.get(cache_key)
         if cached_result:
@@ -105,15 +103,15 @@ def api_search():
         search_service = SearchService()
         
         # Priority parameter to ensure more even distribution from all sources
-        balance_sources = request.args.get('balance_sources', 'true').lower() == 'true'
+        balance_sources = True
         
         search_results = search_service.search_publications(
             query=query,
             page=page,
             per_page=per_page,
-            filters=request.args.to_dict(),
             include_external=include_external,
-            balance_sources=balance_sources
+            balance_sources=balance_sources,
+            filters=request.args.to_dict()
         )
         
         # Log the number of results and source distribution for debugging
@@ -158,7 +156,7 @@ def api_search():
         }
         
         # Cache the results
-        if not skip_cache:
+        if not debug_sources:
             cache.set(cache_key, response, timeout=Config.CACHE_TIMEOUT)
         return jsonify(response)
         
@@ -179,9 +177,6 @@ def api_search():
                 'frequentlyCited': 0
             }
         }), 200  # Still return 200 OK but with empty results
-
-# Rest of the file remains the same
-# ...
 
 def calculate_metrics(results):
     """Calculate metrics from search results (fallback function)"""

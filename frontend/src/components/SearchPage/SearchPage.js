@@ -43,8 +43,8 @@ const SearchPage = () => {
     }
   });
 
-  // Get initial query from URL parameters - fixed dependency
-  const queryParams = useMemo(() => new URLSearchParams(window.location.search), []); 
+  // Get initial query from URL using useMemo to avoid dependency issues
+  const queryParams = useMemo(() => new URLSearchParams(window.location.search), [window.location.search]);
   const query = useMemo(() => queryParams.get('query') || '', [queryParams]);
   const pageParam = useMemo(() => parseInt(queryParams.get('page'), 10) || 1, [queryParams]);
   
@@ -55,16 +55,12 @@ const SearchPage = () => {
     }
   }, [query, pageParam, currentPage]);
   
-  // Enhanced fetchSearchResults function with better per_page handling
+  // Enhanced fetchSearchResults function with filter support
   const fetchSearchResults = useCallback(async (searchTerm, page = 1, additionalFilters = {}) => { 
     setLoading(true);
     setError(null);
-    
-    console.log(`Fetching search results for "${searchTerm}" on page ${page} with per_page=${resultsPerPage}`);
-    console.log("Additional filters:", additionalFilters);
-    
     try { 
-      // Explicitly include the per_page parameter
+      // Combine the page, per_page and any additional filters
       const searchParams = {
         page,
         per_page: resultsPerPage,
@@ -72,10 +68,7 @@ const SearchPage = () => {
         ...additionalFilters
       };
       
-      console.log("Final search params:", searchParams);
-      
       const response = await search(searchTerm, 'all', page, resultsPerPage, true, searchParams);
-      console.log("API response:", response);
       
       // Process results with proper fallbacks
       const processedResults = (response?.results || []).map(item => ({
@@ -92,7 +85,6 @@ const SearchPage = () => {
         source: item.source || 'unknown'
       }));
 
-      console.log(`Processed ${processedResults.length} results`);
       setData(processedResults);
       setCurrentPage(page);
       
@@ -101,9 +93,9 @@ const SearchPage = () => {
       setMetrics({
         scholarlyWorks: responseMetrics.scholarlyWorks || processedResults.length,
         worksCited: responseMetrics.worksCited || 
-                   processedResults.reduce((sum, item) => sum + (parseInt(item.citation_count) || 0), 0),
+                   processedResults.reduce((sum, item) => sum + (item.citation_count || 0), 0),
         frequentlyCited: responseMetrics.frequentlyCited || 
-                        processedResults.filter(item => (parseInt(item.citation_count) || 0) > 10).length
+                        processedResults.filter(item => (item.citation_count || 0) > 10).length
       });
 
       // Update charts with actual data
@@ -146,20 +138,17 @@ const SearchPage = () => {
       if (queryParams.get('author')) filters.authorFilter = queryParams.get('author');
       if (queryParams.get('journal')) filters.journalFilter = queryParams.get('journal');
       
-      // Explicitly add per_page to filters
-      filters.per_page = resultsPerPage;
-      
       fetchSearchResults(query, pageParam, filters);
       fetchBibliometricMetrics(query);
     }
-  }, [fetchSearchResults, fetchBibliometricMetrics, query, pageParam, queryParams, resultsPerPage]);
+  }, [fetchSearchResults, fetchBibliometricMetrics, query, pageParam, queryParams]);
   
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       const newUrl = `${window.location.pathname}?query=${encodeURIComponent(searchQuery.trim())}`;
       window.history.pushState({ path: newUrl }, '', newUrl);
-      fetchSearchResults(searchQuery.trim(), 1, { per_page: resultsPerPage });
+      fetchSearchResults(searchQuery.trim(), 1);
       fetchBibliometricMetrics(searchQuery.trim());
       setSelectedWork(null);
       setCurrentPage(1);
@@ -169,9 +158,7 @@ const SearchPage = () => {
   const handleWorkSelection = async (work) => {
     try {
       setLoading(true);
-      console.log("Selected work:", work);
       const details = await getPaperDetails(work.id || work.title, work.source);
-      console.log("Paper details:", details);
       setSelectedWork({ ...work, ...details });
       handleTabSwitch('citation');
     } catch (error) {
@@ -195,7 +182,7 @@ const SearchPage = () => {
     setCurrentPage(1);
     
     // Process filter values for backend
-    const processedFilters = {...newFilters, per_page: resultsPerPage};
+    const processedFilters = {...newFilters};
     
     // Apply year range formatting if needed
     if (newFilters.dateRange) {
@@ -234,8 +221,7 @@ const SearchPage = () => {
       journalFilter: '',
       titleFilter: '',
       publisherFilter: '',
-      identifierTypes: { doi: false, pmid: false, pmcid: false, arxiv: false, isbn: false },
-      per_page: resultsPerPage
+      identifierTypes: { doi: false, pmid: false, pmcid: false, arxiv: false, isbn: false }
     };
     
     setCurrentFilters(emptyFilters);
@@ -251,60 +237,49 @@ const SearchPage = () => {
       window.history.pushState({ path: newUrl }, '', newUrl);
       
       // Reload search results without filters
-      fetchSearchResults(searchQuery.trim(), 1, { per_page: resultsPerPage });
+      fetchSearchResults(searchQuery.trim(), 1);
     }
   };
   
   // Apply clientside filters to search results
-  const filteredData = useMemo(() => {
-    console.log(`Client-side filtering ${data.length} results`);
+  const filteredData = data.filter((item) => {
+    const { authorFilter, titleFilter, journalFilter, publisherFilter, dateRange, identifierTypes } = currentFilters;
+    const authorMatch = !authorFilter || (item.author && item.author.toLowerCase().includes(authorFilter.toLowerCase()));
+    const titleMatch = !titleFilter || (item.title && item.title.toLowerCase().includes(titleFilter.toLowerCase()));
+    const journalMatch = !journalFilter || (item.journal && item.journal.toLowerCase().includes(journalFilter.toLowerCase()));
+    const publisherMatch = !publisherFilter || (item.publisher && item.publisher.toLowerCase().includes(publisherFilter.toLowerCase()));
     
-    return data.filter((item) => {
-      const { authorFilter, titleFilter, journalFilter, publisherFilter, dateRange, identifierTypes } = currentFilters;
-      const authorMatch = !authorFilter || (item.author && item.author.toLowerCase().includes(authorFilter.toLowerCase()));
-      const titleMatch = !titleFilter || (item.title && item.title.toLowerCase().includes(titleFilter.toLowerCase()));
-      const journalMatch = !journalFilter || (item.journal && item.journal.toLowerCase().includes(journalFilter.toLowerCase()));
-      const publisherMatch = !publisherFilter || (item.publisher && item.publisher.toLowerCase().includes(publisherFilter.toLowerCase()));
+    // Date filtering
+    let dateMatch = true;
+    if (dateRange.start || dateRange.end) {
+      // Extract year from published date
+      const publishedYear = item.published ? parseInt(item.published.toString().substring(0, 4), 10) : 0;
       
-      // Date filtering
-      let dateMatch = true;
-      if (dateRange.start || dateRange.end) {
-        // Extract year from published date
-        const publishedYear = item.published ? parseInt(item.published.toString().substring(0, 4), 10) : 0;
-        
-        if (dateRange.start && dateRange.end) {
-          const startYear = parseInt(dateRange.start, 10);
-          const endYear = parseInt(dateRange.end, 10);
-          dateMatch = publishedYear >= startYear && publishedYear <= endYear;
-        } else if (dateRange.start) {
-          const startYear = parseInt(dateRange.start, 10);
-          dateMatch = publishedYear >= startYear;
-        } else if (dateRange.end) {
-          const endYear = parseInt(dateRange.end, 10);
-          dateMatch = publishedYear <= endYear;
-        }
+      if (dateRange.start && dateRange.end) {
+        const startYear = parseInt(dateRange.start, 10);
+        const endYear = parseInt(dateRange.end, 10);
+        dateMatch = publishedYear >= startYear && publishedYear <= endYear;
+      } else if (dateRange.start) {
+        const startYear = parseInt(dateRange.start, 10);
+        dateMatch = publishedYear >= startYear;
+      } else if (dateRange.end) {
+        const endYear = parseInt(dateRange.end, 10);
+        dateMatch = publishedYear <= endYear;
       }
-      
-      // Identifier filtering
-      const identifierMatch = !Object.values(identifierTypes).some(v => v) || (item.identifiers && (
-          (identifierTypes.doi && item.identifiers.includes('doi')) || (identifierTypes.pmid && item.identifiers.includes('pmid')) ||
-          (identifierTypes.pmcid && item.identifiers.includes('pmcid')) || (identifierTypes.arxiv && item.identifiers.includes('arxiv')) ||
-          (identifierTypes.isbn && item.identifiers.includes('isbn'))
-      ));
-      return (authorMatch && titleMatch && journalMatch && publisherMatch && dateMatch && identifierMatch);
-    });
-  }, [data, currentFilters]);
+    }
+    
+    // Identifier filtering
+    const identifierMatch = !Object.values(identifierTypes).some(v => v) || (item.identifiers && (
+        (identifierTypes.doi && item.identifiers.includes('doi')) || (identifierTypes.pmid && item.identifiers.includes('pmid')) ||
+        (identifierTypes.pmcid && item.identifiers.includes('pmcid')) || (identifierTypes.arxiv && item.identifiers.includes('arxiv')) ||
+        (identifierTypes.isbn && item.identifiers.includes('isbn'))
+    ));
+    return (authorMatch && titleMatch && journalMatch && publisherMatch && dateMatch && identifierMatch);
+  });
   
   // Calculate total pages for pagination
   const totalPages = Math.max(1, Math.ceil(filteredData.length / resultsPerPage));
-  
-  // Paginated data with memoization
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * resultsPerPage;
-    const endIndex = startIndex + resultsPerPage;
-    console.log(`Paginating data: showing items ${startIndex}-${endIndex} of ${filteredData.length}`);
-    return filteredData.slice(startIndex, endIndex);
-  }, [filteredData, currentPage, resultsPerPage]);
+  const paginatedData = filteredData.slice((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage);
   
   // Enhanced page change handler
   const handlePageChange = (newPage) => {
@@ -321,11 +296,7 @@ const SearchPage = () => {
     // Fetch results for the new page, including current filters
     if (searchQuery.trim()) {
       // Convert currentFilters to backend-compatible format
-      const backendFilters = { 
-        ...currentFilters,
-        per_page: resultsPerPage
-      };
-      
+      const backendFilters = { ...currentFilters };
       if (currentFilters.dateRange) {
         if (currentFilters.dateRange.start) {
           backendFilters.year_from = currentFilters.dateRange.start;
@@ -472,14 +443,13 @@ const SearchPage = () => {
               <div className={`results-container bg-white/90 shadow-md rounded p-4 overflow-x-auto transition-opacity duration-800 ease-in-out ${resultsTransition ? 'opacity-0' : 'opacity-100'}`}>
                 {filteredData.length > 0 ? (
                   <>
-                    <p className="text-gray-600 mb-2">Showing {paginatedData.length} of {filteredData.length} results</p>
                     <table className="w-full table-auto border-collapse">
                       <thead><tr className="bg-purple-100 text-left">
                         <th className="p-2 border font-semibold text-purple-800">Title</th>
                         <th className="p-2 border font-semibold text-purple-800">Author</th>
                         <th className="p-2 border font-semibold text-purple-800">Published</th>
                         <th className="p-2 border font-semibold text-purple-800">Journal / Source</th>
-                        <th className="p-2 border font-semibold text-purple-800">Citations</th>
+                        <th className="p-2 border font-semibold text-purple-800">Identifiers</th>
                       </tr></thead>
                       <tbody>{paginatedData.map((item) => (
                         <tr key={item.id || item.title} className="hover:bg-purple-50 cursor-pointer" onClick={() => handleWorkSelection(item)}>
@@ -487,7 +457,7 @@ const SearchPage = () => {
                           <td className="p-2 border">{item.author}</td>
                           <td className="p-2 border">{item.published}</td>
                           <td className="p-2 border">{item.journal}</td>
-                          <td className="p-2 border">{item.citations || item.citation_count || 0}</td>
+                          <td className="p-2 border">{renderIdentifiers(item.identifiers)}</td>
                         </tr>
                       ))}</tbody>
                     </table>
