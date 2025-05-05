@@ -3,6 +3,10 @@ import os
 from datetime import timedelta
 from flask import Flask
 from dotenv import load_dotenv
+
+# Load environment variables from .env file if present
+load_dotenv()
+
 class Config:
     # Flask settings
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
@@ -18,37 +22,40 @@ class Config:
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-key')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
     
-    # Database settings (updated with connection timeout)
+    # Database settings
     DB_HOST = os.environ.get('DB_HOST', 'localhost')
     DB_PORT = int(os.environ.get('DB_PORT', 8080))      
     DB_NAME = os.environ.get('DB_NAME', 'bibliometric_data')
     DB_USER = os.environ.get('DB_USER', 'postgres')
     DB_PASSWORD = os.environ.get('DB_PASSWORD', 'vivo18#')
-    DB_CONNECT_TIMEOUT = 5  # Added connection timeout
+    DB_CONNECT_TIMEOUT = 5  # Connection timeout
+    
+    # Construct DATABASE_URL from individual components
+    DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?connect_timeout={DB_CONNECT_TIMEOUT}"
     
     # SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?connect_timeout={DB_CONNECT_TIMEOUT}"
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Cache settings (unchanged)
+    # Cache settings
     CACHE_TYPE = 'simple'
-    CACHE_DEFAULT_TIMEOUT = 300
+    CACHE_DEFAULT_TIMEOUT = 300  # 5 minutes
     CACHE_TIMEOUT = 300
     
-    # API Configuration (unchanged)
+    # API Configuration
     CROSSREF_API_KEY = os.environ.get('CROSSREF_API_KEY', '')
     SEMANTIC_SCHOLAR_API_KEY = os.environ.get('SEMANTIC_SCHOLAR_API_KEY', '')
     OPENALEX_API_KEY = os.environ.get('OPENALEX_API_KEY', 'demo_key')
     PUBMED_API_KEY = os.environ.get('PUBMED_API_KEY', '')
     ZOTERO_API_KEY = os.getenv('ZOTERO_API_KEY', '')
     
-    # Application identification (unchanged)
+    # Application identification
     ADMIN_EMAIL = '404brain.dead@gmail.com'
     APP_NAME = 'BiblioKnow'
     APP_VERSION = '1.0'
     EXTERNAL_API_RATE_LIMIT = 5
 
-    # CORS settings (added)
+    # CORS settings
     CORS_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
     
     @classmethod
@@ -60,6 +67,7 @@ class Config:
             cls.OPENALEX_API_KEY,
             cls.PUBMED_API_KEY
         ])
+    
     # Logging configuration
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
     
@@ -69,16 +77,10 @@ class Config:
     ARXIV_RATE_LIMIT = int(os.getenv('ARXIV_RATE_LIMIT', 20))
     ZOTERO_RATE_LIMIT = int(os.getenv('ZOTERO_RATE_LIMIT', 30))
     
-    # File upload settings (unchanged)
+    # File upload settings
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads'))
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max upload size
-
-# Add to your main Flask app.py file:
-from flask_cors import CORS
-from config import Config
-
-app = Flask(__name__)
-# Configure CORS
-CORS_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
-
-CORS(app, resources={r"/api/*": {"origins": Config.CORS_ORIGINS}})
+    
+    ELASTICSEARCH_HOST = os.environ.get('ELASTICSEARCH_HOST', 'localhost')
+    ELASTICSEARCH_PORT = int(os.environ.get('ELASTICSEARCH_PORT', 9200))
+    ELASTICSEARCH_ENABLED = os.environ.get('ELASTICSEARCH_ENABLED', 'False').lower() == 'true'

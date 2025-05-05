@@ -1,151 +1,115 @@
-# test_password.py
-from werkzeug.security import generate_password_hash, check_password_hash
-import hashlib
+#!/usr/bin/env python
+# test_password_and_fix.py - A utility to test and fix password validation issues
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from werkzeug.security import generate_password_hash, check_password_hash
+import argparse
 import sys
 
-# Database connection parameters - update these
-DB_CONFIG = {
-    "dbname": "bibliometric_data",  # Update to your actual database name
-    "user": "postgres",
-    "password": "vivo18#",
-    "host": "localhost",
-    "port": "8080"
-}
+def parse_args():
+    parser = argparse.ArgumentParser(description="Test and fix password validation issues")
+    parser.add_argument('--username', required=True, help='Username to test/fix')
+    parser.add_argument('--password', required=True, help='Expected password')
+    parser.add_argument('--fix', action='store_true', help='Fix the password if validation fails')
+    parser.add_argument('--dbname', default='bibliometric_data', help='Database name')
+    parser.add_argument('--dbuser', default='postgres', help='Database user')
+    parser.add_argument('--dbpass', default='vivo18#', help='Database password')
+    parser.add_argument('--dbhost', default='localhost', help='Database host')
+    parser.add_argument('--dbport', default='8080', help='Database port')
+    return parser.parse_args()
 
-def get_db_connection():
-    """Create a connection to the PostgreSQL database"""
+def get_connection(dbname, dbuser, dbpass, dbhost, dbport):
+    """Create a connection to the database"""
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = psycopg2.connect(
+            dbname=dbname,
+            user=dbuser,
+            password=dbpass,
+            host=dbhost,
+            port=dbport
+        )
         return conn
-    except psycopg2.Error as e:
-        print(f"Database connection error: {e}")
-        return None
+    except Exception as e:
+        print(f"Error connecting to database: {e}")
+        sys.exit(1)
 
-def test_password_workflow(username, password):
-    """Test both password storage and verification"""
-    print("=" * 50)
-    print(f"Testing for user: {username}")
-    print("=" * 50)
-    
-    # Step 1: Check if user exists and get stored password
-    conn = get_db_connection()
-    if not conn:
-        print("Failed to connect to database")
-        return
-    
+def test_password(conn, username, password):
+    """Test if the provided password matches what's in the database"""
     try:
-        # Get the current stored password hash
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT password FROM users WHERE username = %s", (username,))
+            # Get the user's stored password hash
+            cur.execute("SELECT id, username, password FROM users WHERE username = %s", (username,))
             user = cur.fetchone()
             
             if not user:
-                print(f"User {username} not found in database")
-                return
+                print(f"User '{username}' not found in database")
+                return False, None
             
             stored_hash = user['password']
-            print(f"Stored password hash: {stored_hash}")
+            print(f"User ID: {user['id']}")
+            print(f"Stored hash: {stored_hash}")
             
-            # Test method 1: Direct verification (should work if single hash is used)
-            print("\nMethod 1: Direct verification")
-            is_valid_direct = check_password_hash(stored_hash, password)
-            print(f"Direct password verification result: {is_valid_direct}")
+            # Test direct validation
+            is_valid = check_password_hash(stored_hash, password)
+            print(f"Password validation result: {is_valid}")
             
-            # Test method 2: SHA256 + verification (should work if double hash is used)
-            print("\nMethod 2: SHA256 + verification")
-            sha_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
-            print(f"Generated SHA256 hash: {sha_hash}")
-            is_valid_sha = check_password_hash(stored_hash, sha_hash)
-            print(f"SHA256 password verification result: {is_valid_sha}")
-            
-            # For debugging - try recreating the hash
-            print("\nDebug: Hash Generation")
-            direct_hash = generate_password_hash(password, method='pbkdf2:sha256')
-            print(f"New direct hash: {direct_hash}")
-            
-            sha_hash_again = hashlib.sha256(password.encode('utf-8')).hexdigest()
-            double_hash = generate_password_hash(sha_hash_again, method='pbkdf2:sha256')
-            print(f"New double hash: {double_hash}")
-            
-            # Compare values
-            print("\nHash Equality Check")
-            print(f"Stored hash == Direct hash?: {stored_hash == direct_hash}")
-            print(f"Stored hash == Double hash?: {stored_hash == double_hash}")
-            
-            if is_valid_direct:
-                print("\n✅ Single hash verification succeeded")
-            elif is_valid_sha:
-                print("\n✅ Double hash verification succeeded")
-            else:
-                print("\n❌ All verification methods failed")
-                
+            return is_valid, user['id']
     except Exception as e:
-        print(f"Error during testing: {e}")
-    finally:
-        conn.close()
+        print(f"Error testing password: {e}")
+        return False, None
 
-def reset_user_password(username, password, method="direct"):
-    """Reset a user's password using specified method"""
-    print("=" * 50)
-    print(f"Resetting password for user: {username}")
-    print("=" * 50)
+def fix_password(conn, user_id, username, password):
+    """Fix the password hash for the user"""
+    try:
+        with conn.cursor() as cur:
+            # Generate a new hash for the password
+            new_hash = generate_password_hash(password)
+            print(f"Generated new hash: {new_hash}")
+            
+            # Update the user's password
+            cur.execute("UPDATE users SET password = %s WHERE id = %s", (new_hash, user_id))
+            conn.commit()
+            print(f"Password hash updated for user '{username}'")
+            
+            # Verify the fix worked
+            print("\nVerifying fix...")
+            is_valid, _ = test_password(conn, username, password)
+            
+            if is_valid:
+                print("✅ Password fix verified successfully!")
+            else:
+                print("❌ Password fix failed verification!")
+                
+            return is_valid
+    except Exception as e:
+        conn.rollback()
+        print(f"Error fixing password: {e}")
+        return False
+
+def main():
+    args = parse_args()
     
-    conn = get_db_connection()
-    if not conn:
-        print("Failed to connect to database")
-        return
+    print("Password Validation Test and Fix Tool")
+    print("====================================")
+    print(f"Testing password for user: {args.username}")
+    
+    conn = get_connection(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport)
     
     try:
-        # Generate password hash based on selected method
-        if method == "direct":
-            # Single hash method
-            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-            print(f"Generated direct hash: {hashed_password}")
-        else:
-            # Double hash method
-            sha_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
-            hashed_password = generate_password_hash(sha_hash, method='pbkdf2:sha256')
-            print(f"Generated double hash: {hashed_password}")
+        is_valid, user_id = test_password(conn, args.username, args.password)
         
-        # Update the password in the database
-        with conn.cursor() as cur:
-            cur.execute("UPDATE users SET password = %s WHERE username = %s RETURNING id", 
-                        (hashed_password, username))
-            result = cur.fetchone()
-            conn.commit()
+        if not is_valid:
+            print("\nPassword validation failed!")
             
-            if result:
-                print(f"✅ Password updated for user {username}")
+            if args.fix:
+                print("Attempting to fix password...")
+                fix_password(conn, user_id, args.username, args.password)
             else:
-                print(f"❌ User {username} not found")
-                
-    except Exception as e:
-        print(f"Error during password reset: {e}")
-        conn.rollback()
+                print("Run with --fix option to update the password hash")
+        else:
+            print("\nPassword validation successful!")
     finally:
         conn.close()
 
-def print_help():
-    print("Usage:")
-    print("  python test_password.py test <username> <password>")
-    print("  python test_password.py reset <username> <password> [direct|double]")
-    print("\nExamples:")
-    print("  python test_password.py test poppy02 password123")
-    print("  python test_password.py reset poppy02 newpassword123 direct")
-
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or sys.argv[1] not in ("test", "reset"):
-        print_help()
-        sys.exit(1)
-        
-    command = sys.argv[1]
-    
-    if command == "test" and len(sys.argv) >= 4:
-        test_password_workflow(sys.argv[2], sys.argv[3])
-    elif command == "reset" and len(sys.argv) >= 4:
-        method = "direct" if len(sys.argv) < 5 else sys.argv[4]
-        reset_user_password(sys.argv[2], sys.argv[3], method)
-    else:
-        print_help()
+    main()

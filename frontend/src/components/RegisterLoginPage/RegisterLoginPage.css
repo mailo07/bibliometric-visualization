@@ -25,7 +25,7 @@
 .register-page-wrapper .container {
     position: relative;
     width: 75%;
-    height: 550px;
+    height: 650px; /* Increased height for the registration form */
     background: #fff;
     margin: 20px;
     border-radius: 30px;
@@ -34,8 +34,8 @@
 }
 
 .register-page-wrapper .container h1 {
-    font-size: 36px;
-    margin: -10px 0;
+    font-size: 32px;
+    margin: -10px 0 15px 0;
 }
 
 .register-page-wrapper .container p {
@@ -45,6 +45,9 @@
 
 .register-page-wrapper form {
     width: 100%;
+    max-height: 100%;
+    overflow-y: auto; /* Added scrolling for longer forms */
+    padding-right: 5px;
 }
 
 .register-page-wrapper .form-box {
@@ -57,7 +60,7 @@
     align-items: center;
     color: #333;
     text-align: center;
-    padding: 40px;
+    padding: 30px 40px;
     z-index: 1;
     transition: .6s ease-in-out 1.2s, visibility 0s 1s;
 }
@@ -76,17 +79,17 @@
 
 .register-page-wrapper .input-box {
     position: relative;
-    margin: 30px 0;
+    margin: 20px 0; /* Reduced margin for compact layout */
 }
 
 .register-page-wrapper .input-box input {
     width: 100%;
-    padding: 13px 50px 13px 20px;
+    padding: 10px 45px 10px 20px; /* Slightly reduced padding */
     background: #eee;
     border-radius: 8px;
     border: none;
     outline: none;
-    font-size: 16px;
+    font-size: 15px;
     color: #333;
     font-weight: 500;
 }
@@ -101,21 +104,29 @@
     right: 20px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 20px;
+    font-size: 18px;
+    color: #555;
 }
 
 .register-page-wrapper .forgot-link {
     margin: -15px 0 15px;
+    text-align: right;
 }
 
 .register-page-wrapper .forgot-link a {
-    font-size: 14.5px;
-    color: #333;
+    font-size: 14px;
+    color: #666;
+    transition: color 0.3s;
+}
+
+.register-page-wrapper .forgot-link a:hover {
+    color: #f05a28;
+    text-decoration: underline;
 }
 
 .register-page-wrapper .btn {
     width: 100%;
-    height: 48px;
+    height: 45px;
     background: #f05a28; /* Fallback for older browsers */
     background: linear-gradient(90deg, #ff4500, #f05a28, #ff9966, #f05a28); /* Multiple color stops for vibrant effect */
     background-size: 300% 100%; /* Larger than the element for animation */
@@ -130,6 +141,7 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    margin-top: 5px;
 }
 
 /* Add shimmer effect */
@@ -171,6 +183,12 @@
 
 .register-page-wrapper .btn:active {
     transform: translateY(1px);
+}
+
+.register-page-wrapper .btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .register-page-wrapper .social-icons {
@@ -287,25 +305,25 @@
     right: auto;
 }
 .register-page-wrapper .home-btn {
-    width: 60px; /* Made slightly smaller to match image */
-    height: 60px;
-    border-radius: 8px; /* Changed from 50% (circle) to 8px (rounded square) */
-    background: transparent; /* Changed to transparent */
+    width: 45px; /* Made slightly smaller */
+    height: 45px;
+    border-radius: 8px;
+    background: transparent;
     border: none;
-    color: #ad6aeb; /* Changed to purple to match image */
-    font-size: 30px;
+    color: #ad6aeb;
+    font-size: 25px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: none; /* Removed shadow */
+    box-shadow: none;
 }
 
 .register-page-wrapper .home-btn:hover {
     transform: translateY(-3px);
-    color: #9656d1; /* Darker shade on hover */
-    background: transparent; /* Keep transparent on hover */
+    color: #9656d1;
+    background: transparent;
 }
 
 .register-page-wrapper .home-btn:active {
@@ -317,7 +335,7 @@
     /* Ensure home button stays visible on mobile */
     .register-page-wrapper .home-button-container {
         top: 20px;
-        right: 20px; /* Changed from left to right */
+        right: 20px;
     }
 }
 
@@ -344,15 +362,36 @@
     border-radius: 4px;
 }
 
+/* Scrollbar styling for the form */
+.register-page-wrapper form::-webkit-scrollbar {
+    width: 6px;
+}
+
+.register-page-wrapper form::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.register-page-wrapper form::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.register-page-wrapper form::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
 @media screen and (max-width: 650px) {
     .register-page-wrapper .container {
         height: calc(100vh - 40px);
+        width: 90%;
     }
 
     .register-page-wrapper .form-box {
         bottom: 0;
         width: 100%;
         height: 70%;
+        padding: 20px;
     }
 
     .register-page-wrapper .container.active .form-box {
@@ -395,14 +434,27 @@
     .register-page-wrapper .container.active .toggle-panel.toggle-right {
         bottom: 0;
     }
+    
+    .register-page-wrapper .container h1 {
+        font-size: 24px;
+    }
+    
+    .register-page-wrapper .input-box {
+        margin: 15px 0;
+    }
 }
 
 @media screen and (max-width: 400px) {
     .register-page-wrapper .form-box {
-        padding: 20px;
+        padding: 15px;
     }
 
     .register-page-wrapper .toggle-panel h1 {
-        font-size: 30px;
+        font-size: 24px;
+    }
+    
+    .register-page-wrapper .input-box input {
+        padding: 8px 40px 8px 15px;
+        font-size: 14px;
     }
 }

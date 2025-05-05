@@ -11,7 +11,7 @@ import os
 from flask_jwt_extended import JWTManager
 from config import Config
 from extensions import db
-
+from services.search_results_storage import SearchResultsStorage
 
 app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
 app.config.from_object(Config)
@@ -49,6 +49,9 @@ app.register_blueprint(admin_bp, url_prefix='/api/admin')
 app.register_blueprint(data_bp, url_prefix='/api')
 app.register_blueprint(search_bp, url_prefix='/api')
 app.register_blueprint(profile_bp, url_prefix='/api')  # Register with proper prefix
+
+search_storage = SearchResultsStorage()
+search_storage.setup_storage_table()
 
 # Create uploads directory if it doesn't exist
 os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)

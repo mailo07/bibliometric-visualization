@@ -1,6 +1,6 @@
 # routes/data_routes.py
 from flask import Blueprint, jsonify
-from utils.db_utils import fetch_all, fetch_filtered, fetch_by_id, execute_custom_query
+from utils.db_utils import fetch_all
 
 data_bp = Blueprint('data', __name__)
 

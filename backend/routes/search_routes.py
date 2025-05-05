@@ -1,4 +1,4 @@
-# search_routes.py (updated)
+# routes/search_routes.py
 from flask import Blueprint, jsonify, request
 from flask_caching import Cache
 from services.search_service import SearchService
@@ -6,6 +6,7 @@ from config import Config
 import logging
 from functools import wraps
 from datetime import datetime
+import json
 
 search_bp = Blueprint('search', __name__)
 cache = Cache()
@@ -43,8 +44,6 @@ def handle_errors(f):
             }), 500
     return wrapper
 
-# search_routes.py (updated api_search route)
-# search_routes.py (updated api_search route)
 @search_bp.route('/search', methods=['GET'])
 @handle_errors
 def api_search():
@@ -63,7 +62,8 @@ def api_search():
     
     try:
         page = max(1, int(request.args.get('page', 1)))
-        per_page = min(50, max(1, int(request.args.get('per_page', 10))))
+        per_page = min(100, max(1, int(request.args.get('per_page', 20))))  # Increased max per_page to 100
+        logging.info(f"Search parameters: page={page}, per_page={per_page}")
     except ValueError:
         return jsonify({
             "error": "Invalid page or per_page parameter",
@@ -71,36 +71,66 @@ def api_search():
             "total": 0
         }), 400
     
+    # Get timestamp for cache invalidation if provided
+    timestamp = request.args.get('t', '')
+    
+    # Create a unique cache key based on the query parameters
     cache_key = f"search:{query}:{page}:{per_page}"
     include_external = request.args.get('include_external', 'false').lower() == 'true'
     if include_external:
         cache_key += ":external"
     
+    # Add any filters to the cache key
     for param in ['year_from', 'year_to', 'source', 'min_citations']:
         if request.args.get(param):
             cache_key += f":{param}:{request.args.get(param)}"
     
-    # Check cache first
-    cached_result = cache.get(cache_key)
-    if cached_result:
-        logging.info(f"Returning cached results for {cache_key}")
-        return jsonify(cached_result)
+    # Add timestamp to force cache invalidation if provided
+    if timestamp:
+        cache_key += f":{timestamp}"
+    
+    debug_sources = request.args.get('debug_sources', 'false').lower() == 'true'
+    
+    # Skip cache if debug_sources is true or if explicitly requested to skip cache
+    skip_cache = debug_sources or request.args.get('skip_cache', 'false').lower() == 'true'
+    
+    if not skip_cache:
+        # Check cache first
+        cached_result = cache.get(cache_key)
+        if cached_result:
+            logging.info(f"Returning cached results for {cache_key}")
+            return jsonify(cached_result)
     
     try:
         search_service = SearchService()
+        
+        # Priority parameter to ensure more even distribution from all sources
+        balance_sources = request.args.get('balance_sources', 'true').lower() == 'true'
+        
         search_results = search_service.search_publications(
             query=query,
             page=page,
             per_page=per_page,
-            filters=request.args.to_dict()
+            filters=request.args.to_dict(),
+            include_external=include_external,
+            balance_sources=balance_sources
         )
         
-        # Log the number of results for debugging
-        logging.info(f"Search found {len(search_results.get('results', []))} total results")
+        # Log the number of results and source distribution for debugging
+        results = search_results.get('results', [])
+        source_distribution = {}
+        for result in results:
+            source = result.get('source', 'unknown')
+            if source not in source_distribution:
+                source_distribution[source] = 0
+            source_distribution[source] += 1
+        
+        logging.info(f"Search found {len(results)} total results")
+        logging.info(f"Source distribution: {json.dumps(source_distribution)}")
         
         # Ensure all results have the expected fields
         standardized_results = []
-        for result in search_results.get('results', []):
+        for result in results:
             # Standardize field names to match what frontend expects
             standard_result = {
                 'id': result.get('id', ''),
@@ -110,12 +140,12 @@ def api_search():
                 'journal': result.get('journal', result.get('source', 'Unknown')),
                 'citations': result.get('citations', 0),
                 'doi': result.get('doi', ''),
-                'source': result.get('source', 'unknown')
+                'source': result.get('table_source', result.get('source', 'unknown'))
             }
             standardized_results.append(standard_result)
         
-        # Safely calculate metrics even if some results are missing
-        metrics = calculate_metrics(standardized_results)
+        # Include metrics directly from search_results
+        metrics = search_results.get('metrics', calculate_metrics(standardized_results))
         
         response = {
             "results": standardized_results,
@@ -123,10 +153,13 @@ def api_search():
             "page": page,
             "per_page": per_page,
             "external_apis_used": search_results.get('external_apis_used', False),
-            "metrics": metrics
+            "metrics": metrics,
+            "source_distribution": source_distribution  # Include for debugging
         }
         
-        cache.set(cache_key, response, timeout=Config.CACHE_TIMEOUT)
+        # Cache the results
+        if not skip_cache:
+            cache.set(cache_key, response, timeout=Config.CACHE_TIMEOUT)
         return jsonify(response)
         
     except Exception as e:
@@ -147,8 +180,11 @@ def api_search():
             }
         }), 200  # Still return 200 OK but with empty results
 
+# Rest of the file remains the same
+# ...
+
 def calculate_metrics(results):
-    """Calculate metrics from search results"""
+    """Calculate metrics from search results (fallback function)"""
     metrics = {
         'scholarlyWorks': len(results),
         'worksCited': 0,
@@ -197,7 +233,7 @@ def calculate_metrics(results):
                 authors = [a if isinstance(a, str) else a.get('name', str(a)) for a in item['authors']]
         elif item.get('author'):
             if isinstance(item['author'], str):
-                authors = [item['author']]
+                authors = [a.strip() for a in item['author'].split(',')]
             elif isinstance(item['author'], list):
                 authors = item['author']
         
@@ -245,12 +281,18 @@ def get_paper_details():
     paper_id = request.args.get('id')
     source = request.args.get('source')
     
-    if not paper_id or not source:
+    if not paper_id:
         return jsonify({
-            "error": "Paper ID and source are required"
+            "error": "Paper ID is required"
         }), 400
     
-    cache_key = f"paper:{paper_id}:{source}"
+    # Get timestamp for cache invalidation if provided
+    timestamp = request.args.get('t', '')
+    
+    cache_key = f"paper:{paper_id}:{source or 'any'}"
+    if timestamp:
+        cache_key += f":{timestamp}"
+        
     cached_result = cache.get(cache_key)
     if cached_result:
         return jsonify(cached_result)
@@ -266,3 +308,69 @@ def get_paper_details():
     # Cache the result
     cache.set(cache_key, paper_details, timeout=Config.CACHE_TIMEOUT)
     return jsonify(paper_details)
+
+@search_bp.route('/metrics', methods=['GET'])
+@handle_errors
+def get_metrics():
+    query = request.args.get('query', '').strip()
+    
+    if not query:
+        return jsonify({
+            "error": "Query parameter is required"
+        }), 400
+    
+    # Get timestamp for cache invalidation if provided
+    timestamp = request.args.get('t', '')
+    
+    cache_key = f"metrics:{query}"
+    if timestamp:
+        cache_key += f":{timestamp}"
+        
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return jsonify(cached_result)
+    
+    search_service = SearchService()
+    metrics = search_service.get_bibliometric_metrics(query)
+    
+    if not metrics:
+        return jsonify({
+            "error": "Failed to calculate metrics"
+        }), 500
+    
+    # Cache the result
+    cache.set(cache_key, metrics, timeout=Config.CACHE_TIMEOUT)
+    return jsonify(metrics)
+
+@search_bp.route('/summary', methods=['GET'])
+@handle_errors
+def get_summary():
+    paper_id = request.args.get('id')
+    
+    if not paper_id:
+        return jsonify({
+            "error": "Paper ID is required"
+        }), 400
+    
+    # Get timestamp for cache invalidation if provided
+    timestamp = request.args.get('t', '')
+    
+    cache_key = f"summary:{paper_id}"
+    if timestamp:
+        cache_key += f":{timestamp}"
+        
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        return jsonify(cached_result)
+    
+    search_service = SearchService()
+    summary = search_service.get_publication_summary(paper_id)
+    
+    if not summary:
+        return jsonify({
+            "error": "Summary not found"
+        }), 404
+    
+    # Cache the result
+    cache.set(cache_key, summary, timeout=Config.CACHE_TIMEOUT)
+    return jsonify(summary)

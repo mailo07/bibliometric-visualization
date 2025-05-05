@@ -1,16 +1,22 @@
-// Fixed ProfileHomePage.js
-import React, { useState, useEffect, useCallback } from 'react';
+// ProfileHomePage.js
+import React, { useState, useEffect } from 'react';
 import ProfileCard from './ProfileCard';
 import EditProfileModal from './EditProfileModal';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
-// Make sure this matches your actual API URL
-const API_BASE_URL = 'http://localhost:5000/api';
+import { useAuth } from '../../contexts/auth_context';
 
 const ProfileHomePage = () => {
   const navigate = useNavigate();
+  const { 
+    currentUser, 
+    updateProfile, 
+    changePassword, 
+    updateProfilePicture, 
+    logout,
+    error: authError 
+  } = useAuth();
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
@@ -28,92 +34,42 @@ const ProfileHomePage = () => {
     profilePicture: null
   });
 
-  // Enhanced error handling and debugging for profile fetch
-  const fetchUserProfile = useCallback(async (token) => {
-    if (!token) {
-      console.error('No token available for profile fetch');
-      navigate('/registerlogin?show=login');
-      return;
-    }
-    
-    try {
-      console.log("Fetching profile with token:", token.substring(0, 10) + "...");
-      setIsLoading(true);
-      
-      const response = await axios.get(`${API_BASE_URL}/profile`, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Cache-Control': 'no-cache'
-        }
-      });
-      
-      console.log("Profile data received:", response.data);
-      const profileData = response.data;
-      
-      // Map backend field names to frontend field names
+  // Effect to update local userData when currentUser changes
+  useEffect(() => {
+    if (currentUser) {
       setUserData({
-        fullName: profileData.full_name || profileData.username || '',
-        email: profileData.email || '',
-        username: profileData.username || '',
-        bio: profileData.bio || '',
-        location: profileData.location || '',
-        memberSince: profileData.member_since || new Date().toLocaleDateString(),
-        occupation: profileData.occupation || '',
-        profilePicture: profileData.profile_picture || null
+        fullName: currentUser.full_name || '',
+        email: currentUser.email || '',
+        username: currentUser.username || '',
+        bio: currentUser.bio || '',
+        location: currentUser.location || '',
+        memberSince: formatDate(currentUser.member_since) || new Date().toLocaleDateString(),
+        occupation: currentUser.occupation || '',
+        profilePicture: currentUser.profile_picture || null
       });
       
-      localStorage.setItem('user', JSON.stringify(profileData));
-      setGeneralError(''); // Clear any previous errors
-    } catch (error) {
-      console.error('Profile fetch error:', error);
-      console.error('Response data:', error.response?.data);
-      console.error('Status code:', error.response?.status);
-      
-      // Handle different error scenarios
-      if (error.response?.status === 401) {
-        console.log('Authentication failed, redirecting to login');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/registerlogin?show=login');
-      } else {
-        const errorMessage = error.response?.data?.error || 
-                             error.message || 
-                             'Failed to load profile data. Please try again.';
-        setGeneralError(`Profile Error: ${errorMessage}`);
-      }
-    } finally {
       setIsLoading(false);
     }
-  }, [navigate]);
+  }, [currentUser]);
 
+  // Set general error when auth error occurs
   useEffect(() => {
-    // Get token from localStorage
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.log('No token found, redirecting to login');
-      navigate('/registerlogin?show=login');
-      return;
+    if (authError) {
+      setGeneralError(authError);
     }
-    
-    // Use stored data immediately for better UX
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-    if (Object.keys(storedUser).length > 0) {
-      console.log('Using stored user data for initial render');
-      setUserData({
-        fullName: storedUser.full_name || storedUser.username || '',
-        email: storedUser.email || '',
-        username: storedUser.username || '',
-        bio: storedUser.bio || '',
-        location: storedUser.location || '',
-        memberSince: storedUser.member_since || new Date().toLocaleDateString(),
-        occupation: storedUser.occupation || '',
-        profilePicture: storedUser.profile_picture || null
-      });
+  }, [authError]);
+
+  // Helper function to format date 
+  const formatDate = (dateString) => {
+    if (!dateString) return null;
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString;
     }
-    
-    // Then fetch fresh data
-    fetchUserProfile(token);
-  }, [navigate, fetchUserProfile]);
+  };
 
   const handleEditProfile = () => {
     setModalType('profile');
@@ -133,118 +89,95 @@ const ProfileHomePage = () => {
     setGeneralError('');
   };
 
-  // Improved error handling for profile updates
+  // Profile update handler
   const handleSaveChanges = async (updatedData) => {
     try {
       setGeneralError('');
       setSuccessMessage('');
       setIsSubmitting(true);
       
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token is missing');
-      }
-      
       console.log('Sending profile update:', updatedData);
       
-      // Make sure field names match what backend expects
-      const response = await axios.put(`${API_BASE_URL}/profile`, {
-        // Use snake_case for backend API
-        full_name: updatedData.fullName,
-        email: updatedData.email,
-        username: updatedData.username,
-        bio: updatedData.bio,
-        location: updatedData.location,
-        occupation: updatedData.occupation
-      }, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('Profile update response:', response.data);
+      // Send only the fields our backend expects
+      const profileData = {};
+      if (updatedData.username) profileData.username = updatedData.username;
+      if (updatedData.email) profileData.email = updatedData.email;
+      if (updatedData.bio) profileData.bio = updatedData.bio;
       
-      const updatedUser = {
+      console.log('Filtered profile data:', profileData);
+      
+      const response = await updateProfile(profileData);
+      console.log('Profile update response:', response);
+      
+      // Update local user data
+      setUserData({
         ...userData,
-        fullName: response.data.user.full_name,
-        email: response.data.user.email,
-        username: response.data.user.username,
-        bio: response.data.user.bio,
-        location: response.data.user.location,
-        occupation: response.data.user.occupation
-      };
+        fullName: response.user.full_name || '',
+        email: response.user.email || '',
+        username: response.user.username || '',
+        bio: response.user.bio || '',
+        location: response.user.location || '',
+        occupation: response.user.occupation || ''
+      });
       
-      setUserData(updatedUser);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
       setIsModalOpen(false);
-      
-      setSuccessMessage(response.data.message || 'Profile updated successfully');
+      setSuccessMessage('Profile updated successfully');
       setTimeout(() => setSuccessMessage(''), 3000);
+      
+      return true;
     } catch (error) {
       console.error('Update error:', error);
-      console.error('Response data:', error.response?.data);
       
-      const errorMsg = error.response?.data?.error || 
-                     error.response?.data?.message || 
-                     error.message ||
-                     'Failed to update profile';
-      setGeneralError(`Update Error: ${errorMsg}`);
+      const errorMsg = error.message || 'Failed to update profile';
+      setGeneralError(errorMsg);
       
-      // Check for specific error types
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        setTimeout(() => navigate('/registerlogin?show=login'), 2000);
+        setTimeout(() => {
+          logout();
+          navigate('/registerlogin?show=login');
+        }, 2000);
       }
+      
+      return false;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Improved error handling for password changes
+  // Password change handler
   const handleChangePasswordSubmit = async (passwordData) => {
     try {
       setGeneralError('');
       setIsSubmitting(true);
       
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token is missing');
-      }
-      
       console.log('Sending password change request');
       
-      const response = await axios.put(`${API_BASE_URL}/password`, {
+      const response = await changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
-      }, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
       });
 
-      console.log('Password change response:', response.data);
+      console.log('Password change response:', response);
       
       setIsModalOpen(false);
-      setSuccessMessage(response.data.message || 'Password changed successfully');
+      setSuccessMessage('Password changed successfully');
       setTimeout(() => setSuccessMessage(''), 3000);
+      
       return true;
     } catch (error) {
       console.error('Password change error:', error);
-      console.error('Response data:', error.response?.data);
       
-      const errorMsg = error.response?.data?.error || 
-                     error.message ||
-                     'Failed to change password';
+      const errorMsg = error.message || 'Failed to change password';
                      
       // Check for authentication errors
       if (error.response?.status === 401 && 
           error.response?.data?.error === 'Current password is incorrect') {
         throw new Error('Current password is incorrect');
       } else if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        setTimeout(() => navigate('/registerlogin?show=login'), 2000);
+        setTimeout(() => {
+          logout();
+          navigate('/registerlogin?show=login');
+        }, 2000);
         throw new Error('Authentication failed. Please log in again.');
       }
       
@@ -255,12 +188,11 @@ const ProfileHomePage = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout();
     navigate('/registerlogin?show=login');
   };
 
-  // Improved error handling for profile picture uploads
+  // Profile picture update handler
   const handleProfilePictureChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -284,52 +216,42 @@ const ProfileHomePage = () => {
       const formData = new FormData();
       formData.append('profilePicture', file);
       
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token is missing');
-      }
-      
       console.log('Uploading profile picture');
       
-      const response = await axios.post(`${API_BASE_URL}/profile/picture`, formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const response = await updateProfilePicture(formData);
       
-      console.log('Profile picture response:', response.data);
+      console.log('Profile picture response:', response);
       
-      const updatedUser = { 
+      // Update local user data with new profile picture
+      setUserData({ 
         ...userData, 
-        profilePicture: response.data.profile_picture 
-      };
-      setUserData(updatedUser);
-      
-      // Update local storage
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      localStorage.setItem('user', JSON.stringify({
-        ...storedUser,
-        profile_picture: response.data.profile_picture
-      }));
+        profilePicture: response.profile_picture 
+      });
       
       setSuccessMessage('Profile picture updated successfully');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error('Profile picture error:', error);
-      console.error('Response data:', error.response?.data);
       
-      const errorMsg = error.response?.data?.error || 
-                     error.message ||
-                     'Failed to update profile picture';
-      setGeneralError(`Image Error: ${errorMsg}`);
+      const errorMsg = error.message || 'Failed to update profile picture';
+      setGeneralError(errorMsg);
       
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        setTimeout(() => navigate('/registerlogin?show=login'), 2000);
+        setTimeout(() => {
+          logout();
+          navigate('/registerlogin?show=login');
+        }, 2000);
       }
     }
   };
+
+  // If no token exists, redirect to login page
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/registerlogin?show=login');
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-purple-700 via-indigo-700 to-blue-700">

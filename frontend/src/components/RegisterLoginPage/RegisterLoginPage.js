@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './RegisterLoginPage.css';
-import { FaUser, FaLock, FaEnvelope, FaHome } from 'react-icons/fa';
+import { FaUser, FaLock, FaEnvelope, FaHome, FaMapMarkerAlt } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
-// API base URL - change this to match your Flask server
-const API_BASE_URL = 'http://localhost:5000';
+import { useAuth } from '../../contexts/auth_context';
 
 const RegisterLoginPage = () => {
     const [isActive, setIsActive] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
+    const { login, register: authRegister } = useAuth();
     
     // Form state management
     const [loginData, setLoginData] = useState({
@@ -23,7 +21,8 @@ const RegisterLoginPage = () => {
         email: '',
         password: '',
         bio: '',
-        profile_image: ''
+        full_name: '',
+        location: ''
     });
     
     // Error state management
@@ -64,6 +63,8 @@ const RegisterLoginPage = () => {
             ...loginData,
             [name]: value
         });
+        // Clear error when typing
+        if (loginError) setLoginError('');
     };
     
     const handleLoginSubmit = async (e) => {
@@ -72,30 +73,13 @@ const RegisterLoginPage = () => {
         setIsLoading(true);
 
         try {
-            const { data } = await axios.post(`${API_BASE_URL}/api/auth/login`, loginData);
-            
-            if (data.user && data.user.token) {
-                // Store user data including token
-                const userData = {
-                    id: data.user.id,
-                    username: data.user.username,
-                    email: data.user.email,
-                    bio: data.user.bio || '',
-                    profile_image: data.user.profile_image || '',
-                    token: data.user.token
-                };
-
-                localStorage.setItem('token', data.user.token);
-                localStorage.setItem('user', JSON.stringify(userData));
-                
-                navigate('/profile');
-            } else {
-                throw new Error('Invalid response structure');
-            }
+            console.log("Attempting login with:", loginData.username);
+            await login(loginData.username, loginData.password);
+            console.log('Login successful, navigating to profile');
+            navigate('/profile');
         } catch (error) {
             console.error('Login error:', error);
             setLoginError(
-                error.response?.data?.message || 
                 error.message || 
                 'Login failed. Please check your credentials and try again.'
             );
@@ -110,6 +94,8 @@ const RegisterLoginPage = () => {
             ...registerData,
             [name]: value
         });
+        // Clear error when typing
+        if (registerError) setRegisterError('');
     };
     
     const handleRegisterSubmit = async (e) => {
@@ -140,13 +126,18 @@ const RegisterLoginPage = () => {
                 return;
             }
             
-            await axios.post(`${API_BASE_URL}/api/auth/register`, {
+            // Create user data with all fields properly named
+            const userData = {
                 username: registerData.username,
                 email: registerData.email,
                 password: registerData.password,
                 bio: registerData.bio || '',
-                profile_image: registerData.profile_image || ''
-            });
+                full_name: registerData.full_name || '',
+                location: registerData.location || ''
+            };
+            
+            // Use the auth context's register function
+            await authRegister(userData);
             
             setRegisterSuccess('Registration successful! You can now log in.');
             
@@ -156,7 +147,8 @@ const RegisterLoginPage = () => {
                 email: '',
                 password: '',
                 bio: '',
-                profile_image: ''
+                full_name: '',
+                location: ''
             });
             
             // Switch to login form after successful registration
@@ -173,10 +165,8 @@ const RegisterLoginPage = () => {
                 if (error.response.status === 409) {
                     setRegisterError('Username or email already exists. Please try another one.');
                 }
-            } else if (error.request) {
-                setRegisterError('No response from server. Please check your connection.');
             } else {
-                setRegisterError('Registration failed. Please try again later.');
+                setRegisterError(error.message || 'Registration failed. Please try again later.');
             }
         } finally {
             setIsLoading(false);
@@ -267,12 +257,32 @@ const RegisterLoginPage = () => {
                         <div className="input-box">
                             <input 
                                 type="text" 
+                                name="full_name"
+                                placeholder="Full Name (optional)" 
+                                value={registerData.full_name}
+                                onChange={handleRegisterChange}
+                            />
+                            <i><FaUser /></i>
+                        </div>
+                        <div className="input-box">
+                            <input 
+                                type="text" 
                                 name="bio"
                                 placeholder="Short bio (optional)" 
                                 value={registerData.bio}
                                 onChange={handleRegisterChange}
                             />
                             <i><FaUser /></i>
+                        </div>
+                        <div className="input-box">
+                            <input 
+                                type="text" 
+                                name="location"
+                                placeholder="Location (optional)" 
+                                value={registerData.location}
+                                onChange={handleRegisterChange}
+                            />
+                            <i><FaMapMarkerAlt /></i>
                         </div>
                         <button type="submit" className="btn" disabled={isLoading}>
                             {isLoading ? 'Registering...' : 'Register'}
@@ -289,13 +299,13 @@ const RegisterLoginPage = () => {
                     <div className="toggle-panel toggle-left">
                         <h1>Hello, Welcome!</h1>
                         <p>Don't have an account?</p>
-                        <button className="btn register-btn" onClick={handleRegisterClick}>Register</button>
+                        <button type="button" className="btn register-btn" onClick={handleRegisterClick}>Register</button>
                     </div>
 
                     <div className="toggle-panel toggle-right">
                         <h1>Welcome Back!</h1>
                         <p>Already have an account?</p>
-                        <button className="btn login-btn" onClick={handleLoginClick}>Login</button>
+                        <button type="button" className="btn login-btn" onClick={handleLoginClick}>Login</button>
                     </div>
                 </div>
             </div>
